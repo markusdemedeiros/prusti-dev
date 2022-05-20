@@ -204,6 +204,18 @@ fn ensure_permission_in_state(
     if predicate_state.contains(permission_kind, &place) {
         // The requirement is already satisfied.
     } else if let Some(prefix) = predicate_state.find_prefix(permission_kind, &place) {
+        if prefix.get_type().is_trusted() {
+            // Trusted types cannot be unfolded.
+            let place_span = context.get_span(place.position()).unwrap();
+            let prefix_span = context.get_span(prefix.position()).unwrap();
+            let mut error = SpannedEncodingError::incorrect(
+                "accessing fields of #[trusted] types is not allowed",
+                place_span,
+            );
+            error.add_note("the type of this place is marked as #[trusted]", Some(prefix_span));
+            error.set_help("you might want to mark the function as #[trusted]");
+            return Err(error);
+        }
         // The requirement can be satisifed by unfolding.
         predicate_state.remove(permission_kind, &prefix)?;
         let expanded_place = context.expand_place(&prefix, &place)?;

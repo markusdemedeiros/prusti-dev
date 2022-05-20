@@ -7,7 +7,7 @@
 use super::{helpers::compute_discriminant_values, interface::MirTypeEncoderInterface};
 use crate::encoder::{
     errors::{SpannedEncodingError, SpannedEncodingResult},
-    mir::{generics::MirGenericsEncoderInterface, types::helpers::compute_discriminant_ranges},
+    mir::{generics::MirGenericsEncoderInterface, types::helpers::compute_discriminant_ranges, specifications::SpecificationsInterface},
     Encoder,
 };
 use log::debug;
@@ -65,6 +65,14 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
         )
     }
 
+    fn is_trusted_type(&self, did: DefId) -> bool {
+        if let Some(type_specs) = self.encoder.get_type_specs(did) {
+            *type_specs.trusted.expect_inherent()
+        } else {
+            false
+        }
+    }
+
     fn compute_array_len(&self, size: ty::Const<'tcx>) -> u64 {
         self.encoder
             .const_eval_intlike(size.val())
@@ -107,6 +115,13 @@ impl<'p, 'v, 'r: 'v, 'tcx: 'v> TypeEncoder<'p, 'v, 'tcx> {
                 let lifetime = vir::ty::LifetimeConst { name: lft_name };
                 let uniqueness = self.encode_uniqueness(*mutability);
                 vir::Type::reference(lifetime, uniqueness, self.encoder.encode_type_high(*ty)?)
+            }
+
+            ty::TyKind::Adt(adt_def, substs) if self.is_trusted_type(adt_def.did()) => {
+                vir::Type::trusted(
+                    encode_trusted_name(self.encoder, adt_def.did()),
+                    self.encode_substs(substs),
+                )
             }
 
             ty::TyKind::Adt(adt_def, substs) if adt_def.is_struct() => {
@@ -535,6 +550,10 @@ fn encode_box_name() -> String {
 
 fn encode_struct_name<'v, 'tcx: 'v>(encoder: &Encoder<'v, 'tcx>, did: DefId) -> String {
     format!("struct${}", encoder.encode_item_name(did))
+}
+
+fn encode_trusted_name<'v, 'tcx: 'v>(encoder: &Encoder<'v, 'tcx>, did: DefId) -> String {
+    format!("trusted${}", encoder.encode_item_name(did))
 }
 
 fn encode_variant<'v, 'tcx: 'v>(

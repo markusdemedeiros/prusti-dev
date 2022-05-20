@@ -970,8 +970,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> BuiltinMethodsInterface for Lowerer<'p, 'v, 'tcx> {
                         call write_address<ty>([target_address], source_value)
                     });
                 }
-                vir_mid::TypeDecl::TypeVar(_) => {
-                    // move_place of a generic variable has no body
+                vir_mid::TypeDecl::TypeVar(_) | vir_mid::TypeDecl::Trusted(_) => {
+                    // move_place of a generic or trusted type has no body
                 }
                 vir_mid::TypeDecl::Tuple(decl) => {
                     if decl.arguments.is_empty() {
@@ -1185,7 +1185,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> BuiltinMethodsInterface for Lowerer<'p, 'v, 'tcx> {
             }
 
             // FIXME: Add method body for move_place for references
-            let body = if ty.is_type_var() || ty.is_reference() {
+            let body = if ty.is_type_var() || ty.is_trusted() || ty.is_reference() {
                 None
             } else {
                 Some(statements)
@@ -1364,6 +1364,9 @@ impl<'p, 'v: 'p, 'tcx: 'v> BuiltinMethodsInterface for Lowerer<'p, 'v, 'tcx> {
                 }
                 vir_mid::TypeDecl::TypeVar(_) => {
                     unreachable!("Cannot write constants to variables of generic type.");
+                }
+                vir_mid::TypeDecl::Trusted(_) => {
+                    unreachable!("Cannot write constants to variables of trusted type.");
                 }
                 vir_mid::TypeDecl::Tuple(decl) => {
                     if decl.arguments.is_empty() {
@@ -2048,6 +2051,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> BuiltinMethodsInterface for Lowerer<'p, 'v, 'tcx> {
                                 // Primitive type. Nothing to do.
                             }
                             vir_mid::TypeDecl::TypeVar(_) => unreachable!("cannot convert abstract type into a memory block: {}", ty),
+                            vir_mid::TypeDecl::Trusted(_) => unreachable!("cannot convert trusted type into a memory block: {}", ty),
                             vir_mid::TypeDecl::Tuple(decl) => {
                                 // TODO: Remove code duplication.
                                 for field in decl.iter_fields() {
