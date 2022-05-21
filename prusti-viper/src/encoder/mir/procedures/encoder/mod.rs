@@ -577,7 +577,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             // mir::Rvalue::Cast(CastKind, Operand<'tcx>, Ty<'tcx>),
             mir::Rvalue::BinaryOp(op, box (left, right)) => {
                 let encoded_left = self.encode_statement_operand(block_builder, location, left)?;
-                let encoded_right = self.encode_statement_operand(block_builder, location, right)?;
+                let encoded_right =
+                    self.encode_statement_operand(block_builder, location, right)?;
                 let kind = self.encode_binary_op_kind(*op)?;
                 let encoded_rvalue = vir_high::Rvalue::binary_op(kind, encoded_left, encoded_right);
                 block_builder.add_statement(self.set_statement_error(
@@ -588,7 +589,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             }
             mir::Rvalue::CheckedBinaryOp(op, box (left, right)) => {
                 let encoded_left = self.encode_statement_operand(block_builder, location, left)?;
-                let encoded_right = self.encode_statement_operand(block_builder, location, right)?;
+                let encoded_right =
+                    self.encode_statement_operand(block_builder, location, right)?;
                 let kind = self.encode_binary_op_kind(*op)?;
                 let encoded_rvalue =
                     vir_high::Rvalue::checked_binary_op(kind, encoded_left, encoded_right);
@@ -600,7 +602,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             }
             // mir::Rvalue::NullaryOp(NullOp, Ty<'tcx>),
             mir::Rvalue::UnaryOp(op, operand) => {
-                let encoded_operand = self.encode_statement_operand(block_builder, location, operand)?;
+                let encoded_operand =
+                    self.encode_statement_operand(block_builder, location, operand)?;
                 let kind = match op {
                     mir::UnOp::Not => vir_high::UnaryOpKind::Not,
                     mir::UnOp::Neg => vir_high::UnaryOpKind::Minus,
@@ -681,7 +684,11 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         };
         let mut encoded_operands = Vec::new();
         for operand in operands {
-            encoded_operands.push(self.encode_statement_operand(block_builder, location, operand)?);
+            encoded_operands.push(self.encode_statement_operand(
+                block_builder,
+                location,
+                operand,
+            )?);
         }
         let encoded_rvalue = vir_high::Rvalue::aggregate(ty, encoded_operands);
         block_builder.add_statement(vir_high::Statement::assign(
@@ -1397,7 +1404,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     .encode_place_high(self.mir, target_place)?
                     .set_default_position(position);
                 assert_eq!(args.len(), 1);
-                let encoded_arg = self.encode_statement_operand(block_builder, location, &args[0])?;
+                let encoded_arg =
+                    self.encode_statement_operand(block_builder, location, &args[0])?;
                 let statement = vir_high::Statement::consume_no_pos(encoded_arg.clone());
                 block_builder.add_statement(self.encoder.set_statement_error_ctxt(
                     statement,

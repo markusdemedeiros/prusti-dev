@@ -10,6 +10,10 @@ struct T2 {
     f: u32,
 }
 
+struct T3 {
+    g: T,
+}
+
 impl Drop for T {
     fn drop(&mut self) {}
 }
@@ -43,6 +47,11 @@ fn test4() {
         let _b = a;
     }
     assert!(false);     //~ ERROR the asserted expression might not hold
+}
+
+fn test5() {
+    let a = T { f: 4 };
+    let b = T3 { g: a };
 }
 
 fn main() {}

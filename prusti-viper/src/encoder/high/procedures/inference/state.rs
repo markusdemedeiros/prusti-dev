@@ -17,6 +17,12 @@ pub(super) struct PredicateState {
     mut_borrowed: BTreeMap<vir_high::Expression, vir_high::ty::LifetimeConst>,
 }
 
+// #[derive(Clone, PartialOrd, Ord, PartialEq, Eq)]
+// pub(super) struct Condition {
+//     label: vir_mid::BasicBlockId,
+//     visited: bool,
+// }
+
 #[derive(Clone)]
 pub(in super::super) struct FoldUnfoldState {
     /// If this state is a merge of multiple incoming states, then
@@ -34,7 +40,7 @@ pub(in super::super) struct FoldUnfoldState {
     /// `incoming_labels`.
     ///
     /// Invariant: only non-empty entries are present.
-    conditional: BTreeMap<Vec<vir_mid::BasicBlockId>, PredicateState>,
+    conditional: BTreeMap<vir_mid::BlockMarkerCondition, PredicateState>,
 }
 
 impl std::fmt::Display for PredicateState {
@@ -221,6 +227,16 @@ impl PredicateState {
     }
 }
 
+// impl std::fmt::Display for Condition {
+//     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+//         if self.visited {
+//             write!(f, "{}", self.label)
+//         } else {
+//             write!(f, "!{}", self.label)
+//         }
+//     }
+// }
+
 impl std::fmt::Display for FoldUnfoldState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "incoming labels: ")?;
@@ -230,8 +246,8 @@ impl std::fmt::Display for FoldUnfoldState {
         writeln!(f, "\nunconditional:")?;
         writeln!(f, "{}", self.unconditional)?;
         for (condition, state) in &self.conditional {
-            write!(f, "conditional (")?;
-            self.debug_write_condition(condition, f)?;
+            write!(f, "conditional ({}", condition)?;
+            // self.debug_write_condition(condition, f)?;
             writeln!(f, "):\n{}", state)?;
         }
         Ok(())
@@ -251,20 +267,20 @@ impl FoldUnfoldState {
         debug!("state:\n{}", self);
     }
 
-    fn debug_write_condition(
-        &self,
-        condition: &[vir_mid::BasicBlockId],
-        writer: &mut dyn Write,
-    ) -> std::fmt::Result {
-        let mut iterator = condition.iter();
-        if let Some(first) = iterator.next() {
-            write!(writer, "{}", first)?;
-        }
-        for label in iterator {
-            write!(writer, "→{}", label)?;
-        }
-        Ok(())
-    }
+    // fn debug_write_condition(
+    //     &self,
+    //     condition: &[Condition],
+    //     writer: &mut dyn Write,
+    // ) -> std::fmt::Result {
+    //     let mut iterator = condition.iter();
+    //     if let Some(first) = iterator.next() {
+    //         write!(writer, "{}", first)?;
+    //     }
+    //     for label in iterator {
+    //         write!(writer, "→{}", label)?;
+    //     }
+    //     Ok(())
+    // }
 
     pub(in super::super) fn is_empty(&self) -> bool {
         self.unconditional.is_empty() && self.conditional.is_empty()
@@ -273,11 +289,28 @@ impl FoldUnfoldState {
     pub(in super::super) fn reset_incoming_labels_with(
         &mut self,
         incoming_label: vir_mid::BasicBlockId,
+        path_disambiguators: &[vir_mid::BasicBlockId],
+        // predecessors_without_without_incoming_label: Vec<vir_mid::BasicBlockId>,
     ) -> SpannedEncodingResult<()> {
         self.conditional = std::mem::take(&mut self.conditional)
             .into_iter()
             .map(|(mut labels, state)| {
-                labels.push(incoming_label.clone());
+                for non_incoming_label in path_disambiguators {
+                    labels.elements.push(vir_mid::BlockMarkerConditionElement {
+                        visited: false,
+                        basic_block_id: non_incoming_label.clone(),
+                    });
+                }
+                labels.elements.push(vir_mid::BlockMarkerConditionElement {
+                    visited: true,
+                    basic_block_id: incoming_label.clone(),
+                });
+                // for predecessor in predecessors_without_without_incoming_label.clone() {
+                //     labels.elements.push(Condition {
+                //         visited: false,
+                //         label: predecessor,
+                //     });
+                // }
                 (labels, state)
             })
             .collect();
@@ -291,6 +324,12 @@ impl FoldUnfoldState {
     pub(in super::super) fn merge(
         &mut self,
         incoming_label: vir_mid::BasicBlockId,
+        current_label: vir_mid::BasicBlockId,
+        path_disambiguators: &BTreeMap<
+            (vir_mid::BasicBlockId, vir_mid::BasicBlockId),
+            Vec<vir_mid::BasicBlockId>,
+        >,
+        // predecessors_without_without_incoming_label: Vec<vir_mid::BasicBlockId>,
         incoming_state: Self,
     ) -> SpannedEncodingResult<()> {
         let mut new_conditional = PredicateState::default();
@@ -311,27 +350,75 @@ impl FoldUnfoldState {
         )?;
 
         // Copy over conditional.
+        let empty_vec = Vec::new();
+        let incoming_label_path_disambiguators = path_disambiguators
+            .get(&(incoming_label.clone(), current_label.clone()))
+            .unwrap_or(&empty_vec);
         self.conditional
             .extend(
                 incoming_state
                     .conditional
                     .into_iter()
-                    .map(|(mut condition, state)| {
-                        condition.push(incoming_label.clone());
-                        (condition, state)
+                    .map(|(mut labels, state)| {
+                        for non_incoming_label in incoming_label_path_disambiguators {
+                            labels.elements.push(vir_mid::BlockMarkerConditionElement {
+                                visited: false,
+                                basic_block_id: non_incoming_label.clone(),
+                            });
+                        }
+                        labels.elements.push(vir_mid::BlockMarkerConditionElement {
+                            visited: true,
+                            basic_block_id: incoming_label.clone(),
+                        });
+                        // for predecessor in predecessors_without_without_incoming_label.clone() {
+                        //     labels.elements.push(Condition {
+                        //         visited: false,
+                        //         label: predecessor,
+                        //     });
+                        // }
+                        (labels, state)
                     }),
             );
 
         // Create new conditionals.
         if !new_conditional.is_empty() {
             for label in &self.incoming_labels {
-                self.conditional
-                    .insert(vec![label.clone()], new_conditional.clone());
+                let mut elements = vec![vir_mid::BlockMarkerConditionElement {
+                    basic_block_id: label.clone(),
+                    visited: true,
+                }];
+                for disambiguator in path_disambiguators
+                    .get(&(label.clone(), current_label.clone()))
+                    .unwrap_or(&empty_vec)
+                {
+                    elements.push(vir_mid::BlockMarkerConditionElement {
+                        visited: false,
+                        basic_block_id: disambiguator.clone(),
+                    });
+                }
+                self.conditional.insert(
+                    vir_mid::BlockMarkerCondition { elements },
+                    new_conditional.clone(),
+                );
             }
         }
         if !incoming_conditional.is_empty() {
-            self.conditional
-                .insert(vec![incoming_label.clone()], incoming_conditional);
+            let mut elements = vec![vir_mid::BlockMarkerConditionElement {
+                basic_block_id: incoming_label.clone(),
+                visited: true,
+            }];
+            for non_incoming_label in incoming_label_path_disambiguators {
+                elements.push(vir_mid::BlockMarkerConditionElement {
+                    visited: false,
+                    basic_block_id: non_incoming_label.clone(),
+                });
+            }
+            self.conditional.insert(
+                vir_mid::BlockMarkerCondition {
+                    elements,
+                },
+                incoming_conditional,
+            );
         }
         self.incoming_labels.push(incoming_label);
         self.check_no_default_position();
@@ -481,7 +568,7 @@ impl FoldUnfoldState {
     pub(super) fn get_conditional_states(
         &mut self,
     ) -> SpannedEncodingResult<
-        impl Iterator<Item = (&Vec<vir_mid::BasicBlockId>, &mut PredicateState)>,
+        impl Iterator<Item = (&vir_mid::BlockMarkerCondition, &mut PredicateState)>,
     > {
         self.check_no_default_position();
         Ok(self.conditional.iter_mut())

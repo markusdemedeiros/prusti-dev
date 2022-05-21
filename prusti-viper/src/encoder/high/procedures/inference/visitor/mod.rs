@@ -37,6 +37,9 @@ pub(super) struct Visitor<'p, 'v, 'tcx> {
     successfully_processed_blocks: FxHashSet<vir_mid::BasicBlockId>,
     current_label: Option<vir_mid::BasicBlockId>,
     current_statements: Vec<vir_mid::Statement>,
+    path_disambiguators: Option<
+        BTreeMap<(vir_mid::BasicBlockId, vir_mid::BasicBlockId), Vec<vir_mid::BasicBlockId>>,
+    >,
     /// Should we dump a Graphviz plot in case we crash during inference?
     graphviz_on_crash: bool,
 }
@@ -54,6 +57,7 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
             successfully_processed_blocks: Default::default(),
             current_label: None,
             current_statements: Default::default(),
+            path_disambiguators: Default::default(),
             graphviz_on_crash: config::dump_debug_info(),
         }
     }
@@ -64,6 +68,18 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
         entry_state: FoldUnfoldState,
     ) -> SpannedEncodingResult<vir_mid::ProcedureDecl> {
         self.procedure_name = Some(procedure.name.clone());
+
+        let mut path_disambiguators = BTreeMap::new();
+        for ((from, to), value) in procedure.get_path_disambiguators() {
+            path_disambiguators.insert(
+                (self.lower_label(&from), self.lower_label(&to)),
+                value
+                    .into_iter()
+                    .map(|label| self.lower_label(&label))
+                    .collect(),
+            );
+        }
+        self.path_disambiguators = Some(path_disambiguators);
 
         let traversal_order = procedure.get_topological_sort();
         for (label, block) in &procedure.basic_blocks {
@@ -82,7 +98,7 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
         for old_label in traversal_order {
             let old_block = procedure.basic_blocks.remove(&old_label).unwrap();
             self.current_label = Some(self.lower_label(&old_label));
-            self.lower_block(old_label, old_block)?;
+            self.lower_block(old_block)?;
             self.successfully_processed_blocks
                 .insert(self.current_label.take().unwrap());
         }
@@ -124,11 +140,7 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
         }
     }
 
-    fn lower_block(
-        &mut self,
-        _old_label: vir_high::BasicBlockId,
-        old_block: vir_high::BasicBlock,
-    ) -> SpannedEncodingResult<()> {
+    fn lower_block(&mut self, old_block: vir_high::BasicBlock) -> SpannedEncodingResult<()> {
         let mut state = if config::dump_debug_info() {
             self.state_at_entry
                 .get(self.current_label.as_ref().unwrap())
@@ -314,13 +326,27 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
         mut state: FoldUnfoldState,
     ) -> SpannedEncodingResult<()> {
         let from_label = self.current_label.as_ref().unwrap();
-        match self.state_at_entry.entry(to_label) {
+        // let predecessors_without = self.get_predecessors_without(&to_label, &from_label);
+        match self.state_at_entry.entry(to_label.clone()) {
             Entry::Vacant(entry) => {
-                state.reset_incoming_labels_with(from_label.clone())?;
+                state.reset_incoming_labels_with(
+                    from_label.clone(),
+                    self.path_disambiguators
+                        .as_ref()
+                        .unwrap()
+                        .get(&(from_label.clone(), to_label))
+                        .unwrap_or(&Vec::new()), // , predecessors_without
+                )?;
                 entry.insert(state);
             }
             Entry::Occupied(mut entry) => {
-                entry.get_mut().merge(from_label.clone(), state)?;
+                entry.get_mut().merge(
+                    from_label.clone(),
+                    to_label,
+                    self.path_disambiguators.as_ref().unwrap(),
+                    //  predecessors_without,
+                    state,
+                )?;
             }
         }
         Ok(())
@@ -337,6 +363,15 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
             .into_iter()
             .cloned()
             .collect())
+    }
+
+    // fn get_predecessors_without(&self, label: &vir_mid::BasicBlockId, predecessor_to_skip: &vir_mid::BasicBlockId) -> Vec<vir_mid::BasicBlockId> {
+    //     self.predecessors.unwrap()[label].iter().filter(|predecessor| predecessor == predecessor_to_skip).collect()
+    // }
+    fn path_disambiguators(
+        &self,
+    ) -> &BTreeMap<(vir_mid::BasicBlockId, vir_mid::BasicBlockId), Vec<vir_mid::BasicBlockId>> {
+        self.path_disambiguators.as_ref().unwrap()
     }
 
     pub(super) fn cancel_crash_graphviz(mut self) {
