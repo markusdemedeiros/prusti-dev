@@ -26,5 +26,24 @@ fn test2() {
     assert!(b.f == 5);  //~ ERROR the asserted expression might not hold
 }
 
+fn random() -> bool {
+    false
+}
+
+fn test3() {
+    let a = T { f: 4 };
+    if random() {
+        let _b = a;
+    }
+}
+
+fn test4() {
+    let a = T { f: 4 };
+    if random() {
+        let _b = a;
+    }
+    assert!(false);     //~ ERROR the asserted expression might not hold
+}
+
 fn main() {}
 

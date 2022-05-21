@@ -89,7 +89,7 @@ pub(super) fn find_dead_unwinds<'tcx>(
 
 use rustc_middle::mir;
 use vir_crate::high::{self as vir_high, builders::procedure::BasicBlockBuilder};
-use crate::encoder::errors::{SpannedEncodingResult, ErrorCtxt};
+use crate::encoder::{errors::{SpannedEncodingResult, ErrorCtxt}, mir::{errors::ErrorInterface, places::PlacesEncoderInterface}};
 use super::ProcedureEncoder;
 
 pub(super) struct DropFlags<'tcx> {
@@ -121,6 +121,28 @@ impl<'tcx> DropFlags<'tcx> {
 }
 
 impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
+
+    pub(super) fn encode_drop_flag_initialization(&mut self) -> SpannedEncodingResult<Vec<vir_high::Statement>> {
+        let mut statements = Vec::new();
+        for (flag_place, flag_variable) in self.drop_flags.flags.clone() {
+            let initialized = self.mir.args_iter().any(|arg| flag_place.local == arg);
+            let assign_statement = vir_high::Statement::ghost_assign_no_pos(
+                flag_variable,
+                vir_high::Expression::constant_no_pos(
+                    initialized.into(),
+                    vir_high::Type::MBool,
+                ),
+            );
+            let span = self.encoder.get_local_span(self.mir, flag_place.local)?;
+            statements.push(self.encoder.set_statement_error_ctxt(
+                assign_statement,
+                span,
+                ErrorCtxt::SetDropFlag,
+                self.def_id,
+            )?);
+        }
+        Ok(statements)
+    }
 
     pub(super) fn set_drop_flag_false(&mut self,
         block_builder: &mut BasicBlockBuilder, location: mir::Location, place: mir::Place<'tcx>

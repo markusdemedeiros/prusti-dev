@@ -143,14 +143,18 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         let (allocate_returns, deallocate_returns) = self.encode_returns()?;
         let (assume_preconditions, assert_postconditions) =
             self.encode_functional_specifications()?;
+        let initialize_drop_flags = self.encode_drop_flag_initialization()?;
+        let mut pre_statements = allocate_parameters;
+        pre_statements.extend(assume_preconditions);
+        pre_statements.extend(allocate_returns);
+        pre_statements.extend(initialize_drop_flags);
+        let mut post_statements = assert_postconditions;
+        post_statements.extend(deallocate_parameters);
+        post_statements.extend(deallocate_returns);
         let mut procedure_builder = ProcedureBuilder::new(
             name,
-            allocate_parameters,
-            allocate_returns,
-            assume_preconditions,
-            deallocate_parameters,
-            deallocate_returns,
-            assert_postconditions,
+            pre_statements,
+            post_statements,
         );
         self.encode_body(&mut procedure_builder)?;
         self.encode_implicit_allocations(&mut procedure_builder)?;
