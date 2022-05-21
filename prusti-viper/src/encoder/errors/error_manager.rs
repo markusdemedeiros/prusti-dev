@@ -420,6 +420,13 @@ impl<'tcx> ErrorManager<'tcx> {
                 ).push_primary_span(opt_cause_span)
             }
 
+            ("assert.failed:assertion.false", ErrorCtxt::DropCall) => {
+                PrustiError::verification(
+                    "the drop handler was called.",
+                    error_span
+                ).push_primary_span(opt_cause_span)
+            }
+
             ("application.precondition:assertion.false", ErrorCtxt::PureFunctionCall) => {
                 PrustiError::verification(
                     "precondition of pure function call might not hold.",
