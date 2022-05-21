@@ -17,7 +17,7 @@ impl<'mir, 'tcx> InitializationData<'mir, 'tcx> {
         body: &'mir mir::Body<'tcx>,
         move_env: &'mir MoveDataParamEnv<'tcx>,
     ) -> Self {
-        let dead_unwinds = super::elaborate_drops::find_dead_unwinds(tcx, body, move_env);
+        let dead_unwinds = super::elaborate_drops::compiler::find_dead_unwinds(tcx, body, move_env);
 
         let inits = MaybeInitializedPlaces::new(tcx, body, move_env)
             .into_engine(tcx, body)

@@ -414,9 +414,7 @@ impl FoldUnfoldState {
                 });
             }
             self.conditional.insert(
-                vir_mid::BlockMarkerCondition {
-                    elements,
-                },
+                vir_mid::BlockMarkerCondition { elements },
                 incoming_conditional,
             );
         }
