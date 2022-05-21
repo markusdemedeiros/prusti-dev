@@ -78,13 +78,14 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     let mir = procedure.get_mir();
     let tcx = encoder.env().tcx();
     let move_env = self::initialisation::create_move_data_param_env(tcx, mir, def_id);
-    let init_data = InitializationData::new(tcx, mir, &move_env);
+    let mut init_data = InitializationData::new(tcx, mir, &move_env);
     let locals_without_explicit_allocation: BTreeSet<_> = mir.vars_and_temps_iter().collect();
     let rd_perm = lifetimes.lifetime_count();
     let specification_blocks = SpecificationBlocks::build(tcx, mir, &procedure);
     let initialization = compute_definitely_initialized(def_id, mir, encoder.env().tcx());
     let allocation = compute_definitely_allocated(def_id, mir);
     let drop_flags = DropFlags::build(mir);
+    elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
     let mut procedure_encoder = ProcedureEncoder {
         encoder,
         def_id,

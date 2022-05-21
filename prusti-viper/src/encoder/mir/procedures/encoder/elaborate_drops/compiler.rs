@@ -82,3 +82,46 @@ pub(in super::super) fn find_dead_unwinds<'tcx>(
 
     dead_unwinds
 }
+
+pub(in super::super) fn collect_drop_flags<'mir, 'tcx>(
+    tcx: TyCtxt<'tcx>,
+    body: &Body<'tcx>,
+    env: &MoveDataParamEnv<'tcx>,
+    init_data: &mut crate::encoder::mir::procedures::encoder::initialisation::InitializationData<'mir, 'tcx>,
+) {
+    for (bb, data) in body.basic_blocks().iter_enumerated() {
+        let terminator = data.terminator();
+        let place = match terminator.kind {
+            TerminatorKind::Drop { ref place, .. }
+            | TerminatorKind::DropAndReplace { ref place, .. } => place,
+            _ => continue,
+        };
+
+        init_data.seek_before(body.terminator_loc(bb));
+
+        let path = env.move_data.rev_lookup.find(place.as_ref());
+        debug!("collect_drop_flags: {:?}, place {:?} ({:?})", bb, place, path);
+
+        let path = match path {
+            LookupResult::Exact(e) => e,
+            LookupResult::Parent(_) => continue,
+        };
+
+        let mut drop_flags = Vec::new();
+        on_all_drop_children_bits(tcx, body, env, path, |child| {
+            let (maybe_live, maybe_dead) = init_data.maybe_live_dead(child);
+            debug!(
+                "collect_drop_flags: collecting {:?} from {:?}@{:?} - {:?}",
+                child,
+                place,
+                path,
+                (maybe_live, maybe_dead)
+            );
+            if maybe_live && maybe_dead {
+                drop_flags.push(child);
+                // self.create_drop_flag(child, terminator.source_info.span)
+            }
+        });
+        eprintln!("drop_flags: {:?}", drop_flags);
+    }
+}
