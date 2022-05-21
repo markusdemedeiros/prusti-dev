@@ -1,5 +1,6 @@
 use crate::encoder::{
-    errors::SpannedEncodingResult, high::procedures::HighProcedureEncoderInterface, mir::specifications::SpecificationsInterface,
+    errors::SpannedEncodingResult, high::procedures::HighProcedureEncoderInterface,
+    mir::specifications::SpecificationsInterface,
 };
 use log::debug;
 use rustc_hir::def_id::DefId;

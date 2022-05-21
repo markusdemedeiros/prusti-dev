@@ -610,9 +610,11 @@ impl IntoLow for vir_mid::Statement {
             Self::GhostAssign(statement) => {
                 let target = statement.target.to_procedure_snapshot(lowerer)?;
                 let value = statement.value.to_procedure_snapshot(lowerer)?;
-                let statements = vec![
-                    vir_low::Statement::assign(target, value, statement.position)
-                ];
+                let statements = vec![vir_low::Statement::assign(
+                    target,
+                    value,
+                    statement.position,
+                )];
                 Ok(statements)
             }
         }

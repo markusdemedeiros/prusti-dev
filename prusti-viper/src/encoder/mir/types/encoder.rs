@@ -7,7 +7,10 @@
 use super::{helpers::compute_discriminant_values, interface::MirTypeEncoderInterface};
 use crate::encoder::{
     errors::{SpannedEncodingError, SpannedEncodingResult},
-    mir::{generics::MirGenericsEncoderInterface, types::helpers::compute_discriminant_ranges, specifications::SpecificationsInterface},
+    mir::{
+        generics::MirGenericsEncoderInterface, specifications::SpecificationsInterface,
+        types::helpers::compute_discriminant_ranges,
+    },
     Encoder,
 };
 use log::debug;

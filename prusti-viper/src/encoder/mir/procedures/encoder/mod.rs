@@ -1,6 +1,6 @@
 use self::{
-    initialisation::InitializationData, lifetimes::LifetimesEncoder,
-    specification_blocks::SpecificationBlocks, elaborate_drops::DropFlags,
+    elaborate_drops::DropFlags, initialisation::InitializationData, lifetimes::LifetimesEncoder,
+    specification_blocks::SpecificationBlocks,
 };
 use super::MirProcedureEncoderInterface;
 use crate::encoder::{
@@ -151,11 +151,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         let mut post_statements = assert_postconditions;
         post_statements.extend(deallocate_parameters);
         post_statements.extend(deallocate_returns);
-        let mut procedure_builder = ProcedureBuilder::new(
-            name,
-            pre_statements,
-            post_statements,
-        );
+        let mut procedure_builder = ProcedureBuilder::new(name, pre_statements, post_statements);
         self.encode_body(&mut procedure_builder)?;
         self.encode_implicit_allocations(&mut procedure_builder)?;
         Ok(procedure_builder.build())
@@ -519,6 +515,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     .encode_place_high(self.mir, *target)?
                     .set_default_position(position);
                 self.encode_statement_assign(block_builder, location, encoded_target, source)?;
+                self.set_drop_flag_true(block_builder, location, *target)?;
             }
             _ => {
                 block_builder.add_comment("encode_statement: not encoded".to_string());
@@ -1173,11 +1170,10 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         target: mir::BasicBlock,
         unwind: &Option<mir::BasicBlock>,
     ) -> SpannedEncodingResult<SuccessorBuilder> {
-
         let target_block_label = self.encode_basic_block_label(target);
         let fresh_drop_block_label = self.fresh_basic_block_label();
-        let mut drop_block_builder = block_builder.create_basic_block_builder(
-            fresh_drop_block_label.clone());
+        let mut drop_block_builder =
+            block_builder.create_basic_block_builder(fresh_drop_block_label.clone());
         self.set_drop_flag_false(&mut drop_block_builder, location, place)?;
         // Inside the drop_block, the place is definitely live, emit the drop
         // function call.
@@ -1198,31 +1194,34 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         )?;
         statement.check_no_default_position();
         drop_block_builder.add_statement(statement);
+        if config::check_no_drops() {
+            let statement = self.encoder.set_statement_error_ctxt(
+                vir_high::Statement::assert_no_pos(false.into()),
+                span,
+                ErrorCtxt::DropCall,
+                self.def_id,
+            )?;
+            drop_block_builder.add_statement(statement);
+        }
         let drop_block_successor = if let Some(unwind_block) = unwind {
-            let encoded_unwind_block =
-                self.encode_basic_block_label(*unwind_block);
+            let encoded_unwind_block = self.encode_basic_block_label(*unwind_block);
             SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
                 target_block_label.clone(),
                 encoded_unwind_block,
             ))
         } else {
-            SuccessorBuilder::jump(vir_high::Successor::Goto(
-                target_block_label.clone(),
-            ))
+            SuccessorBuilder::jump(vir_high::Successor::Goto(target_block_label.clone()))
         };
         drop_block_builder.set_successor(drop_block_successor);
         drop_block_builder.build();
 
-        let successor = SuccessorBuilder::jump(vir_high::Successor::GotoSwitch(
-            vec![
-                (self.get_drop_flag(place)?, fresh_drop_block_label),
-                (vir_high::Expression::not(self.get_drop_flag(place)?), target_block_label),
-            ]
-        ));
-
-
-
-
+        let successor = SuccessorBuilder::jump(vir_high::Successor::GotoSwitch(vec![
+            (self.get_drop_flag(place)?, fresh_drop_block_label),
+            (
+                vir_high::Expression::not(self.get_drop_flag(place)?),
+                target_block_label,
+            ),
+        ]));
 
         // self.init_data.seek_before(location);
         // let path = self.move_env.move_data.rev_lookup.find(place.as_ref());
@@ -1751,6 +1750,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     )?;
                     post_call_block_builder.add_statement(assume_statement);
                 }
+                self.set_drop_flag_true(&mut post_call_block_builder, location, *target_place)?;
                 post_call_block_builder.build();
 
                 if let Some(cleanup_block) = cleanup {

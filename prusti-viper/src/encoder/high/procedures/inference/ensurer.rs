@@ -212,7 +212,10 @@ fn ensure_permission_in_state(
                 "accessing fields of #[trusted] types is not allowed",
                 place_span,
             );
-            error.add_note("the type of this place is marked as #[trusted]", Some(prefix_span));
+            error.add_note(
+                "the type of this place is marked as #[trusted]",
+                Some(prefix_span),
+            );
             error.set_help("you might want to mark the function as #[trusted]");
             return Err(error);
         }
