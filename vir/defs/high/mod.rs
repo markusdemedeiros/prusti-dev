@@ -20,7 +20,7 @@ pub use self::{
             Assert, Assign, Assume, CloseFracRef, CloseMutRef, Comment, Consume, CopyPlace, Dead,
             EndLft, Exhale, Havoc, Inhale, LeakAll, LifetimeReturn, LifetimeTake, LoopInvariant,
             MovePlace, NewLft, OldLabel, OpenFracRef, OpenMutRef, SetUnionVariant, Statement,
-            WriteAddress, WritePlace,
+            WriteAddress, WritePlace, GhostAssign,
         },
         ty::{self, Type},
         type_decl::{self, DiscriminantRange, DiscriminantValue, TypeDecl},

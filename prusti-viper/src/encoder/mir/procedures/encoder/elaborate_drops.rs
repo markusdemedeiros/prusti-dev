@@ -10,7 +10,11 @@
 // + Allow obtaining the elaboration patch (this is the main reason for
 //   duplication).
 
+use std::collections::BTreeMap;
+
 use log::debug;
+use prusti_interface::utils;
+use rustc_hash::FxHashMap;
 use rustc_index::bit_set::BitSet;
 use rustc_middle::{mir::*, ty::TyCtxt};
 use rustc_mir_dataflow::{
@@ -81,4 +85,70 @@ pub(super) fn find_dead_unwinds<'tcx>(
     }
 
     dead_unwinds
+}
+
+use rustc_middle::mir;
+use vir_crate::high::{self as vir_high, builders::procedure::BasicBlockBuilder};
+use crate::encoder::errors::{SpannedEncodingResult, ErrorCtxt};
+use super::ProcedureEncoder;
+
+pub(super) struct DropFlags<'tcx> {
+    /// The drop flag is true if the place needs to be dropped.
+    flags: FxHashMap<mir::Place<'tcx>, vir_high::VariableDecl>,
+}
+
+impl<'tcx> DropFlags<'tcx> {
+    pub(super) fn build(body: &Body<'tcx>) -> Self {
+        let mut flags = FxHashMap::default();
+        for bb_data in body.basic_blocks().iter() {
+            match bb_data.terminator().kind {
+                TerminatorKind::Drop {
+                    place,
+                    ..
+                }
+                | TerminatorKind::DropAndReplace {
+                    place,
+                    ..
+                } => {
+                    let identifier = flags.len();
+                    flags.insert(place, vir_high::VariableDecl::new(format!("drop_flag${}", identifier), vir_high::Type::MBool));
+                },
+                _ => {},
+            };
+        }
+        Self { flags }
+    }
+}
+
+impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
+
+    pub(super) fn set_drop_flag_false(&mut self,
+        block_builder: &mut BasicBlockBuilder, location: mir::Location, place: mir::Place<'tcx>
+) -> SpannedEncodingResult<()> {
+    let mut statements = Vec::new();
+        for (flag_place, flag_variable) in &self.drop_flags.flags {
+            if utils::is_prefix(flag_place, &place) {
+                let assign_statement = vir_high::Statement::ghost_assign_no_pos(
+                    flag_variable.clone(),
+                    vir_high::Expression::constant_no_pos(
+                        false.into(),
+                        vir_high::Type::MBool,
+                    ),
+                );
+                statements.push(assign_statement);
+            }
+        }
+        for statement in statements {
+            block_builder.add_statement(self.set_statement_error(
+                location,
+                ErrorCtxt::SetDropFlag,
+                statement,
+            )?);
+        }
+        Ok(())
+    }
+
+    pub(super) fn get_drop_flag(&self, place: mir::Place<'tcx>) -> SpannedEncodingResult<vir_high::Expression> {
+        Ok(self.drop_flags.flags[&place].clone().into())
+    }
 }

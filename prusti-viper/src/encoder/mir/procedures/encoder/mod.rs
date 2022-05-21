@@ -1,6 +1,6 @@
 use self::{
     initialisation::InitializationData, lifetimes::LifetimesEncoder,
-    specification_blocks::SpecificationBlocks,
+    specification_blocks::SpecificationBlocks, elaborate_drops::DropFlags,
 };
 use super::MirProcedureEncoderInterface;
 use crate::encoder::{
@@ -84,6 +84,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     let specification_blocks = SpecificationBlocks::build(tcx, mir, &procedure);
     let initialization = compute_definitely_initialized(def_id, mir, encoder.env().tcx());
     let allocation = compute_definitely_allocated(def_id, mir);
+    let drop_flags = DropFlags::build(mir);
     let mut procedure_encoder = ProcedureEncoder {
         encoder,
         def_id,
@@ -93,6 +94,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         init_data,
         initialization,
         allocation,
+        drop_flags,
         lifetimes,
         reachable_blocks: Default::default(),
         specification_blocks,
@@ -115,6 +117,7 @@ struct ProcedureEncoder<'p, 'v: 'p, 'tcx: 'v> {
     init_data: InitializationData<'p, 'tcx>,
     initialization: DefinitelyInitializedAnalysisResult<'tcx>,
     allocation: DefinitelyAllocatedAnalysisResult,
+    drop_flags: DropFlags<'tcx>,
     lifetimes: Lifetimes,
     /// Blocks that we managed to reach when traversing from the entry block.
     reachable_blocks: FxHashSet<mir::BasicBlock>,
@@ -801,6 +804,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
 
         match operand {
             mir::Operand::Move(source) => {
+                self.set_drop_flag_false(block_builder, location, *source)?;
                 let encoded_source = self.encoder.encode_place_high(self.mir, *source)?;
                 block_builder.add_statement(self.set_statement_error(
                     location,
@@ -1165,86 +1169,138 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         target: mir::BasicBlock,
         unwind: &Option<mir::BasicBlock>,
     ) -> SpannedEncodingResult<SuccessorBuilder> {
-        self.init_data.seek_before(location);
-        let path = self.move_env.move_data.rev_lookup.find(place.as_ref());
-        debug!(
-            "collect_drop_flags: {:?}, place {:?} ({:?})",
-            location, place, path
+
+        let target_block_label = self.encode_basic_block_label(target);
+        let fresh_drop_block_label = self.fresh_basic_block_label();
+        let mut drop_block_builder = block_builder.create_basic_block_builder(
+            fresh_drop_block_label.clone());
+        self.set_drop_flag_false(&mut drop_block_builder, location, place)?;
+        // Inside the drop_block, the place is definitely live, emit the drop
+        // function call.
+        //
+        // FIXME: Assert that the lifetimes used in type of the place are alive
+        // at this point (by exhaling them and inhaling). Do not forget to take
+        // into account
+        // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.GenericParamDef.html#structfield.pure_wrt_drop
+        let argument = vir_high::Operand::new(
+            vir_high::OperandKind::Move,
+            self.encoder.encode_place_high(self.mir, place)?,
         );
-        let path = match path {
-            LookupResult::Exact(e) => e,
-            LookupResult::Parent(_) => {
-                unimplemented!();
-            }
+        let statement = self.encoder.set_statement_error_ctxt(
+            vir_high::Statement::consume_no_pos(argument),
+            span,
+            ErrorCtxt::DropCall,
+            self.def_id,
+        )?;
+        statement.check_no_default_position();
+        drop_block_builder.add_statement(statement);
+        let drop_block_successor = if let Some(unwind_block) = unwind {
+            let encoded_unwind_block =
+                self.encode_basic_block_label(*unwind_block);
+            SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
+                target_block_label.clone(),
+                encoded_unwind_block,
+            ))
+        } else {
+            SuccessorBuilder::jump(vir_high::Successor::Goto(
+                target_block_label.clone(),
+            ))
         };
-        let mut successor = None;
-        on_all_drop_children_bits(
-            self.encoder.env().tcx(),
-            self.mir,
-            self.move_env,
-            path,
-            |child| {
-                let live_dead = self.init_data.maybe_live_dead(child);
-                debug!(
-                    "collect_drop_flags: collecting {:?} from {:?}@{:?} - {:?}",
-                    child, place, path, live_dead
-                );
-                let target_block = self.encode_basic_block_label(target);
-                successor = Some((|| {
-                    match live_dead {
-                        (true, false) => {
-                            // The place is definitely live, emit the drop
-                            // function call.
-                            //
-                            // FIXME: Assert that the lifetimes used in type
-                            // of the place are alive at this point (by
-                            // exhaling them and inhaling). Do not forget to
-                            // take into account
-                            // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.GenericParamDef.html#structfield.pure_wrt_drop
-                            let argument = vir_high::Operand::new(
-                                vir_high::OperandKind::Move,
-                                self.encoder.encode_place_high(self.mir, place)?,
-                            );
-                            let statement = self.encoder.set_statement_error_ctxt(
-                                vir_high::Statement::consume_no_pos(argument),
-                                span,
-                                ErrorCtxt::DropCall,
-                                self.def_id,
-                            )?;
-                            statement.check_no_default_position();
-                            block_builder.add_statement(statement);
-                            if let Some(unwind_block) = unwind {
-                                let encoded_unwind_block =
-                                    self.encode_basic_block_label(*unwind_block);
-                                Ok(SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
-                                    target_block,
-                                    encoded_unwind_block,
-                                )))
-                            } else {
-                                Ok(SuccessorBuilder::jump(vir_high::Successor::Goto(
-                                    target_block,
-                                )))
-                            }
-                        }
-                        (false, true) => {
-                            // The place is definitely dead, emit just a jump to the next block.
-                            Ok(SuccessorBuilder::jump(vir_high::Successor::Goto(
-                                target_block,
-                            )))
-                        }
-                        (true, true) => {
-                            // The place could be either alive or dead. We need a dynamic drop flag.
-                            unimplemented!();
-                        }
-                        (false, false) => {
-                            // This should not be possible.
-                            unreachable!();
-                        }
-                    }
-                })());
-            },
-        );
-        successor.unwrap()
+        drop_block_builder.set_successor(drop_block_successor);
+        drop_block_builder.build();
+
+        let successor = SuccessorBuilder::jump(vir_high::Successor::GotoSwitch(
+            vec![
+                (self.get_drop_flag(place)?, fresh_drop_block_label),
+                (vir_high::Expression::not(self.get_drop_flag(place)?), target_block_label),
+            ]
+        ));
+
+
+
+
+
+        // self.init_data.seek_before(location);
+        // let path = self.move_env.move_data.rev_lookup.find(place.as_ref());
+        // debug!(
+        //     "collect_drop_flags: {:?}, place {:?} ({:?})",
+        //     location, place, path
+        // );
+        // let path = match path {
+        //     LookupResult::Exact(e) => e,
+        //     LookupResult::Parent(_) => {
+        //         unimplemented!();
+        //     }
+        // };
+        // let mut successor = None;
+        // on_all_drop_children_bits(
+        //     self.encoder.env().tcx(),
+        //     self.mir,
+        //     self.move_env,
+        //     path,
+        //     |child| {
+        //         let live_dead = self.init_data.maybe_live_dead(child);
+        //         debug!(
+        //             "collect_drop_flags: collecting {:?} from {:?}@{:?} - {:?}",
+        //             child, place, path, live_dead
+        //         );
+        //         let target_block = self.encode_basic_block_label(target);
+        //         successor = Some((|| {
+        //             match live_dead {
+        //                 (true, false) => {
+        //                     // The place is definitely live, emit the drop
+        //                     // function call.
+        //                     //
+        //                     // FIXME: Assert that the lifetimes used in type
+        //                     // of the place are alive at this point (by
+        //                     // exhaling them and inhaling). Do not forget to
+        //                     // take into account
+        //                     // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.GenericParamDef.html#structfield.pure_wrt_drop
+        //                     let argument = vir_high::Operand::new(
+        //                         vir_high::OperandKind::Move,
+        //                         self.encoder.encode_place_high(self.mir, place)?,
+        //                     );
+        //                     let statement = self.encoder.set_statement_error_ctxt(
+        //                         vir_high::Statement::consume_no_pos(argument),
+        //                         span,
+        //                         ErrorCtxt::DropCall,
+        //                         self.def_id,
+        //                     )?;
+        //                     statement.check_no_default_position();
+        //                     block_builder.add_statement(statement);
+        //                     if let Some(unwind_block) = unwind {
+        //                         let encoded_unwind_block =
+        //                             self.encode_basic_block_label(*unwind_block);
+        //                         Ok(SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
+        //                             target_block,
+        //                             encoded_unwind_block,
+        //                         )))
+        //                     } else {
+        //                         Ok(SuccessorBuilder::jump(vir_high::Successor::Goto(
+        //                             target_block,
+        //                         )))
+        //                     }
+        //                 }
+        //                 (false, true) => {
+        //                     // The place is definitely dead, emit just a jump to the next block.
+        //                     Ok(SuccessorBuilder::jump(vir_high::Successor::Goto(
+        //                         target_block,
+        //                     )))
+        //                 }
+        //                 (true, true) => {
+        //                     // The place could be either alive or dead. We need a dynamic drop flag.
+        //                     unimplemented!();
+        //                 }
+        //                 (false, false) => {
+        //                     // This should not be possible.
+        //                     unreachable!();
+        //                 }
+        //             }
+        //         })());
+        //     },
+        // );
+        // successor.unwrap()
+        Ok(successor)
     }
 
     #[allow(clippy::too_many_arguments)]

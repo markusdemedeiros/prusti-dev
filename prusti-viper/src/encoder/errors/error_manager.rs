@@ -146,6 +146,8 @@ pub enum ErrorCtxt {
     CloseFracRef,
     /// Failed to set an active variant of an union.
     SetEnumVariant,
+    /// Failed to set the drop flag.
+    SetDropFlag
 }
 
 /// The error manager

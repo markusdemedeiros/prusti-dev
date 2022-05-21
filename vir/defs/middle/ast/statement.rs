@@ -40,6 +40,7 @@ pub enum Statement {
     OpenFracRef(OpenFracRef),
     CloseMutRef(CloseMutRef),
     CloseFracRef(CloseFracRef),
+    GhostAssign(GhostAssign),
 }
 
 #[display(fmt = "// {}", comment)]
@@ -324,5 +325,12 @@ pub struct CloseFracRef {
     pub place: Expression,
     /// The permission amount that we get for accessing `Owned`.
     pub predicate_permission_amount: VariableDecl,
+    pub position: Position,
+}
+
+#[display(fmt = "ghost-assign {} := {}", target, value)]
+pub struct GhostAssign {
+    pub target: VariableDecl,
+    pub value: Expression,
     pub position: Position,
 }

@@ -29,6 +29,7 @@ impl Positioned for Statement {
             Self::OpenFracRef(statement) => statement.position(),
             Self::CloseMutRef(statement) => statement.position(),
             Self::CloseFracRef(statement) => statement.position(),
+            Self::GhostAssign(statement) => statement.position(),
         }
     }
 }
@@ -178,6 +179,12 @@ impl Positioned for CloseMutRef {
 }
 
 impl Positioned for CloseFracRef {
+    fn position(&self) -> Position {
+        self.position
+    }
+}
+
+impl Positioned for GhostAssign {
     fn position(&self) -> Position {
         self.position
     }
