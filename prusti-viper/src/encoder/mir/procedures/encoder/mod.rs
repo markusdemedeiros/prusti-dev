@@ -463,6 +463,13 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             location.statement_index += 1;
         }
         if let Some(terminator) = terminator {
+            let replacing_terminator = self.drop_patch.patch_map[bb].clone();
+            let terminator = if let Some(replacing_terminator) = &replacing_terminator {
+                assert!(matches!(replacing_terminator, mir::TerminatorKind::Drop{..} | mir::TerminatorKind::DropAndReplace{..}));
+                replacing_terminator
+            } else {
+                &terminator.kind
+            };
             self.encode_terminator(&mut block_builder, location, terminator)?;
         }
         if let Some(statement) = self.loop_invariant_encoding.remove(&bb) {
@@ -972,12 +979,12 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         &mut self,
         block_builder: &mut BasicBlockBuilder,
         location: mir::Location,
-        terminator: &mir::Terminator<'tcx>,
+        terminator: &mir::TerminatorKind<'tcx>,
     ) -> SpannedEncodingResult<()> {
-        block_builder.add_comment(format!("{:?} {:?}", location, terminator.kind));
+        block_builder.add_comment(format!("{:?} {:?}", location, terminator));
         let span = self.encoder.get_span_of_location(self.mir, location);
         use rustc_middle::mir::TerminatorKind;
-        let successor = match &terminator.kind {
+        let successor = match &terminator {
             TerminatorKind::Goto { target } => {
                 self.encode_lft_for_block(*target, location, block_builder)?;
                 SuccessorBuilder::jump(vir_high::Successor::Goto(
