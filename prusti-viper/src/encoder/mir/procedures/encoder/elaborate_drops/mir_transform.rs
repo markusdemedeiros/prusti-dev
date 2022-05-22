@@ -26,7 +26,7 @@ use super::mir_dataflow::{DropElaborator, elaborate_drop};
 
 pub struct ElaborateDrops;
 
-fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &mut Body<'tcx>) {
+pub(in super::super) fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &Body<'tcx>) -> MirPatch<'tcx> {
     debug!("elaborate_drops({:?} @ {:?})", body.source, body.span);
 
     let def_id = body.source.def_id();
@@ -71,7 +71,7 @@ fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &mut Body<'tcx>) {
         }
         .elaborate()
     };
-    elaborate_patch.apply(body);
+    elaborate_patch
 }
 
 /// Returns the set of basic blocks whose unwind edges are known

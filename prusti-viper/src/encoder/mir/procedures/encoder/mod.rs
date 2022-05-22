@@ -1,5 +1,5 @@
 use self::{
-    elaborate_drops::DropFlags, initialisation::InitializationData, lifetimes::LifetimesEncoder,
+    elaborate_drops::{DropFlags, patch::MirPatch}, initialisation::InitializationData, lifetimes::LifetimesEncoder,
     specification_blocks::SpecificationBlocks,
 };
 use super::MirProcedureEncoderInterface;
@@ -86,6 +86,8 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     let allocation = compute_definitely_allocated(def_id, mir);
     let drop_flags = DropFlags::build(mir);
     elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
+    let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
+    eprintln!("patch: {:?}", drop_patch.patch_map);
     // TODO: Try copying
     // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_transform/src/elaborate_drops.rs
     // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_dataflow/src/elaborate_drops.rs
@@ -101,6 +103,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         initialization,
         allocation,
         drop_flags,
+        drop_patch,
         lifetimes,
         reachable_blocks: Default::default(),
         specification_blocks,
@@ -124,6 +127,7 @@ struct ProcedureEncoder<'p, 'v: 'p, 'tcx: 'v> {
     initialization: DefinitelyInitializedAnalysisResult<'tcx>,
     allocation: DefinitelyAllocatedAnalysisResult,
     drop_flags: DropFlags<'tcx>,
+    drop_patch: MirPatch<'tcx>,
     lifetimes: Lifetimes,
     /// Blocks that we managed to reach when traversing from the entry block.
     reachable_blocks: FxHashSet<mir::BasicBlock>,
