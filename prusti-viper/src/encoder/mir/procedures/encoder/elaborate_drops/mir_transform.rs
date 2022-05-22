@@ -1,13 +1,16 @@
 // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_transform/src/elaborate_drops.rs
+// Changes:
+// 1. Fix compilation errors.
+// 2. Pull `run_pass` out of `MirPass`.
+// 3. Use our version of MirPatch.
 
-use crate::MirPass;
+use log::debug;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_index::bit_set::BitSet;
-use rustc_middle::mir::patch::MirPatch;
 use rustc_middle::mir::*;
 use rustc_middle::ty::{self, TyCtxt};
 use rustc_mir_dataflow::elaborate_drops::{elaborate_drop, DropFlagState, Unwind};
-use rustc_mir_dataflow::elaborate_drops::{DropElaborator, DropFlagMode, DropStyle};
+use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle};
 use rustc_mir_dataflow::impls::{MaybeInitializedPlaces, MaybeUninitializedPlaces};
 use rustc_mir_dataflow::move_paths::{LookupResult, MoveData, MovePathIndex};
 use rustc_mir_dataflow::on_lookup_result_bits;
@@ -17,61 +20,58 @@ use rustc_mir_dataflow::{Analysis, ResultsCursor};
 use rustc_span::Span;
 use rustc_target::abi::VariantIdx;
 use std::fmt;
+use crate::encoder::mir::procedures::encoder::elaborate_drops::patch::MirPatch;
+
+use super::mir_dataflow::DropElaborator;
 
 pub struct ElaborateDrops;
 
-impl<'tcx> MirPass<'tcx> for ElaborateDrops {
-    fn phase_change(&self) -> Option<MirPhase> {
-        Some(MirPhase::DropsLowered)
-    }
+fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &mut Body<'tcx>) {
+    debug!("elaborate_drops({:?} @ {:?})", body.source, body.span);
 
-    fn run_pass(&self, tcx: TyCtxt<'tcx>, body: &mut Body<'tcx>) {
-        debug!("elaborate_drops({:?} @ {:?})", body.source, body.span);
+    let def_id = body.source.def_id();
+    let param_env = tcx.param_env_reveal_all_normalized(def_id);
+    let move_data = match MoveData::gather_moves(body, tcx, param_env) {
+        Ok(move_data) => move_data,
+        Err((move_data, _)) => {
+            tcx.sess.delay_span_bug(
+                body.span,
+                "No `move_errors` should be allowed in MIR borrowck",
+            );
+            move_data
+        }
+    };
+    let elaborate_patch = {
+        let body = &*body;
+        let env = MoveDataParamEnv { move_data, param_env };
+        let dead_unwinds = find_dead_unwinds(tcx, body, &env);
 
-        let def_id = body.source.def_id();
-        let param_env = tcx.param_env_reveal_all_normalized(def_id);
-        let move_data = match MoveData::gather_moves(body, tcx, param_env) {
-            Ok(move_data) => move_data,
-            Err((move_data, _)) => {
-                tcx.sess.delay_span_bug(
-                    body.span,
-                    "No `move_errors` should be allowed in MIR borrowck",
-                );
-                move_data
-            }
-        };
-        let elaborate_patch = {
-            let body = &*body;
-            let env = MoveDataParamEnv { move_data, param_env };
-            let dead_unwinds = find_dead_unwinds(tcx, body, &env);
+        let inits = MaybeInitializedPlaces::new(tcx, body, &env)
+            .into_engine(tcx, body)
+            .dead_unwinds(&dead_unwinds)
+            .pass_name("elaborate_drops")
+            .iterate_to_fixpoint()
+            .into_results_cursor(body);
 
-            let inits = MaybeInitializedPlaces::new(tcx, body, &env)
-                .into_engine(tcx, body)
-                .dead_unwinds(&dead_unwinds)
-                .pass_name("elaborate_drops")
-                .iterate_to_fixpoint()
-                .into_results_cursor(body);
+        let uninits = MaybeUninitializedPlaces::new(tcx, body, &env)
+            .mark_inactive_variants_as_uninit()
+            .into_engine(tcx, body)
+            .dead_unwinds(&dead_unwinds)
+            .pass_name("elaborate_drops")
+            .iterate_to_fixpoint()
+            .into_results_cursor(body);
 
-            let uninits = MaybeUninitializedPlaces::new(tcx, body, &env)
-                .mark_inactive_variants_as_uninit()
-                .into_engine(tcx, body)
-                .dead_unwinds(&dead_unwinds)
-                .pass_name("elaborate_drops")
-                .iterate_to_fixpoint()
-                .into_results_cursor(body);
-
-            ElaborateDropsCtxt {
-                tcx,
-                body,
-                env: &env,
-                init_data: InitializationData { inits, uninits },
-                drop_flags: Default::default(),
-                patch: MirPatch::new(body),
-            }
-            .elaborate()
-        };
-        elaborate_patch.apply(body);
-    }
+        ElaborateDropsCtxt {
+            tcx,
+            body,
+            env: &env,
+            init_data: InitializationData { inits, uninits },
+            drop_flags: Default::default(),
+            patch: MirPatch::new(body),
+        }
+        .elaborate()
+    };
+    elaborate_patch.apply(body);
 }
 
 /// Returns the set of basic blocks whose unwind edges are known
@@ -100,7 +100,9 @@ fn find_dead_unwinds<'tcx>(
 
         debug!("find_dead_unwinds @ {:?}: {:?}", bb, bb_data);
 
-        let LookupResult::Exact(path) = env.move_data.rev_lookup.find(place.as_ref()) else {
+        let path = if let LookupResult::Exact(path) = env.move_data.rev_lookup.find(place.as_ref()) {
+            path
+        } else {
             debug!("find_dead_unwinds: has parent; skipping");
             continue;
         };
