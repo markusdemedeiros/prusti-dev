@@ -1,9 +1,12 @@
 // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_dataflow/src/elaborate_drops.rs
+// Changes:
+// 1. Use our version of MirPatch.
+// 2. Fix compilation errors.
 
+use log::debug;
 use rustc_hir as hir;
 use rustc_hir::lang_items::LangItem;
 use rustc_index::vec::Idx;
-use rustc_middle::mir::patch::MirPatch;
 use rustc_middle::mir::*;
 use rustc_middle::traits::Reveal;
 use rustc_middle::ty::subst::SubstsRef;
@@ -11,6 +14,7 @@ use rustc_middle::ty::util::IntTypeExt;
 use rustc_middle::ty::{self, Ty, TyCtxt};
 use rustc_target::abi::VariantIdx;
 use std::{fmt, iter};
+use super::patch::MirPatch;
 
 /// The value of an inserted drop flag.
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -883,7 +887,7 @@ where
             }
             ty::Slice(ety) => self.open_drop_for_array(*ety, None),
 
-            _ => bug!("open drop from non-ADT `{:?}`", ty),
+            _ => unreachable!("open drop from non-ADT `{:?}`", ty),
         }
     }
 
