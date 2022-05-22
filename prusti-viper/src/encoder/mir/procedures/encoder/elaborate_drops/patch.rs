@@ -1,5 +1,9 @@
 // https://github.com/rust-lang/rust/blob/45e2c2881d11324d610815bfff097e25c412199e/compiler/rustc_middle/src/mir/patch.rs
+// Changes:
+// 1. Made fields of MirPatch public (main reason for copying).
+// 2. Fixed compilation errors.
 
+use log::debug;
 use rustc_index::vec::{Idx, IndexVec};
 use rustc_middle::mir::*;
 use rustc_middle::ty::Ty;
@@ -9,12 +13,12 @@ use rustc_span::Span;
 /// new statements and basic blocks and patch over block
 /// terminators.
 pub struct MirPatch<'tcx> {
-    patch_map: IndexVec<BasicBlock, Option<TerminatorKind<'tcx>>>,
-    new_blocks: Vec<BasicBlockData<'tcx>>,
-    new_statements: Vec<(Location, StatementKind<'tcx>)>,
-    new_locals: Vec<LocalDecl<'tcx>>,
-    resume_block: BasicBlock,
-    next_local: usize,
+    pub patch_map: IndexVec<BasicBlock, Option<TerminatorKind<'tcx>>>,
+    pub new_blocks: Vec<BasicBlockData<'tcx>>,
+    pub new_statements: Vec<(Location, StatementKind<'tcx>)>,
+    pub new_locals: Vec<LocalDecl<'tcx>>,
+    pub resume_block: BasicBlock,
+    pub next_local: usize,
 }
 
 impl<'tcx> MirPatch<'tcx> {
