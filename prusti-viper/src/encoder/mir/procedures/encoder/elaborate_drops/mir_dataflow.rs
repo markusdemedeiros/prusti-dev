@@ -12,70 +12,80 @@ use rustc_middle::traits::Reveal;
 use rustc_middle::ty::subst::SubstsRef;
 use rustc_middle::ty::util::IntTypeExt;
 use rustc_middle::ty::{self, Ty, TyCtxt};
+use rustc_mir_dataflow::elaborate_drops::{DropFlagState, Unwind};
+use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle};
 use rustc_target::abi::VariantIdx;
 use std::{fmt, iter};
 use super::patch::MirPatch;
 
-/// The value of an inserted drop flag.
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
-pub enum DropFlagState {
-    /// The tracked value is initialized and needs to be dropped when leaving its scope.
-    Present,
+// /// The value of an inserted drop flag.
+// #[derive(Debug, PartialEq, Eq, Copy, Clone)]
+// pub enum DropFlagState {
+//     /// The tracked value is initialized and needs to be dropped when leaving its scope.
+//     Present,
 
-    /// The tracked value is uninitialized or was moved out of and does not need to be dropped when
-    /// leaving its scope.
-    Absent,
+//     /// The tracked value is uninitialized or was moved out of and does not need to be dropped when
+//     /// leaving its scope.
+//     Absent,
+// }
+
+// impl DropFlagState {
+//     pub fn value(self) -> bool {
+//         match self {
+//             DropFlagState::Present => true,
+//             DropFlagState::Absent => false,
+//         }
+//     }
+// }
+
+// /// Describes how/if a value should be dropped.
+// #[derive(Debug)]
+// pub enum DropStyle {
+//     /// The value is already dead at the drop location, no drop will be executed.
+//     Dead,
+
+//     /// The value is known to always be initialized at the drop location, drop will always be
+//     /// executed.
+//     Static,
+
+//     /// Whether the value needs to be dropped depends on its drop flag.
+//     Conditional,
+
+//     /// An "open" drop is one where only the fields of a value are dropped.
+//     ///
+//     /// For example, this happens when moving out of a struct field: The rest of the struct will be
+//     /// dropped in such an "open" drop. It is also used to generate drop glue for the individual
+//     /// components of a value, for example for dropping array elements.
+//     Open,
+// }
+
+// /// Which drop flags to affect/check with an operation.
+// #[derive(Debug)]
+// pub enum DropFlagMode {
+//     /// Only affect the top-level drop flag, not that of any contained fields.
+//     Shallow,
+//     /// Affect all nested drop flags in addition to the top-level one.
+//     Deep,
+// }
+
+// /// Describes if unwinding is necessary and where to unwind to if a panic occurs.
+// #[derive(Copy, Clone, Debug)]
+// pub enum Unwind {
+//     /// Unwind to this block.
+//     To(BasicBlock),
+//     /// Already in an unwind path, any panic will cause an abort.
+//     InCleanup,
+// }
+
+trait UnwindPublic {
+    fn is_cleanup(self) -> bool;
+    fn into_option(self) -> Option<BasicBlock>;
+        fn map<F>(self, f: F) -> Self
+    where
+        F: FnOnce(BasicBlock) -> BasicBlock;
 }
 
-impl DropFlagState {
-    pub fn value(self) -> bool {
-        match self {
-            DropFlagState::Present => true,
-            DropFlagState::Absent => false,
-        }
-    }
-}
-
-/// Describes how/if a value should be dropped.
-#[derive(Debug)]
-pub enum DropStyle {
-    /// The value is already dead at the drop location, no drop will be executed.
-    Dead,
-
-    /// The value is known to always be initialized at the drop location, drop will always be
-    /// executed.
-    Static,
-
-    /// Whether the value needs to be dropped depends on its drop flag.
-    Conditional,
-
-    /// An "open" drop is one where only the fields of a value are dropped.
-    ///
-    /// For example, this happens when moving out of a struct field: The rest of the struct will be
-    /// dropped in such an "open" drop. It is also used to generate drop glue for the individual
-    /// components of a value, for example for dropping array elements.
-    Open,
-}
-
-/// Which drop flags to affect/check with an operation.
-#[derive(Debug)]
-pub enum DropFlagMode {
-    /// Only affect the top-level drop flag, not that of any contained fields.
-    Shallow,
-    /// Affect all nested drop flags in addition to the top-level one.
-    Deep,
-}
-
-/// Describes if unwinding is necessary and where to unwind to if a panic occurs.
-#[derive(Copy, Clone, Debug)]
-pub enum Unwind {
-    /// Unwind to this block.
-    To(BasicBlock),
-    /// Already in an unwind path, any panic will cause an abort.
-    InCleanup,
-}
-
-impl Unwind {
+impl UnwindPublic for Unwind {
     fn is_cleanup(self) -> bool {
         match self {
             Unwind::To(..) => false,

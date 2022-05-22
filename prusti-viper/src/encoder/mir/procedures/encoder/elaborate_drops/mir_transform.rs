@@ -9,7 +9,7 @@ use rustc_data_structures::fx::FxHashMap;
 use rustc_index::bit_set::BitSet;
 use rustc_middle::mir::*;
 use rustc_middle::ty::{self, TyCtxt};
-use rustc_mir_dataflow::elaborate_drops::{elaborate_drop, DropFlagState, Unwind};
+use rustc_mir_dataflow::elaborate_drops::{DropFlagState, Unwind};
 use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle};
 use rustc_mir_dataflow::impls::{MaybeInitializedPlaces, MaybeUninitializedPlaces};
 use rustc_mir_dataflow::move_paths::{LookupResult, MoveData, MovePathIndex};
@@ -22,7 +22,7 @@ use rustc_target::abi::VariantIdx;
 use std::fmt;
 use crate::encoder::mir::procedures::encoder::elaborate_drops::patch::MirPatch;
 
-use super::mir_dataflow::DropElaborator;
+use super::mir_dataflow::{DropElaborator, elaborate_drop};
 
 pub struct ElaborateDrops;
 
