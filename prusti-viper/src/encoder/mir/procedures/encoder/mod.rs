@@ -86,6 +86,11 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     let allocation = compute_definitely_allocated(def_id, mir);
     let drop_flags = DropFlags::build(mir);
     elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
+    // TODO: Try copying
+    // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_transform/src/elaborate_drops.rs
+    // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_dataflow/src/elaborate_drops.rs
+    // https://github.com/rust-lang/rust/blob/45e2c2881d11324d610815bfff097e25c412199e/compiler/rustc_middle/src/mir/patch.rs
+    // Change the fields of the patch to public.
     let mut procedure_encoder = ProcedureEncoder {
         encoder,
         def_id,
