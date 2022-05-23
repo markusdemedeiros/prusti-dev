@@ -68,7 +68,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         .env()
         .try_get_local_mir_borrowck_facts(def_id.expect_local())
     {
-        Lifetimes::new(facts)
+        Lifetimes::new(facts.input_facts.borrow().as_ref().unwrap(), &facts.location_table.borrow().as_ref().unwrap())
     } else {
         return Err(SpannedEncodingError::internal(
             format!("failed to obtain borrow information for {:?}", def_id),

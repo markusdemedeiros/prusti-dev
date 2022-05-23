@@ -22,6 +22,16 @@ pub struct BorrowckFacts {
     pub location_table: LocationTable,
 }
 
+impl BorrowckFacts {
+    pub fn new(
+     input_facts: AllInputFacts,
+     output_facts: AllOutputFacts,
+     location_table: LocationTable,
+    ) -> Self {
+        Self { input_facts, output_facts, location_table }
+    }
+}
+
 #[derive(Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord, Debug)]
 pub enum RichLocation {
     Start(mir::Location),
@@ -46,7 +56,7 @@ pub struct LocationTable {
 }
 
 impl LocationTable {
-    pub fn new(location_table: rustc_borrowck::consumers::LocationTable) -> Self {
+    pub fn new(location_table: &rustc_borrowck::consumers::LocationTable) -> Self {
         let mut locations = FxHashMap::default();
         let mut points = FxHashMap::default();
         for point in location_table.all_points() {
@@ -56,4 +66,9 @@ impl LocationTable {
         }
         Self { locations, points }
     }
+
+    pub fn location_to_point(&self, location: RichLocation) -> Point {
+        self.points[&location]
+    }
+
 }
