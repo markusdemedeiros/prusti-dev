@@ -5,6 +5,7 @@
 // 3. Use our version of MirPatch.
 
 use log::debug;
+use prusti_interface::environment::mir_body::patch::MirPatch;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_index::bit_set::BitSet;
 use rustc_middle::mir::*;
@@ -20,8 +21,6 @@ use rustc_mir_dataflow::{Analysis, ResultsCursor};
 use rustc_span::Span;
 use rustc_target::abi::VariantIdx;
 use std::fmt;
-use crate::encoder::mir::procedures::encoder::elaborate_drops::patch::MirPatch;
-
 use super::mir_dataflow::{DropElaborator, elaborate_drop};
 
 pub struct ElaborateDrops;

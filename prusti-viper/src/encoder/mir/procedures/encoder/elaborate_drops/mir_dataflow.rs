@@ -4,6 +4,7 @@
 // 2. Fix compilation errors.
 
 use log::debug;
+use prusti_interface::environment::mir_body::patch::MirPatch;
 use rustc_hir as hir;
 use rustc_hir::lang_items::LangItem;
 use rustc_index::vec::Idx;
@@ -16,7 +17,6 @@ use rustc_mir_dataflow::elaborate_drops::{DropFlagState, Unwind};
 use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle};
 use rustc_target::abi::VariantIdx;
 use std::{fmt, iter};
-use super::patch::MirPatch;
 
 // /// The value of an inserted drop flag.
 // #[derive(Debug, PartialEq, Eq, Copy, Clone)]

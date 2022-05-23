@@ -1,5 +1,5 @@
 use self::{
-    elaborate_drops::{DropFlags, patch::MirPatch}, initialisation::InitializationData, lifetimes::LifetimesEncoder,
+    elaborate_drops::{DropFlags}, initialisation::InitializationData, lifetimes::LifetimesEncoder,
     specification_blocks::SpecificationBlocks,
 };
 use super::MirProcedureEncoderInterface;
@@ -29,8 +29,8 @@ use prusti_interface::environment::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
     },
-    mir_dump::{graphviz::ToText, lifetimes::Lifetimes},
-    Procedure,
+    mir_dump::{graphviz::ToText},
+    Procedure, mir_body::{borrowck::lifetimes::Lifetimes, patch::MirPatch},
 };
 use rustc_data_structures::graph::WithStartNode;
 use rustc_hash::FxHashSet;
