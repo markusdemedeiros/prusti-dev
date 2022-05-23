@@ -29,7 +29,11 @@ use prusti_interface::environment::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
     },
-    mir_body::{borrowck::{lifetimes::Lifetimes, facts::LocationTable}, patch::MirPatch, apply_patch},
+    mir_body::{
+        apply_patch,
+        borrowck::{facts::LocationTable, lifetimes::Lifetimes},
+        patch::MirPatch,
+    },
     mir_dump::graphviz::ToText,
     Procedure,
 };

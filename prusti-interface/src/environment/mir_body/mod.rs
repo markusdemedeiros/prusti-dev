@@ -1,5 +1,5 @@
+use self::borrowck::facts::{patch::apply_patch_to_borrowck, AllInputFacts, LocationTable};
 use rustc_middle::mir;
-use self::borrowck::facts::{AllInputFacts, LocationTable, patch::apply_patch_to_borrowck};
 
 pub mod borrowck;
 pub mod patch;
