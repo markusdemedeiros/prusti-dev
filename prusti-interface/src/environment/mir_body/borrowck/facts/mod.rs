@@ -4,6 +4,8 @@ use rustc_hash::FxHashMap;
 use rustc_middle::mir;
 use std::collections::BTreeMap;
 
+pub mod patch;
+
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;
 pub type Point = <RustcFacts as FactTypes>::Point;

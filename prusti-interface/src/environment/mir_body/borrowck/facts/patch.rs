@@ -1,4 +1,4 @@
-use super::facts::BorrowckFacts;
+use super::BorrowckFacts;
 use crate::environment::mir_body::patch::MirPatch;
 
 impl BorrowckFacts {
