@@ -5,8 +5,7 @@
 
 use log::debug;
 use rustc_index::vec::{Idx, IndexVec};
-use rustc_middle::mir::*;
-use rustc_middle::ty::Ty;
+use rustc_middle::{mir::*, ty::Ty};
 use rustc_span::Span;
 
 /// This struct represents a patch to MIR, which can add
@@ -62,8 +61,12 @@ impl<'tcx> MirPatch<'tcx> {
         });
         result.resume_block = resume_block;
         if let Some(resume_stmt_block) = resume_stmt_block {
-            result
-                .patch_terminator(resume_stmt_block, TerminatorKind::Goto { target: resume_block });
+            result.patch_terminator(
+                resume_stmt_block,
+                TerminatorKind::Goto {
+                    target: resume_block,
+                },
+            );
         }
         result
     }
@@ -81,7 +84,10 @@ impl<'tcx> MirPatch<'tcx> {
             Some(index) => self.new_blocks[index].statements.len(),
             None => body[bb].statements.len(),
         };
-        Location { block: bb, statement_index: offset }
+        Location {
+            block: bb,
+            statement_index: offset,
+        }
     }
 
     pub fn new_temp(&mut self, ty: Ty<'tcx>, span: Span) -> Local {
@@ -152,12 +158,19 @@ impl<'tcx> MirPatch<'tcx> {
                 delta = 0;
                 last_bb = loc.block;
             }
-            debug!("MirPatch: adding statement {:?} at loc {:?}+{}", stmt, loc, delta);
+            debug!(
+                "MirPatch: adding statement {:?} at loc {:?}+{}",
+                stmt, loc, delta
+            );
             loc.statement_index += delta;
             let source_info = Self::source_info_for_index(&body[loc.block], loc);
-            body[loc.block]
-                .statements
-                .insert(loc.statement_index, Statement { source_info, kind: stmt });
+            body[loc.block].statements.insert(
+                loc.statement_index,
+                Statement {
+                    source_info,
+                    kind: stmt,
+                },
+            );
             delta += 1;
         }
     }

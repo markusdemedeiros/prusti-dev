@@ -4,24 +4,25 @@
 // 2. Pull `run_pass` out of `MirPass`.
 // 3. Use our version of MirPatch.
 
+use super::mir_dataflow::{elaborate_drop, DropElaborator};
 use log::debug;
 use prusti_interface::environment::mir_body::patch::MirPatch;
 use rustc_data_structures::fx::FxHashMap;
 use rustc_index::bit_set::BitSet;
-use rustc_middle::mir::*;
-use rustc_middle::ty::{self, TyCtxt};
-use rustc_mir_dataflow::elaborate_drops::{DropFlagState, Unwind};
-use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle};
-use rustc_mir_dataflow::impls::{MaybeInitializedPlaces, MaybeUninitializedPlaces};
-use rustc_mir_dataflow::move_paths::{LookupResult, MoveData, MovePathIndex};
-use rustc_mir_dataflow::on_lookup_result_bits;
-use rustc_mir_dataflow::MoveDataParamEnv;
-use rustc_mir_dataflow::{on_all_children_bits, on_all_drop_children_bits};
-use rustc_mir_dataflow::{Analysis, ResultsCursor};
+use rustc_middle::{
+    mir::*,
+    ty::{self, TyCtxt},
+};
+use rustc_mir_dataflow::{
+    elaborate_drops::{DropFlagMode, DropFlagState, DropStyle, Unwind},
+    impls::{MaybeInitializedPlaces, MaybeUninitializedPlaces},
+    move_paths::{LookupResult, MoveData, MovePathIndex},
+    on_all_children_bits, on_all_drop_children_bits, on_lookup_result_bits, Analysis,
+    MoveDataParamEnv, ResultsCursor,
+};
 use rustc_span::Span;
 use rustc_target::abi::VariantIdx;
 use std::fmt;
-use super::mir_dataflow::{DropElaborator, elaborate_drop};
 
 pub struct ElaborateDrops;
 
@@ -42,7 +43,10 @@ pub(in super::super) fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &Body<'tcx>) -> 
     };
     let elaborate_patch = {
         let body = &*body;
-        let env = MoveDataParamEnv { move_data, param_env };
+        let env = MoveDataParamEnv {
+            move_data,
+            param_env,
+        };
         let dead_unwinds = find_dead_unwinds(tcx, body, &env);
 
         let inits = MaybeInitializedPlaces::new(tcx, body, &env)
@@ -92,14 +96,23 @@ fn find_dead_unwinds<'tcx>(
         .into_results_cursor(body);
     for (bb, bb_data) in body.basic_blocks().iter_enumerated() {
         let place = match bb_data.terminator().kind {
-            TerminatorKind::Drop { ref place, unwind: Some(_), .. }
-            | TerminatorKind::DropAndReplace { ref place, unwind: Some(_), .. } => place,
+            TerminatorKind::Drop {
+                ref place,
+                unwind: Some(_),
+                ..
+            }
+            | TerminatorKind::DropAndReplace {
+                ref place,
+                unwind: Some(_),
+                ..
+            } => place,
             _ => continue,
         };
 
         debug!("find_dead_unwinds @ {:?}: {:?}", bb, bb_data);
 
-        let path = if let LookupResult::Exact(path) = env.move_data.rev_lookup.find(place.as_ref()) {
+        let path = if let LookupResult::Exact(path) = env.move_data.rev_lookup.find(place.as_ref())
+        {
             path
         } else {
             debug!("find_dead_unwinds: has parent; skipping");
@@ -225,9 +238,16 @@ impl<'a, 'tcx> DropElaborator<'a, 'tcx> for Elaborator<'a, '_, 'tcx> {
 
     fn array_subpath(&self, path: Self::Path, index: u64, size: u64) -> Option<Self::Path> {
         rustc_mir_dataflow::move_path_children_matching(self.ctxt.move_data(), path, |e| match e {
-            ProjectionElem::ConstantIndex { offset, min_length, from_end } => {
+            ProjectionElem::ConstantIndex {
+                offset,
+                min_length,
+                from_end,
+            } => {
                 debug_assert!(size == min_length, "min_length should be exact for arrays");
-                assert!(!from_end, "from_end should not be used for array element ConstantIndex");
+                assert!(
+                    !from_end,
+                    "from_end should not be used for array element ConstantIndex"
+                );
                 offset == index
             }
             _ => false,
@@ -274,7 +294,9 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
         let tcx = self.tcx;
         let patch = &mut self.patch;
         debug!("create_drop_flag({:?})", self.body.span);
-        self.drop_flags.entry(index).or_insert_with(|| patch.new_internal(tcx.types.bool, span));
+        self.drop_flags
+            .entry(index)
+            .or_insert_with(|| patch.new_internal(tcx.types.bool, span));
     }
 
     fn drop_flag(&mut self, index: MovePathIndex) -> Option<Place<'tcx>> {
@@ -308,7 +330,10 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
             self.init_data.seek_before(self.body.terminator_loc(bb));
 
             let path = self.move_data().rev_lookup.find(place.as_ref());
-            debug!("collect_drop_flags: {:?}, place {:?} ({:?})", bb, place, path);
+            debug!(
+                "collect_drop_flags: {:?}, place {:?} ({:?})",
+                bb, place, path
+            );
 
             let path = match path {
                 LookupResult::Exact(e) => e,
@@ -346,12 +371,19 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
 
     fn elaborate_drops(&mut self) {
         for (bb, data) in self.body.basic_blocks().iter_enumerated() {
-            let loc = Location { block: bb, statement_index: data.statements.len() };
+            let loc = Location {
+                block: bb,
+                statement_index: data.statements.len(),
+            };
             let terminator = data.terminator();
 
             let resume_block = self.patch.resume_block();
             match terminator.kind {
-                TerminatorKind::Drop { place, target, unwind } => {
+                TerminatorKind::Drop {
+                    place,
+                    target,
+                    unwind,
+                } => {
                     self.init_data.seek_before(loc);
                     match self.move_data().rev_lookup.find(place.as_ref()) {
                         LookupResult::Exact(path) => elaborate_drop(
@@ -375,7 +407,12 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
                         }
                     }
                 }
-                TerminatorKind::DropAndReplace { place, ref value, target, unwind } => {
+                TerminatorKind::DropAndReplace {
+                    place,
+                    ref value,
+                    target,
+                    unwind,
+                } => {
                     assert!(!data.is_cleanup);
 
                     self.elaborate_replace(loc, place, value, target, unwind);
@@ -408,7 +445,10 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
         let bb = loc.block;
         let data = &self.body[bb];
         let terminator = data.terminator();
-        assert!(!data.is_cleanup, "DropAndReplace in unwind path not supported");
+        assert!(
+            !data.is_cleanup,
+            "DropAndReplace in unwind path not supported"
+        );
 
         let assign = Statement {
             kind: StatementKind::Assign(Box::new((place, Rvalue::Use(value.clone())))),
@@ -427,13 +467,19 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
 
         let target = self.patch.new_block(BasicBlockData {
             statements: vec![assign],
-            terminator: Some(Terminator { kind: TerminatorKind::Goto { target }, ..*terminator }),
+            terminator: Some(Terminator {
+                kind: TerminatorKind::Goto { target },
+                ..*terminator
+            }),
             is_cleanup: false,
         });
 
         match self.move_data().rev_lookup.find(place.as_ref()) {
             LookupResult::Exact(path) => {
-                debug!("elaborate_drop_and_replace({:?}) - tracked {:?}", terminator, path);
+                debug!(
+                    "elaborate_drop_and_replace({:?}) - tracked {:?}",
+                    terminator, path
+                );
                 self.init_data.seek_before(loc);
                 elaborate_drop(
                     &mut Elaborator { ctxt: self },
@@ -446,12 +492,18 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
                 );
                 on_all_children_bits(self.tcx, self.body, self.move_data(), path, |child| {
                     self.set_drop_flag(
-                        Location { block: target, statement_index: 0 },
+                        Location {
+                            block: target,
+                            statement_index: 0,
+                        },
                         child,
                         DropFlagState::Present,
                     );
                     self.set_drop_flag(
-                        Location { block: unwind, statement_index: 0 },
+                        Location {
+                            block: unwind,
+                            statement_index: 0,
+                        },
                         child,
                         DropFlagState::Present,
                     );
@@ -460,10 +512,17 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
             LookupResult::Parent(parent) => {
                 // drop and replace behind a pointer/array/whatever. The location
                 // must be initialized.
-                debug!("elaborate_drop_and_replace({:?}) - untracked {:?}", terminator, parent);
+                debug!(
+                    "elaborate_drop_and_replace({:?}) - untracked {:?}",
+                    terminator, parent
+                );
                 self.patch.patch_terminator(
                     bb,
-                    TerminatorKind::Drop { place, target, unwind: Some(unwind) },
+                    TerminatorKind::Drop {
+                        place,
+                        target,
+                        unwind: Some(unwind),
+                    },
                 );
             }
         }
@@ -490,7 +549,8 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
         let span = self.patch.source_info_for_location(self.body, loc).span;
         let false_ = self.constant_bool(span, false);
         for flag in self.drop_flags.values() {
-            self.patch.add_assign(loc, Place::from(*flag), false_.clone());
+            self.patch
+                .add_assign(loc, Place::from(*flag), false_.clone());
         }
     }
 
@@ -504,7 +564,10 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
             {
                 assert!(!self.patch.is_patched(bb));
 
-                let loc = Location { block: tgt, statement_index: 0 };
+                let loc = Location {
+                    block: tgt,
+                    statement_index: 0,
+                };
                 let path = self.move_data().rev_lookup.find(place.as_ref());
                 on_lookup_result_bits(self.tcx, self.body, self.move_data(), path, |child| {
                     self.set_drop_flag(loc, child, DropFlagState::Present)
@@ -562,7 +625,10 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
                         }
                     }
                 }
-                let loc = Location { block: bb, statement_index: i };
+                let loc = Location {
+                    block: bb,
+                    statement_index: i,
+                };
                 rustc_mir_dataflow::drop_flag_effects_for_location(
                     self.tcx,
                     self.body,
@@ -580,12 +646,17 @@ impl<'b, 'tcx> ElaborateDropsCtxt<'b, 'tcx> {
             // so mark the return as initialized *before* the
             // call.
             if let TerminatorKind::Call {
-                destination: Some((ref place, _)), cleanup: None, ..
+                destination: Some((ref place, _)),
+                cleanup: None,
+                ..
             } = data.terminator().kind
             {
                 assert!(!self.patch.is_patched(bb));
 
-                let loc = Location { block: bb, statement_index: data.statements.len() };
+                let loc = Location {
+                    block: bb,
+                    statement_index: data.statements.len(),
+                };
                 let path = self.move_data().rev_lookup.find(place.as_ref());
                 on_lookup_result_bits(self.tcx, self.body, self.move_data(), path, |child| {
                     self.set_drop_flag(loc, child, DropFlagState::Present)

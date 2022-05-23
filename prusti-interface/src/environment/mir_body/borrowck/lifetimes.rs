@@ -1,29 +1,26 @@
-use crate::environment::{
-    // borrowck::facts::{AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, Point, Region},
-    mir_dump::graphviz::{
-         opaque_lifetime_string,
-           ToText},
-};
+use crate::environment::mir_dump::graphviz::{opaque_lifetime_string, ToText};
 // use rustc_borrowck::consumers::{LocationTable, RichLocation};
+use super::facts::{
+    AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, Point, Region, RichLocation,
+};
+use rustc_middle::mir;
 use std::{
     cell::Ref,
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-use rustc_middle::mir;
-use super::facts::{BorrowckFacts, AllInputFacts, Region, AllOutputFacts, Point, Loan, RichLocation};
 
 pub struct Lifetimes {
     facts: BorrowckFacts,
 }
 
 impl Lifetimes {
-    pub fn new(input_facts: &AllInputFacts, original_location_table: &rustc_borrowck::consumers::LocationTable) -> Self {
-        let output_facts = polonius_engine::Output::compute(
-            input_facts,
-            polonius_engine::Algorithm::Naive,
-            true,
-        );
+    pub fn new(
+        input_facts: &AllInputFacts,
+        original_location_table: &rustc_borrowck::consumers::LocationTable,
+    ) -> Self {
+        let output_facts =
+            polonius_engine::Output::compute(input_facts, polonius_engine::Algorithm::Naive, true);
         let location_table = super::facts::LocationTable::new(original_location_table);
         Self {
             facts: BorrowckFacts::new(input_facts.clone(), output_facts, location_table),
@@ -53,7 +50,9 @@ impl Lifetimes {
     }
     pub fn lifetime_count(&self) -> u32 {
         let original_lifetimes_count: u32 = self.get_original_lifetimes().len().try_into().unwrap();
-        let subset_lifetimes: BTreeSet<Region> = self.facts.input_facts
+        let subset_lifetimes: BTreeSet<Region> = self
+            .facts
+            .input_facts
             .subset_base
             .iter()
             .flat_map(|&(r1, r2, _)| [r1, r2])
@@ -82,7 +81,8 @@ impl Lifetimes {
     //     eprintln!("{:?}", self.borrowck_out_facts());
     // }
     pub(super) fn get_original_lifetimes(&self) -> Vec<Region> {
-        self.facts.input_facts
+        self.facts
+            .input_facts
             .loan_issued_at
             .iter()
             .map(|(region, _, _)| *region)

@@ -18,7 +18,6 @@ use rustc_mir_dataflow::{
     MoveDataParamEnv,
 };
 
-
 /// Returns the set of basic blocks whose unwind edges are known
 /// to not be reachable, because they are `drop` terminators
 /// that can't drop anything.
@@ -88,7 +87,10 @@ pub(in super::super) fn collect_drop_flags<'mir, 'tcx>(
     tcx: TyCtxt<'tcx>,
     body: &Body<'tcx>,
     env: &MoveDataParamEnv<'tcx>,
-    init_data: &mut crate::encoder::mir::procedures::encoder::initialisation::InitializationData<'mir, 'tcx>,
+    init_data: &mut crate::encoder::mir::procedures::encoder::initialisation::InitializationData<
+        'mir,
+        'tcx,
+    >,
 ) {
     for (bb, data) in body.basic_blocks().iter_enumerated() {
         let terminator = data.terminator();
@@ -101,7 +103,10 @@ pub(in super::super) fn collect_drop_flags<'mir, 'tcx>(
         init_data.seek_before(body.terminator_loc(bb));
 
         let path = env.move_data.rev_lookup.find(place.as_ref());
-        debug!("collect_drop_flags: {:?}, place {:?} ({:?})", bb, place, path);
+        debug!(
+            "collect_drop_flags: {:?}, place {:?} ({:?})",
+            bb, place, path
+        );
 
         let path = match path {
             LookupResult::Exact(e) => e,

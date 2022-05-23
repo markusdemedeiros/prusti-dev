@@ -1,5 +1,5 @@
 use self::{
-    elaborate_drops::{DropFlags}, initialisation::InitializationData, lifetimes::LifetimesEncoder,
+    elaborate_drops::DropFlags, initialisation::InitializationData, lifetimes::LifetimesEncoder,
     specification_blocks::SpecificationBlocks,
 };
 use super::MirProcedureEncoderInterface;
@@ -29,8 +29,9 @@ use prusti_interface::environment::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
     },
-    mir_dump::{graphviz::ToText},
-    Procedure, mir_body::{borrowck::lifetimes::Lifetimes, patch::MirPatch},
+    mir_body::{borrowck::lifetimes::Lifetimes, patch::MirPatch},
+    mir_dump::graphviz::ToText,
+    Procedure,
 };
 use rustc_data_structures::graph::WithStartNode;
 use rustc_hash::FxHashSet;
@@ -68,7 +69,10 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         .env()
         .try_get_local_mir_borrowck_facts(def_id.expect_local())
     {
-        Lifetimes::new(facts.input_facts.borrow().as_ref().unwrap(), &facts.location_table.borrow().as_ref().unwrap())
+        Lifetimes::new(
+            facts.input_facts.borrow().as_ref().unwrap(),
+            &facts.location_table.borrow().as_ref().unwrap(),
+        )
     } else {
         return Err(SpannedEncodingError::internal(
             format!("failed to obtain borrow information for {:?}", def_id),
@@ -465,7 +469,10 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         if let Some(terminator) = terminator {
             let replacing_terminator = self.drop_patch.patch_map[bb].clone();
             let terminator = if let Some(replacing_terminator) = &replacing_terminator {
-                assert!(matches!(replacing_terminator, mir::TerminatorKind::Drop{..} | mir::TerminatorKind::DropAndReplace{..}));
+                assert!(matches!(
+                    replacing_terminator,
+                    mir::TerminatorKind::Drop { .. } | mir::TerminatorKind::DropAndReplace { .. }
+                ));
                 replacing_terminator
             } else {
                 &terminator.kind

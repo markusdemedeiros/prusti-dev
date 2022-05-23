@@ -9,8 +9,8 @@ use rustc_middle::mir;
 use vir_crate::high::{self as vir_high, builders::procedure::BasicBlockBuilder};
 
 pub(super) mod compiler;
-pub(super) mod mir_transform;
 pub(super) mod mir_dataflow;
+pub(super) mod mir_transform;
 
 pub(super) struct DropFlags<'tcx> {
     /// The drop flag is true if the place needs to be dropped.

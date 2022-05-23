@@ -1,5 +1,5 @@
 use polonius_engine::FactTypes;
-use rustc_borrowck::consumers::{RustcFacts};
+use rustc_borrowck::consumers::RustcFacts;
 use rustc_hash::FxHashMap;
 use rustc_middle::mir;
 use std::collections::BTreeMap;
@@ -24,11 +24,15 @@ pub struct BorrowckFacts {
 
 impl BorrowckFacts {
     pub fn new(
-     input_facts: AllInputFacts,
-     output_facts: AllOutputFacts,
-     location_table: LocationTable,
+        input_facts: AllInputFacts,
+        output_facts: AllOutputFacts,
+        location_table: LocationTable,
     ) -> Self {
-        Self { input_facts, output_facts, location_table }
+        Self {
+            input_facts,
+            output_facts,
+            location_table,
+        }
     }
 }
 
@@ -70,5 +74,4 @@ impl LocationTable {
     pub fn location_to_point(&self, location: RichLocation) -> Point {
         self.points[&location]
     }
-
 }
