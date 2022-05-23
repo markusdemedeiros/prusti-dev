@@ -47,8 +47,6 @@ RUSTFMT_PATHS = [
     'prusti-common/src/vir/low_to_viper/mod.rs',
     'prusti-common/src/vir/optimizations/mod.rs',
     'prusti-interface/src/environment/mir_dump/mod.rs',
-    'prusti-interface/src/environment/mir_analyses/mod.rs',
-    'prusti-interface/src/environment/mir_sets/mod.rs',
     'prusti-tests/tests/verify_partial/**/*.rs',
     'prusti-viper/src/encoder/foldunfold/mod.rs',
     'prusti-viper/src/encoder/mir/mod.rs',
@@ -566,6 +564,14 @@ def fmt_check_all():
         for file in glob.glob(path, recursive=True):
             run_command(['rustfmt', '--check', file])
 
+def analysis_on(args):
+    """Run an analysis on a provided file"""
+    sysroot = subprocess.check_output(["rustup", "run", "nightly-2022-05-16", "rustc", "--print", "sysroot"]).decode(sys.stdout.encoding)[:-1]
+    env = get_env()
+    set_env_variables(env, [("LD_LIBRARY_PATH", sysroot + "/lib"), ("LD_LIBRARY_PATH", sysroot + "/bin")])
+    run_command(['cargo', 'run', '--bin', 'analysis-driver', args[0], '--sysroot=' + sysroot, '--analysis-domain=' + args[1]])
+
+
 def main(argv):
     global verbose
     for i, arg in enumerate(argv):
@@ -604,6 +610,9 @@ def main(argv):
             break
         elif arg == 'fmt-all':
             fmt_all(*argv[i+1:])
+            break
+        elif arg == 'analysis':
+            analysis_on(argv[i+1:])
             break
         else:
             cargo(argv[i:])
