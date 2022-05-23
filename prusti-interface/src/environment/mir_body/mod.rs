@@ -1,4 +1,5 @@
 use rustc_middle::mir;
+use self::borrowck::facts::{AllInputFacts, LocationTable, patch::apply_patch_to_borrowck};
 
 pub mod borrowck;
 pub mod patch;
@@ -6,9 +7,10 @@ pub mod patch;
 pub fn apply_patch<'tcx>(
     patch: self::patch::MirPatch<'tcx>,
     body: &mir::Body<'tcx>,
-    borrowck_facts: &mut self::borrowck::facts::BorrowckFacts,
+    borrowck_input_facts: &mut AllInputFacts,
+    location_table: &mut LocationTable,
 ) -> mir::Body<'tcx> {
-    borrowck_facts.apply_patch(&patch);
+    apply_patch_to_borrowck(borrowck_input_facts, location_table, &patch);
     let mut body = body.clone();
     patch.apply(&mut body);
     body

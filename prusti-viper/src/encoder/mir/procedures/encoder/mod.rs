@@ -29,7 +29,7 @@ use prusti_interface::environment::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
     },
-    mir_body::{borrowck::lifetimes::Lifetimes, patch::MirPatch},
+    mir_body::{borrowck::{lifetimes::Lifetimes, facts::LocationTable}, patch::MirPatch, apply_patch},
     mir_dump::graphviz::ToText,
     Procedure,
 };
@@ -65,14 +65,17 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     def_id: DefId,
 ) -> SpannedEncodingResult<vir_high::ProcedureDecl> {
     let procedure = Procedure::new(encoder.env(), def_id);
-    let lifetimes = if let Some(facts) = encoder
+    let (mut input_facts, mut location_table) = if let Some(facts) = encoder
         .env()
         .try_get_local_mir_borrowck_facts(def_id.expect_local())
     {
-        Lifetimes::new(
-            facts.input_facts.borrow().as_ref().unwrap(),
-            &facts.location_table.borrow().as_ref().unwrap(),
-        )
+        let input_facts = facts.input_facts.borrow().as_ref().unwrap().clone();
+        let location_table = LocationTable::new(facts.location_table.borrow().as_ref().unwrap());
+        // Lifetimes::new(
+        //     facts.input_facts.borrow().as_ref().unwrap(),
+        //     &facts.location_table.borrow().as_ref().unwrap(),
+        // )
+        (input_facts, location_table)
     } else {
         return Err(SpannedEncodingError::internal(
             format!("failed to obtain borrow information for {:?}", def_id),
@@ -81,17 +84,20 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     };
     let mir = procedure.get_mir();
     let tcx = encoder.env().tcx();
+    let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
+    let drop_patch2 = elaborate_drops::mir_transform::run_pass(tcx, mir);
+    let mir = &apply_patch(drop_patch2, mir, &mut input_facts, &mut location_table);
     let move_env = self::initialisation::create_move_data_param_env(tcx, mir, def_id);
     let mut init_data = InitializationData::new(tcx, mir, &move_env);
     let locals_without_explicit_allocation: BTreeSet<_> = mir.vars_and_temps_iter().collect();
+    let lifetimes = Lifetimes::new(input_facts, location_table);
     let rd_perm = lifetimes.lifetime_count();
     let specification_blocks = SpecificationBlocks::build(tcx, mir, &procedure);
     let initialization = compute_definitely_initialized(def_id, mir, encoder.env().tcx());
     let allocation = compute_definitely_allocated(def_id, mir);
     let drop_flags = DropFlags::build(mir);
     elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
-    let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
-    eprintln!("patch: {:?}", drop_patch.patch_map);
+    // eprintln!("patch: {:?}", drop_patch.patch_map);
     // TODO: Try copying
     // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_transform/src/elaborate_drops.rs
     // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_dataflow/src/elaborate_drops.rs

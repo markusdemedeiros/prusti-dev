@@ -1,8 +1,7 @@
-use super::BorrowckFacts;
+use super::{BorrowckFacts, AllInputFacts, LocationTable};
 use crate::environment::mir_body::patch::MirPatch;
 
-impl BorrowckFacts {
-    pub fn apply_patch<'tcx>(&mut self, patch: &MirPatch<'tcx>) {
-        unimplemented!();
-    }
+pub fn apply_patch_to_borrowck<'tcx>(borrowck_input_facts: &mut AllInputFacts,
+    location_table: &mut LocationTable, patch: &MirPatch<'tcx>) {
+    unimplemented!();
 }

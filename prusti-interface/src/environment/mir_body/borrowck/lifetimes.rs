@@ -1,7 +1,7 @@
 use crate::environment::mir_dump::graphviz::{opaque_lifetime_string, ToText};
 // use rustc_borrowck::consumers::{LocationTable, RichLocation};
 use super::facts::{
-    AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, Point, Region, RichLocation,
+    AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, Point, Region, RichLocation, LocationTable,
 };
 use rustc_middle::mir;
 use std::{
@@ -16,12 +16,11 @@ pub struct Lifetimes {
 
 impl Lifetimes {
     pub fn new(
-        input_facts: &AllInputFacts,
-        original_location_table: &rustc_borrowck::consumers::LocationTable,
+        input_facts: AllInputFacts,
+        location_table: LocationTable,
     ) -> Self {
         let output_facts =
-            polonius_engine::Output::compute(input_facts, polonius_engine::Algorithm::Naive, true);
-        let location_table = super::facts::LocationTable::new(original_location_table);
+            polonius_engine::Output::compute(&input_facts, polonius_engine::Algorithm::Naive, true);
         Self {
             facts: BorrowckFacts::new(input_facts.clone(), output_facts, location_table),
         }
