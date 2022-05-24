@@ -35,7 +35,7 @@ use prusti_interface::environment::{
             facts::{validation::validate, LocationTable},
             lifetimes::Lifetimes,
         },
-        patch::MirPatch,
+        patch::MirPatch, graphviz::to_graphviz,
     },
     mir_dump::graphviz::ToText,
     Procedure,
@@ -91,6 +91,17 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     };
     let mir = procedure.get_mir();
     let tcx = encoder.env().tcx();
+    {
+        eprintln!("def_id: {:?}", def_id);
+        let local_def_id = def_id.expect_local();
+        let def_path = encoder.env().tcx().hir().def_path(local_def_id);
+        let graph = to_graphviz(&input_facts, &location_table, mir);
+        prusti_common::report::log::report_with_writer(
+            "graphviz_mir_dump",
+            format!("{}.dot", def_path.to_filename_friendly_no_crate()),
+            |writer| graph.write(writer).unwrap(),
+        );
+    }
     validate(&input_facts, &location_table, mir);
     let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
     let drop_patch2 = elaborate_drops::mir_transform::run_pass(tcx, mir);
