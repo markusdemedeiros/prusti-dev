@@ -5,6 +5,7 @@ use rustc_middle::mir;
 use std::collections::BTreeMap;
 
 pub mod patch;
+pub mod validation;
 
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;

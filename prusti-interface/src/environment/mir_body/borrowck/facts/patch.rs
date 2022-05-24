@@ -14,6 +14,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
     let mut cfg_edges = FxHashMap::<_, Vec<_>>::default();
     for (from, to) in std::mem::take(&mut borrowck_input_facts.cfg_edge) {
         cfg_edges.entry(from).or_default().push(to);
+        cfg_edges.entry(to).or_default();
     }
 
     // Create cfg_edge facts for the new basic blocks.
@@ -85,6 +86,9 @@ pub fn apply_patch_to_borrowck<'tcx>(
         }
         loc.statement_index += delta;
 
+        let old_statement_start_point =
+            lt_patcher.start_point(loc.block.index(), loc.statement_index);
+
         // Shift all points by one statement down.
         lt_patcher.insert_statement_at(loc, body[loc.block].statements.len());
 
@@ -96,9 +100,23 @@ pub fn apply_patch_to_borrowck<'tcx>(
             for predecessor in &predecessors[loc.block] {
                 let terminator_mid_point =
                     lt_patcher.mid_point(predecessor.index(), body[*predecessor].statements.len());
-                assert!(cfg_edges
-                    .insert(terminator_mid_point, vec![statement_start_point])
-                    .is_some());
+                let mut found = false;
+                for target_point in cfg_edges.get_mut(&terminator_mid_point).unwrap() {
+                    if *target_point == old_statement_start_point {
+                        assert!(!found);
+                        *target_point = statement_start_point;
+                        found = true;
+                    }
+                }
+                assert!(
+                    found,
+                    "location: {:?}, predecessor: {:?} target_points: {:?} \
+                    old_statement_start_point: {:?}",
+                    loc,
+                    predecessor,
+                    cfg_edges[&terminator_mid_point],
+                    old_statement_start_point
+                );
             }
         } else {
             // Insert the statement and patch the links with the previous and following statements.

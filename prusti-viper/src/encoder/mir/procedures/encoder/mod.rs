@@ -31,7 +31,10 @@ use prusti_interface::environment::{
     },
     mir_body::{
         apply_patch,
-        borrowck::{facts::LocationTable, lifetimes::Lifetimes},
+        borrowck::{
+            facts::{validation::validate, LocationTable},
+            lifetimes::Lifetimes,
+        },
         patch::MirPatch,
     },
     mir_dump::graphviz::ToText,
@@ -88,6 +91,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     };
     let mir = procedure.get_mir();
     let tcx = encoder.env().tcx();
+    validate(&input_facts, &location_table, mir);
     let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
     let drop_patch2 = elaborate_drops::mir_transform::run_pass(tcx, mir);
     let mir = &apply_patch(drop_patch2, mir, &mut input_facts, &mut location_table);
