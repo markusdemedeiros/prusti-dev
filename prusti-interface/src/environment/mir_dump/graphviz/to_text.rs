@@ -1,5 +1,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::environment::mir_body::borrowck::facts::Point;
+
 pub trait ToText {
     fn to_text(&self) -> String;
 }
@@ -82,6 +84,10 @@ impl ToText for BTreeMap<rustc_middle::ty::RegionVid, BTreeSet<rustc_middle::ty:
             .collect();
         strings.join(", ")
     }
+}
+
+pub fn point_to_text(point: &Point) -> String {
+    format!("{:?}", point)
 }
 
 pub fn loan_to_text(loan: &crate::environment::borrowck::facts::Loan) -> String {

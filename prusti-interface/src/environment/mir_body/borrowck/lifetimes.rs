@@ -85,7 +85,7 @@ impl Lifetimes {
             .collect()
     }
 
-    fn location_to_point(&self, location: RichLocation) -> Point {
+    pub(in super::super) fn location_to_point(&self, location: RichLocation) -> Point {
         self.facts.location_table.location_to_point(location)
     }
 

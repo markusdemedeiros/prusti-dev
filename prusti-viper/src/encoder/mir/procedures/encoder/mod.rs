@@ -97,7 +97,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         let def_path = encoder.env().tcx().hir().def_path(local_def_id);
         let graph = to_graphviz(&input_facts, &location_table, mir);
         prusti_common::report::log::report_with_writer(
-            "graphviz_mir_dump",
+            "graphviz_mir_dump_before_patch",
             format!("{}.dot", def_path.to_filename_friendly_no_crate()),
             |writer| graph.write(writer).unwrap(),
         );
