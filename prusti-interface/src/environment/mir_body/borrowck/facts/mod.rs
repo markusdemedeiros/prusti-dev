@@ -44,6 +44,22 @@ pub enum RichLocation {
     Mid(mir::Location),
 }
 
+impl RichLocation {
+    fn start(block: mir::BasicBlock, statement_index: usize) -> Self {
+        Self::Start(mir::Location {
+            block,
+            statement_index,
+        })
+    }
+
+    fn mid(block: mir::BasicBlock, statement_index: usize) -> Self {
+        Self::Mid(mir::Location {
+            block,
+            statement_index,
+        })
+    }
+}
+
 impl From<rustc_borrowck::consumers::RichLocation> for RichLocation {
     fn from(location: rustc_borrowck::consumers::RichLocation) -> Self {
         match location {
