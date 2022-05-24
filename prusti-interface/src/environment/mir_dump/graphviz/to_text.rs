@@ -4,7 +4,7 @@ pub trait ToText {
     fn to_text(&self) -> String;
 }
 
-pub(in super::super) fn to_sorted_text<S: ToText>(texts: &[S]) -> Vec<String> {
+pub fn to_sorted_text<S: ToText>(texts: &[S]) -> Vec<String> {
     let mut strings: Vec<_> = texts.iter().map(ToText::to_text).collect();
     strings.sort();
     strings
@@ -84,13 +84,11 @@ impl ToText for BTreeMap<rustc_middle::ty::RegionVid, BTreeSet<rustc_middle::ty:
     }
 }
 
-pub(in super::super) fn loan_to_text(loan: &crate::environment::borrowck::facts::Loan) -> String {
+pub fn loan_to_text(loan: &crate::environment::borrowck::facts::Loan) -> String {
     format!("{:?}", loan)
 }
 
-pub(in super::super) fn loans_to_text(
-    loans: &[crate::environment::borrowck::facts::Loan],
-) -> String {
+pub fn loans_to_text(loans: &[crate::environment::borrowck::facts::Loan]) -> String {
     let mut strings: Vec<_> = loans.iter().map(loan_to_text).collect();
     strings.sort();
     strings.join(", ")
@@ -103,7 +101,7 @@ pub(in super::super) fn loan_set_to_text(
     strings.join(" ∪ ")
 }
 
-pub(in super::super) fn loan_containment_to_text(
+pub fn loan_containment_to_text(
     loans: &BTreeMap<
         rustc_middle::ty::RegionVid,
         BTreeSet<crate::environment::borrowck::facts::Loan>,

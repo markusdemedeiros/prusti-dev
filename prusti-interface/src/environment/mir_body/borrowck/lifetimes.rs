@@ -76,7 +76,7 @@ impl Lifetimes {
     // pub(super) fn debug_borrowck_out_facts(&self) {
     //     eprintln!("{:?}", self.borrowck_out_facts());
     // }
-    pub(super) fn get_original_lifetimes(&self) -> Vec<Region> {
+    pub(in super::super) fn get_original_lifetimes(&self) -> Vec<Region> {
         self.facts
             .input_facts
             .loan_issued_at
@@ -84,37 +84,12 @@ impl Lifetimes {
             .map(|(region, _, _)| *region)
             .collect()
     }
-    // pub(super) fn get_subset_base(&self, location: RichLocation) -> Vec<(Region, Region)> {
-    //     let point = self.location_to_point(location);
-    //     let borrowck_in_facts = self.borrowck_in_facts();
-    //     borrowck_in_facts
-    //         .subset_base
-    //         .iter()
-    //         .flat_map(|&(r1, r2, p)| if p == point { Some((r1, r2)) } else { None })
-    //         .collect()
-    // }
+
     fn location_to_point(&self, location: RichLocation) -> Point {
         self.facts.location_table.location_to_point(location)
     }
-    // pub(super) fn get_subset(&self, location: RichLocation) -> BTreeMap<Region, BTreeSet<Region>> {
-    //     let point = self.location_to_point(location);
-    //     let borrowck_out_facts = self.borrowck_out_facts();
-    //     if let Some(map) = borrowck_out_facts.subset.get(&point) {
-    //         map.clone()
-    //     } else {
-    //         BTreeMap::new()
-    //     }
-    // }
-    // pub(super) fn get_origin_live_on_entry(&self, location: RichLocation) -> Vec<Region> {
-    //     let point = self.location_to_point(location);
-    //     let borrowck_out_facts = self.borrowck_out_facts();
-    //     if let Some(origins) = borrowck_out_facts.origin_live_on_entry.get(&point) {
-    //         origins.clone()
-    //     } else {
-    //         Vec::new()
-    //     }
-    // }
-    pub(super) fn get_loan_live_at(&self, location: RichLocation) -> Vec<Loan> {
+
+    pub(in super::super) fn get_loan_live_at(&self, location: RichLocation) -> Vec<Loan> {
         let point = self.location_to_point(location);
         if let Some(loans) = self.facts.output_facts.loan_live_at.get(&point) {
             loans.clone()
@@ -122,7 +97,7 @@ impl Lifetimes {
             Vec::new()
         }
     }
-    fn get_origin_contains_loan_at(
+    pub(in super::super) fn get_origin_contains_loan_at(
         &self,
         location: RichLocation,
     ) -> BTreeMap<Region, BTreeSet<Loan>> {
@@ -134,3 +109,102 @@ impl Lifetimes {
         }
     }
 }
+
+mod graphviz {
+
+    use crate::environment::mir_dump::graphviz::{
+        opaque_lifetime_string,
+        to_text::{loan_to_text, to_sorted_text},
+        ToText,
+    };
+    // use rustc_borrowck::consumers::{LocationTable, RichLocation};
+    use super::{
+        super::facts::{
+            AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, LocationTable, Point, Region,
+            RichLocation,
+        },
+        Lifetimes,
+    };
+    use rustc_middle::mir;
+    use std::{
+        cell::Ref,
+        collections::{BTreeMap, BTreeSet},
+        rc::Rc,
+    };
+
+    pub struct LifetimeWithInclusions {
+        lifetime: Region,
+        loan: Loan,
+        included_in: Vec<Region>,
+    }
+
+    impl super::graphviz::ToText for LifetimeWithInclusions {
+        fn to_text(&self) -> String {
+            let lifetimes = to_sorted_text(&self.included_in);
+            format!(
+                "{} ⊑ {} ({})",
+                self.lifetime.to_text(),
+                lifetimes.join(" ⊓ "),
+                loan_to_text(&self.loan)
+            )
+        }
+    }
+
+    /// Functionality used only for the Graphviz output.
+    pub trait LifetimesGraphviz {
+        fn get_opaque_lifetimes_with_inclusions(&self) -> Vec<LifetimeWithInclusions>;
+        fn get_subset_base(&self, location: RichLocation) -> Vec<(Region, Region)>;
+        fn get_subset(&self, location: RichLocation) -> BTreeMap<Region, BTreeSet<Region>>;
+        fn get_origin_live_on_entry(&self, location: RichLocation) -> Vec<Region>;
+    }
+
+    impl LifetimesGraphviz for Lifetimes {
+        fn get_opaque_lifetimes_with_inclusions(&self) -> Vec<LifetimeWithInclusions> {
+            let mut opaque_lifetimes = Vec::new();
+            for &(placeholder, loan) in &self.facts.input_facts.placeholder {
+                let mut included_in = Vec::new();
+                for &(r1, r2) in &self.facts.input_facts.known_placeholder_subset {
+                    if r1 == placeholder {
+                        included_in.push(r2);
+                    }
+                }
+                opaque_lifetimes.push(LifetimeWithInclusions {
+                    lifetime: placeholder,
+                    loan,
+                    included_in,
+                });
+            }
+            opaque_lifetimes
+        }
+
+        fn get_subset_base(&self, location: RichLocation) -> Vec<(Region, Region)> {
+            let point = self.location_to_point(location);
+            self.facts
+                .input_facts
+                .subset_base
+                .iter()
+                .flat_map(|&(r1, r2, p)| if p == point { Some((r1, r2)) } else { None })
+                .collect()
+        }
+
+        fn get_subset(&self, location: RichLocation) -> BTreeMap<Region, BTreeSet<Region>> {
+            let point = self.location_to_point(location);
+            if let Some(map) = self.facts.output_facts.subset.get(&point) {
+                map.clone()
+            } else {
+                BTreeMap::new()
+            }
+        }
+
+        fn get_origin_live_on_entry(&self, location: RichLocation) -> Vec<Region> {
+            let point = self.location_to_point(location);
+            if let Some(origins) = self.facts.output_facts.origin_live_on_entry.get(&point) {
+                origins.clone()
+            } else {
+                Vec::new()
+            }
+        }
+    }
+}
+
+pub use self::graphviz::LifetimesGraphviz;

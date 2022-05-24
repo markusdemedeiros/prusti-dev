@@ -2,6 +2,7 @@ use self::borrowck::facts::{patch::apply_patch_to_borrowck, AllInputFacts, Locat
 use rustc_middle::mir;
 
 pub mod borrowck;
+pub mod graphviz;
 pub mod patch;
 
 pub fn apply_patch<'tcx>(

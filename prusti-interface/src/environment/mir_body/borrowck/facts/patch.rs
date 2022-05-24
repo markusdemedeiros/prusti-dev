@@ -112,10 +112,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
                     found,
                     "location: {:?}, predecessor: {:?} target_points: {:?} \
                     old_statement_start_point: {:?}",
-                    loc,
-                    predecessor,
-                    cfg_edges[&terminator_mid_point],
-                    old_statement_start_point
+                    loc, predecessor, cfg_edges[&terminator_mid_point], old_statement_start_point
                 );
             }
         } else {
