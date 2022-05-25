@@ -60,7 +60,7 @@ pub fn validate<'tcx>(
                     block: successor,
                     statement_index: 0,
                 }));
-            assert!(successor_points.contains(&following_start_point));
+            assert!(successor_points.contains(&following_start_point), "block: {:?} following_start_point: {:?}", block, following_start_point);
         }
         seen_points.insert(start_point);
         seen_points.insert(mid_point);

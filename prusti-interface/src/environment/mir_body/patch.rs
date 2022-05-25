@@ -2,6 +2,7 @@
 // Changes:
 // 1. Made fields of MirPatch public (main reason for copying).
 // 2. Fixed compilation errors.
+// 3. Implement Clone for MirPatch.
 
 use log::debug;
 use rustc_index::vec::{Idx, IndexVec};
@@ -11,6 +12,7 @@ use rustc_span::Span;
 /// This struct represents a patch to MIR, which can add
 /// new statements and basic blocks and patch over block
 /// terminators.
+#[derive(Clone)]
 pub struct MirPatch<'tcx> {
     pub patch_map: IndexVec<BasicBlock, Option<TerminatorKind<'tcx>>>,
     pub new_blocks: Vec<BasicBlockData<'tcx>>,

@@ -7,7 +7,8 @@ pub fn apply_patch_to_borrowck<'tcx>(
     borrowck_input_facts: &mut AllInputFacts,
     location_table: &mut LocationTable,
     patch: &MirPatch<'tcx>,
-    body: &mir::Body<'tcx>,
+    old_body: &mir::Body<'tcx>,
+    patched_body: &mir::Body<'tcx>,
 ) {
     let mut lt_patcher = LocationTablePatcher::new(location_table);
 
@@ -17,14 +18,14 @@ pub fn apply_patch_to_borrowck<'tcx>(
         cfg_edges.entry(to).or_default();
     }
 
-    let mut block_sizes: FxHashMap<_, _> = body
+    let mut block_sizes: FxHashMap<_, _> = old_body
         .basic_blocks()
         .iter_enumerated()
         .map(|(bb, data)| (bb, data.statements.len()))
         .collect();
 
     // Create cfg_edge facts for the new basic blocks.
-    let bb_base = body.basic_blocks().len();
+    let bb_base = old_body.basic_blocks().len();
     for (offset, block) in patch.new_blocks.iter().enumerate() {
         // +1 is for terminator.
         let mut statement_indices = 0usize..block.statements.len() + 1;
@@ -57,7 +58,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
     }
 
     // Patch cfg_edge facts for the inserted statements.
-    let predecessors = body.predecessors();
+    let predecessors = patched_body.predecessors();
     let mut new_statements = patch.new_statements.clone();
     new_statements.sort_by_key(|s| s.0);
     let mut delta = 0;
@@ -82,7 +83,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
         if loc.statement_index == 0 {
             for predecessor in &predecessors[loc.block] {
                 let terminator_mid_point =
-                    lt_patcher.mid_point(predecessor.index(), body[*predecessor].statements.len());
+                    lt_patcher.mid_point(predecessor.index(), patched_body[*predecessor].statements.len());
                 let mut found = false;
                 for target_point in cfg_edges.get_mut(&terminator_mid_point).unwrap() {
                     if *target_point == old_statement_start_point {
