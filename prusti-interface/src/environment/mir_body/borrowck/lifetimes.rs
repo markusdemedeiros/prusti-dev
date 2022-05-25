@@ -152,6 +152,8 @@ mod graphviz {
 
     /// Functionality used only for the Graphviz output.
     pub trait LifetimesGraphviz {
+        fn get_cfg_incoming(&self, point: Point) -> Vec<Point>;
+        fn get_cfg_outgoing(&self, point: Point) -> Vec<Point>;
         fn get_opaque_lifetimes_with_inclusions(&self) -> Vec<LifetimeWithInclusions>;
         fn get_subset_base(&self, location: RichLocation) -> Vec<(Region, Region)>;
         fn get_subset(&self, location: RichLocation) -> BTreeMap<Region, BTreeSet<Region>>;
@@ -159,6 +161,14 @@ mod graphviz {
     }
 
     impl LifetimesGraphviz for Lifetimes {
+        fn get_cfg_incoming(&self, point: Point) -> Vec<Point> {
+            self.facts.input_facts.cfg_edge.iter().filter(|(from, to)| *to == point).map(|(from, _)| *from).collect()
+        }
+
+        fn get_cfg_outgoing(&self, point: Point) -> Vec<Point> {
+            self.facts.input_facts.cfg_edge.iter().filter(|(from, to)| *from == point).map(|(_, to)| *to).collect()
+        }
+
         fn get_opaque_lifetimes_with_inclusions(&self) -> Vec<LifetimeWithInclusions> {
             let mut opaque_lifetimes = Vec::new();
             for &(placeholder, loan) in &self.facts.input_facts.placeholder {

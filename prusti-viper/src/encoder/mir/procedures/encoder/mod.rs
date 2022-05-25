@@ -103,9 +103,21 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         );
     }
     validate(&input_facts, &location_table, mir);
-    let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
+    // let drop_patch = elaborate_drops::mir_transform::run_pass(tcx, mir);
     let drop_patch2 = elaborate_drops::mir_transform::run_pass(tcx, mir);
     let mir = &apply_patch(drop_patch2, mir, &mut input_facts, &mut location_table);
+    {
+        eprintln!("def_id: {:?}", def_id);
+        let local_def_id = def_id.expect_local();
+        let def_path = encoder.env().tcx().hir().def_path(local_def_id);
+        let graph = to_graphviz(&input_facts, &location_table, mir);
+        prusti_common::report::log::report_with_writer(
+            "graphviz_mir_dump_after_patch",
+            format!("{}.dot", def_path.to_filename_friendly_no_crate()),
+            |writer| graph.write(writer).unwrap(),
+        );
+    }
+    validate(&input_facts, &location_table, mir);
     let move_env = self::initialisation::create_move_data_param_env(tcx, mir, def_id);
     let mut init_data = InitializationData::new(tcx, mir, &move_env);
     let locals_without_explicit_allocation: BTreeSet<_> = mir.vars_and_temps_iter().collect();
@@ -132,7 +144,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         initialization,
         allocation,
         drop_flags,
-        drop_patch,
+        // drop_patch,
         lifetimes,
         reachable_blocks: Default::default(),
         specification_blocks,
@@ -156,7 +168,7 @@ struct ProcedureEncoder<'p, 'v: 'p, 'tcx: 'v> {
     initialization: DefinitelyInitializedAnalysisResult<'tcx>,
     allocation: DefinitelyAllocatedAnalysisResult,
     drop_flags: DropFlags<'tcx>,
-    drop_patch: MirPatch<'tcx>,
+    // drop_patch: MirPatch<'tcx>,
     lifetimes: Lifetimes,
     /// Blocks that we managed to reach when traversing from the entry block.
     reachable_blocks: FxHashSet<mir::BasicBlock>,
@@ -492,16 +504,17 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             location.statement_index += 1;
         }
         if let Some(terminator) = terminator {
-            let replacing_terminator = self.drop_patch.patch_map[bb].clone();
-            let terminator = if let Some(replacing_terminator) = &replacing_terminator {
-                assert!(matches!(
-                    replacing_terminator,
-                    mir::TerminatorKind::Drop { .. } | mir::TerminatorKind::DropAndReplace { .. }
-                ));
-                replacing_terminator
-            } else {
-                &terminator.kind
-            };
+            // let replacing_terminator = self.drop_patch.patch_map[bb].clone();
+            // let terminator = if let Some(replacing_terminator) = &replacing_terminator {
+            //     assert!(matches!(
+            //         replacing_terminator,
+            //         mir::TerminatorKind::Drop { .. } | mir::TerminatorKind::DropAndReplace { .. }
+            //     ));
+            //     replacing_terminator
+            // } else {
+            //     &terminator.kind
+            // };
+            let terminator = &terminator.kind;
             self.encode_terminator(&mut block_builder, location, terminator)?;
         }
         if let Some(statement) = self.loop_invariant_encoding.remove(&bb) {

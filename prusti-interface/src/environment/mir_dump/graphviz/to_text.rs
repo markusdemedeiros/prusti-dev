@@ -87,7 +87,13 @@ impl ToText for BTreeMap<rustc_middle::ty::RegionVid, BTreeSet<rustc_middle::ty:
 }
 
 pub fn point_to_text(point: &Point) -> String {
-    format!("{:?}", point)
+    format!("P{}", point.index())
+}
+
+pub fn points_to_text(points: &[Point]) -> String {
+    let mut strings: Vec<_> = points.iter().map(point_to_text).collect();
+    strings.sort();
+    strings.join(", ")
 }
 
 pub fn loan_to_text(loan: &crate::environment::borrowck::facts::Loan) -> String {

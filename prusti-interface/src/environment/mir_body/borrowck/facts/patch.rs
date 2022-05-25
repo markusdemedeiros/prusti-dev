@@ -40,39 +40,6 @@ pub fn apply_patch_to_borrowck<'tcx>(
         }
     }
 
-    // Patch cfg_edge facts for the replaced terminators.
-    for (src, patch) in patch.patch_map.iter_enumerated() {
-        if let Some(patch) = patch {
-            match patch {
-                mir::TerminatorKind::Goto { target } => {
-                    assert!(cfg_edges
-                        .insert(
-                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
-                            vec![lt_patcher.start_point(target.index(), 0),]
-                        )
-                        .is_some());
-                }
-                mir::TerminatorKind::Drop { target, unwind, .. } => {
-                    assert!(cfg_edges
-                        .insert(
-                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
-                            vec![lt_patcher.start_point(target.index(), 0),]
-                        )
-                        .is_some());
-                    if let Some(unwind) = unwind {
-                        assert!(cfg_edges
-                            .insert(
-                                lt_patcher.mid_point(src.index(), body[src].statements.len()),
-                                vec![lt_patcher.start_point(unwind.index(), 0),]
-                            )
-                            .is_some());
-                    }
-                }
-                _ => unreachable!("patch: {:?}", patch),
-            }
-        }
-    }
-
     // Patch cfg_edge facts for the inserted statements.
     let predecessors = body.predecessors();
     let mut new_statements = patch.new_statements.clone();
@@ -108,11 +75,12 @@ pub fn apply_patch_to_borrowck<'tcx>(
                         found = true;
                     }
                 }
+
                 assert!(
                     found,
                     "location: {:?}, predecessor: {:?} target_points: {:?} \
-                    old_statement_start_point: {:?}",
-                    loc, predecessor, cfg_edges[&terminator_mid_point], old_statement_start_point
+                    terminator_mid_point: {:?} old_statement_start_point: {:?}",
+                    loc, predecessor, cfg_edges[&terminator_mid_point], terminator_mid_point, old_statement_start_point
                 );
             }
         } else {
@@ -131,6 +99,39 @@ pub fn apply_patch_to_borrowck<'tcx>(
             .is_none());
 
         delta += 1;
+    }
+
+    // Patch cfg_edge facts for the replaced terminators.
+    for (src, patch) in patch.patch_map.iter_enumerated() {
+        if let Some(patch) = patch {
+            match patch {
+                mir::TerminatorKind::Goto { target } => {
+                    assert!(cfg_edges
+                        .insert(
+                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
+                            vec![lt_patcher.start_point(target.index(), 0),]
+                        )
+                        .is_some());
+                }
+                mir::TerminatorKind::Drop { target, unwind, .. } => {
+                    assert!(cfg_edges
+                        .insert(
+                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
+                            vec![lt_patcher.start_point(target.index(), 0),]
+                        )
+                        .is_some());
+                    if let Some(unwind) = unwind {
+                        assert!(cfg_edges
+                            .insert(
+                                lt_patcher.mid_point(src.index(), body[src].statements.len()),
+                                vec![lt_patcher.start_point(unwind.index(), 0),]
+                            )
+                            .is_some());
+                    }
+                }
+                _ => unreachable!("patch: {:?}", patch),
+            }
+        }
     }
 
     borrowck_input_facts.cfg_edge = cfg_edges

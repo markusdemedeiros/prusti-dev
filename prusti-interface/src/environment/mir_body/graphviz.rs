@@ -4,7 +4,7 @@ use super::borrowck::{
 };
 use crate::environment::{
     mir_dump::graphviz::{
-        to_text::{loan_containment_to_text, loans_to_text, point_to_text},
+        to_text::{loan_containment_to_text, loans_to_text, point_to_text, points_to_text},
         ToText,
     },
     Environment, Procedure,
@@ -118,8 +118,12 @@ fn visit_statement(
     statement: String,
     lifetimes: &Lifetimes,
 ) {
-    let subset_base_start_point = lifetimes.location_to_point(RichLocation::Start(location));
-    let subset_base_mid_point = lifetimes.location_to_point(RichLocation::Mid(location));
+    let point_start = lifetimes.location_to_point(RichLocation::Start(location));
+    let point_mid = lifetimes.location_to_point(RichLocation::Mid(location));
+    let cfg_in_start = lifetimes.get_cfg_incoming(point_start);
+    let cfg_out_start = lifetimes.get_cfg_outgoing(point_start);
+    let cfg_in_mid = lifetimes.get_cfg_incoming(point_mid);
+    let cfg_out_mid = lifetimes.get_cfg_outgoing(point_mid);
     let subset_base_start = lifetimes.get_subset_base(RichLocation::Start(location));
     let subset_base_mid = lifetimes.get_subset_base(RichLocation::Mid(location));
     let subset_start = lifetimes.get_subset(RichLocation::Start(location));
@@ -136,9 +140,9 @@ fn visit_statement(
 
     let mut row_builder_start = node_builder.create_row();
     row_builder_start.set("location", location.to_text());
-    row_builder_start.set("point", point_to_text(&subset_base_start_point));
-    row_builder_start.set("cfg_in", "TODO".to_text());
-    row_builder_start.set("cfg_out", "TODO".to_text());
+    row_builder_start.set("point", point_to_text(&point_start));
+    row_builder_start.set("cfg_in", points_to_text(&cfg_in_start));
+    row_builder_start.set("cfg_out", points_to_text(&cfg_out_start));
     row_builder_start.set("statement", statement);
     row_builder_start.set("subset_base", subset_base_start.to_text());
     row_builder_start.set("subset", subset_start.to_text());
@@ -152,9 +156,9 @@ fn visit_statement(
 
     let mut row_builder_end = node_builder.create_row();
     row_builder_end.set("location", "".to_text());
-    row_builder_end.set("point", point_to_text(&subset_base_mid_point));
-    row_builder_end.set("cfg_in", "TODO".to_text());
-    row_builder_end.set("cfg_out", "TODO".to_text());
+    row_builder_end.set("point", point_to_text(&point_mid));
+    row_builder_end.set("cfg_in", points_to_text(&cfg_in_mid));
+    row_builder_end.set("cfg_out", points_to_text(&cfg_out_mid));
     row_builder_end.set("statement", "".to_text());
     row_builder_end.set("subset_base", subset_base_mid.to_text());
     row_builder_end.set("subset", subset_mid.to_text());
