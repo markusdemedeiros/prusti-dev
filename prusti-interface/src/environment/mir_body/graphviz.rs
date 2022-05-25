@@ -99,12 +99,7 @@ fn visit_basic_block(
         location.statement_index += 1;
     }
     if let Some(terminator) = terminator {
-        visit_statement(
-            &mut node_builder,
-            location,
-            terminator.to_text(),
-            lifetimes,
-        );
+        visit_statement(&mut node_builder, location, terminator.to_text(), lifetimes);
     }
     node_builder.build();
     if let Some(terminator) = terminator {

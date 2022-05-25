@@ -48,7 +48,12 @@ pub fn validate<'tcx>(
         assert_eq!(cfg_edges[&start_point], [mid_point]);
         let successor_points = &cfg_edges[&mid_point];
         let successors: Vec<_> = body.successors(block).collect();
-        assert_eq!(successors.len(), successor_points.len(), "block: {:?}", block);
+        assert_eq!(
+            successors.len(),
+            successor_points.len(),
+            "block: {:?}",
+            block
+        );
         for successor in successors {
             let following_start_point =
                 location_table.location_to_point(RichLocation::Start(mir::Location {

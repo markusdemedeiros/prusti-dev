@@ -17,7 +17,11 @@ pub fn apply_patch_to_borrowck<'tcx>(
         cfg_edges.entry(to).or_default();
     }
 
-    let mut block_sizes: FxHashMap<_, _> = body.basic_blocks().iter_enumerated().map(|(bb, data)| (bb, data.statements.len())).collect();
+    let mut block_sizes: FxHashMap<_, _> = body
+        .basic_blocks()
+        .iter_enumerated()
+        .map(|(bb, data)| (bb, data.statements.len()))
+        .collect();
 
     // Create cfg_edge facts for the new basic blocks.
     let bb_base = body.basic_blocks().len();
@@ -40,6 +44,15 @@ pub fn apply_patch_to_borrowck<'tcx>(
                 vec![lt_patcher.next_start_point(bb_base + offset, statement_index)],
             );
         }
+        let mut successor_points = Vec::new();
+        for successor in block.terminator().successors() {
+            let following_start_point = lt_patcher.start_point(successor.index(), 0);
+            successor_points.push(following_start_point);
+        }
+        cfg_edges.insert(
+            lt_patcher.mid_point(bb_base + offset, block.statements.len()),
+            successor_points,
+        );
         block_sizes.insert((bb_base + offset).into(), block.statements.len());
     }
 
@@ -83,7 +96,11 @@ pub fn apply_patch_to_borrowck<'tcx>(
                     found,
                     "location: {:?}, predecessor: {:?} target_points: {:?} \
                     terminator_mid_point: {:?} old_statement_start_point: {:?}",
-                    loc, predecessor, cfg_edges[&terminator_mid_point], terminator_mid_point, old_statement_start_point
+                    loc,
+                    predecessor,
+                    cfg_edges[&terminator_mid_point],
+                    terminator_mid_point,
+                    old_statement_start_point
                 );
             }
         } else {
@@ -117,7 +134,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
                         .is_some());
                 }
                 mir::TerminatorKind::Drop { target, unwind, .. } => {
-                    let mut target_points = vec![lt_patcher.start_point(target.index(), 0),];
+                    let mut target_points = vec![lt_patcher.start_point(target.index(), 0)];
                     if let Some(unwind) = unwind {
                         target_points.push(lt_patcher.start_point(unwind.index(), 0));
                     }
@@ -209,7 +226,11 @@ impl<'a> LocationTablePatcher<'a> {
     }
 
     /// Shift locations of all statements by 1 and insert the provided point at that location.
-    fn insert_statement_at(&mut self, location: mir::Location, block_sizes: &mut FxHashMap<mir::BasicBlock, usize>) {
+    fn insert_statement_at(
+        &mut self,
+        location: mir::Location,
+        block_sizes: &mut FxHashMap<mir::BasicBlock, usize>,
+    ) {
         // Shift all the statements by one.
         let mut target_statement_index = block_sizes[&location.block] + 1; // +1 for terminator;
         while target_statement_index > location.statement_index {

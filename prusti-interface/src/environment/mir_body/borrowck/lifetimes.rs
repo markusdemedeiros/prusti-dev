@@ -162,11 +162,23 @@ mod graphviz {
 
     impl LifetimesGraphviz for Lifetimes {
         fn get_cfg_incoming(&self, point: Point) -> Vec<Point> {
-            self.facts.input_facts.cfg_edge.iter().filter(|(from, to)| *to == point).map(|(from, _)| *from).collect()
+            self.facts
+                .input_facts
+                .cfg_edge
+                .iter()
+                .filter(|(from, to)| *to == point)
+                .map(|(from, _)| *from)
+                .collect()
         }
 
         fn get_cfg_outgoing(&self, point: Point) -> Vec<Point> {
-            self.facts.input_facts.cfg_edge.iter().filter(|(from, to)| *from == point).map(|(_, to)| *to).collect()
+            self.facts
+                .input_facts
+                .cfg_edge
+                .iter()
+                .filter(|(from, to)| *from == point)
+                .map(|(_, to)| *to)
+                .collect()
         }
 
         fn get_opaque_lifetimes_with_inclusions(&self) -> Vec<LifetimeWithInclusions> {
