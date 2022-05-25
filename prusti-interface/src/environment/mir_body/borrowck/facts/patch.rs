@@ -17,6 +17,8 @@ pub fn apply_patch_to_borrowck<'tcx>(
         cfg_edges.entry(to).or_default();
     }
 
+    let mut block_sizes: FxHashMap<_, _> = body.basic_blocks().iter_enumerated().map(|(bb, data)| (bb, data.statements.len())).collect();
+
     // Create cfg_edge facts for the new basic blocks.
     let bb_base = body.basic_blocks().len();
     for (offset, block) in patch.new_blocks.iter().enumerate() {
@@ -38,6 +40,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
                 vec![lt_patcher.next_start_point(bb_base + offset, statement_index)],
             );
         }
+        block_sizes.insert((bb_base + offset).into(), block.statements.len());
     }
 
     // Patch cfg_edge facts for the inserted statements.
@@ -57,7 +60,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
             lt_patcher.start_point(loc.block.index(), loc.statement_index);
 
         // Shift all points by one statement down.
-        lt_patcher.insert_statement_at(loc, body[loc.block].statements.len());
+        lt_patcher.insert_statement_at(loc, &mut block_sizes);
 
         let statement_start_point = lt_patcher.start_point(loc.block.index(), loc.statement_index);
         let statement_mid_point = lt_patcher.mid_point(loc.block.index(), loc.statement_index);
@@ -108,26 +111,22 @@ pub fn apply_patch_to_borrowck<'tcx>(
                 mir::TerminatorKind::Goto { target } => {
                     assert!(cfg_edges
                         .insert(
-                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
+                            lt_patcher.mid_point(src.index(), block_sizes[&src]),
                             vec![lt_patcher.start_point(target.index(), 0),]
                         )
                         .is_some());
                 }
                 mir::TerminatorKind::Drop { target, unwind, .. } => {
+                    let mut target_points = vec![lt_patcher.start_point(target.index(), 0),];
+                    if let Some(unwind) = unwind {
+                        target_points.push(lt_patcher.start_point(unwind.index(), 0));
+                    }
                     assert!(cfg_edges
                         .insert(
-                            lt_patcher.mid_point(src.index(), body[src].statements.len()),
-                            vec![lt_patcher.start_point(target.index(), 0),]
+                            lt_patcher.mid_point(src.index(), block_sizes[&src]),
+                            target_points
                         )
                         .is_some());
-                    if let Some(unwind) = unwind {
-                        assert!(cfg_edges
-                            .insert(
-                                lt_patcher.mid_point(src.index(), body[src].statements.len()),
-                                vec![lt_patcher.start_point(unwind.index(), 0),]
-                            )
-                            .is_some());
-                    }
                 }
                 _ => unreachable!("patch: {:?}", patch),
             }
@@ -210,9 +209,9 @@ impl<'a> LocationTablePatcher<'a> {
     }
 
     /// Shift locations of all statements by 1 and insert the provided point at that location.
-    fn insert_statement_at(&mut self, location: mir::Location, statement_count: usize) {
+    fn insert_statement_at(&mut self, location: mir::Location, block_sizes: &mut FxHashMap<mir::BasicBlock, usize>) {
         // Shift all the statements by one.
-        let mut target_statement_index = statement_count + 1; // +1 for terminator;
+        let mut target_statement_index = block_sizes[&location.block] + 1; // +1 for terminator;
         while target_statement_index > location.statement_index {
             let statement_index = target_statement_index - 1;
             let old_start_location = RichLocation::start(location.block, statement_index);
@@ -251,5 +250,8 @@ impl<'a> LocationTablePatcher<'a> {
             .locations
             .insert(mid_point, mid_location);
         self.location_table.points.insert(mid_location, mid_point);
+
+        // Update the sizes map.
+        *block_sizes.get_mut(&location.block).unwrap() += 1;
     }
 }
