@@ -6,9 +6,9 @@ use crate::environment::{
 use rustc_span::def_id::DefId;
 use vir::common::graphviz::Graph;
 
-pub mod graphviz;
-pub mod lifetimes;
-mod mir;
+// pub mod graphviz;
+// pub mod lifetimes;
+// mod mir;
 
 pub(crate) fn dump_mir_info(env: &Environment<'_>, def_id: DefId) {
     eprintln!("def_id: {:?}", def_id);
