@@ -136,6 +136,10 @@ pub enum ErrorCtxt {
     LifetimeTake,
     /// Failed to encode LifetimeReturn
     LifetimeReturn,
+    /// An error when inhaling lifetimes
+    LifetimeInhale,
+    /// An error when exhaling lifetimes
+    LifetimeExhale,
     /// Failed to encode OpenMutRef
     OpenMutRef,
     /// Failed to encode OpenFracRef
@@ -146,6 +150,8 @@ pub enum ErrorCtxt {
     CloseFracRef,
     /// Failed to set an active variant of an union.
     SetEnumVariant,
+    /// A user assumption raised an error
+    Assumption,
 }
 
 /// The error manager
