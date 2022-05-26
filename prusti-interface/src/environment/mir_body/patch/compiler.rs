@@ -1,4 +1,10 @@
+// This file was taken from the compiler:
 // https://github.com/rust-lang/rust/blob/45e2c2881d11324d610815bfff097e25c412199e/compiler/rustc_middle/src/mir/patch.rs
+// This file is licensed under Apache 2.0
+// (https://github.com/rust-lang/rust/blob/949b98cab8a186b98bf87e64374b8d0848c55271/LICENSE-APACHE)
+// and MIT
+// (https://github.com/rust-lang/rust/blob/949b98cab8a186b98bf87e64374b8d0848c55271/LICENSE-MIT).
+
 // Changes:
 // 1. Made fields of MirPatch public (main reason for copying).
 // 2. Fixed compilation errors.
