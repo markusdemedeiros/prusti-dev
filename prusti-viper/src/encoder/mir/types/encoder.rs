@@ -15,7 +15,7 @@ use crate::encoder::{
 };
 use log::debug;
 use prusti_common::config;
-use prusti_interface::environment::mir_dump::graphviz::ToText;
+use prusti_interface::environment::debug_utils::to_text::ToText;
 use rustc_errors::MultiSpan;
 use rustc_hir::def_id::DefId;
 use rustc_middle::{mir, ty};

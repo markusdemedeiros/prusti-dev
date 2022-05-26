@@ -2,10 +2,7 @@ use super::{
     super::facts::{Loan, Point, Region, RichLocation},
     Lifetimes,
 };
-use crate::environment::mir_dump::graphviz::{
-    to_text::{loan_to_text, to_sorted_text},
-    ToText,
-};
+use crate::environment::debug_utils::to_text::{loan_to_text, to_sorted_text, ToText};
 use std::collections::{BTreeMap, BTreeSet};
 
 pub struct LifetimeWithInclusions {

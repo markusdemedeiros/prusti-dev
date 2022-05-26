@@ -25,6 +25,7 @@ use crate::encoder::{
 use log::debug;
 use prusti_common::config;
 use prusti_interface::environment::{
+    debug_utils::to_text::ToText,
     mir_analyses::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
@@ -37,7 +38,6 @@ use prusti_interface::environment::{
         graphviz::to_graphviz,
         patch::apply_patch,
     },
-    mir_dump::graphviz::ToText,
     Procedure,
 };
 use rustc_data_structures::graph::WithStartNode;

@@ -2,12 +2,10 @@ use super::borrowck::{
     facts::{AllInputFacts, LocationTable, RichLocation},
     lifetimes::{Lifetimes, LifetimesGraphviz},
 };
-use crate::environment::mir_dump::graphviz::{
-    to_text::{loan_containment_to_text, loans_to_text, point_to_text, points_to_text},
-    ToText,
+use crate::environment::debug_utils::to_text::{
+    loan_containment_to_text, loans_to_text, point_to_text, points_to_text, ToText,
 };
 use rustc_middle::mir;
-
 use vir::common::graphviz::{Graph, NodeBuilder};
 
 pub fn to_graphviz<'tcx>(

@@ -1,7 +1,7 @@
 use super::facts::{
     AllInputFacts, BorrowckFacts, Loan, LocationTable, Point, Region, RichLocation,
 };
-use crate::environment::mir_dump::graphviz::{opaque_lifetime_string, ToText};
+use crate::environment::debug_utils::to_text::{opaque_lifetime_string, ToText};
 use rustc_middle::mir;
 use std::collections::{BTreeMap, BTreeSet};
 
