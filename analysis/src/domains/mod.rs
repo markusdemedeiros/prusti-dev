@@ -9,6 +9,7 @@ mod definitely_allocated;
 mod definitely_initialized;
 mod framing;
 mod maybe_borrowed;
+mod pcs;
 mod reaching_definitions;
 
 pub use definitely_accessible::*;
@@ -16,4 +17,5 @@ pub use definitely_allocated::*;
 pub use definitely_initialized::*;
 pub use framing::*;
 pub use maybe_borrowed::*;
+pub use pcs::*;
 pub use reaching_definitions::*;

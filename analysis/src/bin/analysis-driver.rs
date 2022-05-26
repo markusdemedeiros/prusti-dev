@@ -16,7 +16,7 @@ use analysis::{
     abstract_interpretation::FixpointEngine,
     domains::{
         DefinitelyAccessibleAnalysis, DefinitelyInitializedAnalysis, FramingAnalysis,
-        MaybeBorrowedAnalysis, ReachingDefsAnalysis,
+        MaybeBorrowedAnalysis, PCSAnalysis, ReachingDefsAnalysis,
     },
 };
 use polonius_engine::{Algorithm, Output};
@@ -267,6 +267,10 @@ impl rustc_driver::Callbacks for OurCompilerCalls {
                             }
                             Err(e) => eprintln!("{}", e.to_pretty_str(body)),
                         }
+                    }
+                    "PCSAnalysis" => {
+                        let analyzer: PCSAnalysis = PCSAnalysis::new(tcx, &body_with_facts);
+                        analyzer.pprint_cfg();
                     }
                     _ => panic!("Unknown domain argument: {}", abstract_domain),
                 }
