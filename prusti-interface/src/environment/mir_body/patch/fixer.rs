@@ -1,4 +1,4 @@
-use super::patch::MirPatch;
+use super::compiler::MirPatch;
 use rustc_hash::FxHashSet;
 use rustc_middle::mir;
 

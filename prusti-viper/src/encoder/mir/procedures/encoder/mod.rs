@@ -30,7 +30,7 @@ use prusti_interface::environment::{
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
     },
     mir_body::{
-        apply_patch,
+        patch::apply_patch,
         borrowck::{
             facts::{validation::validate, LocationTable},
             lifetimes::Lifetimes,
