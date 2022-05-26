@@ -269,8 +269,9 @@ impl rustc_driver::Callbacks for OurCompilerCalls {
                         }
                     }
                     "PCSAnalysis" => {
-                        let analyzer: PCSAnalysis = PCSAnalysis::new(tcx, &body_with_facts);
-                        analyzer.pprint_cfg();
+                        let analyzer: PCSAnalysis =
+                            PCSAnalysis::new(tcx, local_def_id.to_def_id(), &body_with_facts);
+                        analyzer.pprint_rust_init_analysis();
                     }
                     _ => panic!("Unknown domain argument: {}", abstract_domain),
                 }
