@@ -20,7 +20,6 @@ pub(super) fn fix_patch<'tcx>(body: &mir::Body<'tcx>, mut patch: MirPatch<'tcx>)
             }
         }
     }
-    eprintln!("reachable_blocks: {:?}", reachable_blocks);
     let mut queue: Vec<_> = reachable_blocks.iter().cloned().collect();
     while let Some(bb) = queue.pop() {
         if bb.index() < body.basic_blocks().len() {
@@ -30,17 +29,14 @@ pub(super) fn fix_patch<'tcx>(body: &mir::Body<'tcx>, mut patch: MirPatch<'tcx>)
             terminator
         } else {
             let offset = bb.index() - body.basic_blocks().len();
-            eprintln!("bb: {:?} offset: {}", bb, offset);
             &patch.new_blocks[offset].terminator().kind
         };
         for successor in terminator.successors() {
             if reachable_blocks.insert(*successor) {
-                eprintln!("  successor: {:?}", successor);
                 queue.push(*successor);
             }
         }
     }
-    eprintln!("reachable_blocks: {:?}", reachable_blocks);
     let mut new_block_offset = patch.new_blocks.len();
     while new_block_offset > 0 {
         assert_eq!(
@@ -50,30 +46,10 @@ pub(super) fn fix_patch<'tcx>(body: &mir::Body<'tcx>, mut patch: MirPatch<'tcx>)
         new_block_offset -= 1;
         let bb: mir::BasicBlock = (body.basic_blocks().len() + new_block_offset).into();
         if !reachable_blocks.contains(&bb) {
-            eprintln!("unreachable: {:?}", bb);
             // Remove the block.
-            assert_eq!(
-                patch.patch_map.len(),
-                body.basic_blocks().len() + patch.new_blocks.len()
-            );
-            eprintln!("patch.patch_map: {:?} bb: {:?}", patch.patch_map, bb);
             patch.patch_map.raw.remove(bb.index());
-            eprintln!("patch.patch_map: {:?} bb: {:?}", patch.patch_map, bb);
-            eprintln!(
-                "patch new_blocks: {} new_block_offset: {}",
-                patch.new_blocks.len(),
-                new_block_offset
-            );
             patch.new_blocks.remove(new_block_offset);
-            eprintln!(
-                "patch new_blocks: {} new_block_offset: {}",
-                patch.new_blocks.len(),
-                new_block_offset
-            );
-            assert_eq!(
-                patch.patch_map.len(),
-                body.basic_blocks().len() + patch.new_blocks.len()
-            );
+            // Shift all other blocks.
             for new_bb_index in new_block_offset..(patch.new_blocks.len()) {
                 let new_bb: mir::BasicBlock = (body.basic_blocks().len() + new_bb_index).into();
                 let old_bb_index = body.basic_blocks().len() + new_bb_index + 1;
