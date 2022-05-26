@@ -54,5 +54,16 @@ fn test5() {
     let b = T3 { g: a };
 }
 
+//fn test6() {
+    //let a = T { f: 4 };
+    //let b = T3 { g: a };
+    //let mut c = 4;
+    //let x = &mut c;
+    //if random() {
+        //drop(b.g);
+        //*x = 5;
+    //}
+//}
+
 fn main() {}
 
