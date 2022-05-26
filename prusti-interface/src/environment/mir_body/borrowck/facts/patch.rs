@@ -98,8 +98,10 @@ pub fn apply_patch_to_borrowck<'tcx>(
             lt_patcher.start_point(loc.block.index(), loc.statement_index + 1);
         if loc.statement_index == 0 {
             for predecessor in &predecessors[loc.block] {
-                let terminator_mid_point =
-                    lt_patcher.mid_point(predecessor.index(), patched_body[*predecessor].statements.len());
+                let terminator_mid_point = lt_patcher.mid_point(
+                    predecessor.index(),
+                    patched_body[*predecessor].statements.len(),
+                );
                 let mut found = false;
                 for target_point in cfg_edges.get_mut(&terminator_mid_point).unwrap() {
                     if *target_point == old_statement_start_point {
