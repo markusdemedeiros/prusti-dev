@@ -3,6 +3,22 @@ use crate::environment::mir_body::patch::MirPatch;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_middle::mir;
 
+/// FIXME: Currently, this function patches only `borrowck_input_facts.cfg_edge`.
+/// It probably should also patch other facts. For example, added drop flag
+/// assignment statements may mark some lifetimes as dead and result in premature
+/// ending of borrows. Potential example:
+/// ```ignore
+/// fn test6() {
+///     let a = T { f: 4 };
+///     let b = T3 { g: a };
+///     let mut c = 4;
+///     let x = &mut c;
+///     if random() {
+///         drop(b.g);
+///         *x = 5;
+///     }
+/// }
+/// ```
 pub fn apply_patch_to_borrowck<'tcx>(
     borrowck_input_facts: &mut AllInputFacts,
     location_table: &mut LocationTable,
