@@ -89,7 +89,7 @@ fn find_dead_unwinds<'tcx>(
     // We only need to do this pass once, because unwind edges can only
     // reach cleanup blocks, which can't have unwind edges themselves.
     let mut dead_unwinds = BitSet::new_empty(body.basic_blocks().len());
-    let mut flow_inits = MaybeInitializedPlaces::new(tcx, body, &env)
+    let mut flow_inits = MaybeInitializedPlaces::new(tcx, body, env)
         .into_engine(tcx, body)
         .pass_name("find_dead_unwinds")
         .iterate_to_fixpoint()
@@ -129,7 +129,7 @@ fn find_dead_unwinds<'tcx>(
         );
 
         let mut maybe_live = false;
-        on_all_drop_children_bits(tcx, body, &env, path, |child| {
+        on_all_drop_children_bits(tcx, body, env, path, |child| {
             maybe_live |= flow_inits.contains(child);
         });
 

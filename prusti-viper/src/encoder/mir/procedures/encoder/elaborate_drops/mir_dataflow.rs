@@ -13,7 +13,7 @@ use rustc_middle::{
     traits::Reveal,
     ty::{self, subst::SubstsRef, util::IntTypeExt, Ty, TyCtxt},
 };
-use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropFlagState, DropStyle, Unwind};
+use rustc_mir_dataflow::elaborate_drops::{DropFlagMode, DropStyle, Unwind};
 use rustc_target::abi::VariantIdx;
 use std::{fmt, iter};
 
@@ -495,7 +495,7 @@ where
             let fields = self.move_paths_for_fields(
                 self.place,
                 self.path,
-                &adt.variant(VariantIdx::new(0)),
+                adt.variant(VariantIdx::new(0)),
                 substs,
             );
             self.drop_ladder(fields, succ, unwind)
@@ -532,7 +532,7 @@ where
                     self.place,
                     ProjectionElem::Downcast(Some(variant.name), variant_index),
                 );
-                let fields = self.move_paths_for_fields(base_place, variant_path, &variant, substs);
+                let fields = self.move_paths_for_fields(base_place, variant_path, variant, substs);
                 values.push(discr.val);
                 if let Unwind::To(unwind) = unwind {
                     // We can't use the half-ladder from the original
@@ -715,8 +715,8 @@ where
         unwind: Unwind,
         ptr_based: bool,
     ) -> BasicBlock {
-        let copy = |place: Place<'tcx>| Operand::Copy(place);
-        let move_ = |place: Place<'tcx>| Operand::Move(place);
+        let copy = Operand::Copy;
+        let move_ = Operand::Move;
         let tcx = self.tcx();
 
         let ptr_ty = tcx.mk_ptr(ty::TypeAndMut {
@@ -815,7 +815,7 @@ where
             }
         }
 
-        let move_ = |place: Place<'tcx>| Operand::Move(place);
+        let move_ = Operand::Move;
         let elem_size = Place::from(self.new_temp(tcx.types.usize));
         let len = Place::from(self.new_temp(tcx.types.usize));
 

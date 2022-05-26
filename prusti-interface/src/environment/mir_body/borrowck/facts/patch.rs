@@ -1,6 +1,6 @@
-use super::{AllInputFacts, BorrowckFacts, LocationTable, Point, RichLocation};
+use super::{AllInputFacts, LocationTable, Point, RichLocation};
 use crate::environment::mir_body::patch::MirPatch;
-use rustc_hash::{FxHashMap, FxHashSet};
+use rustc_hash::FxHashMap;
 use rustc_middle::mir;
 
 /// FIXME: Currently, this function patches only `borrowck_input_facts.cfg_edge`.
@@ -75,11 +75,15 @@ pub fn apply_patch_to_borrowck<'tcx>(
 
     // Patch cfg_edge facts for the inserted statements.
     let predecessors = patched_body.predecessors();
-    let mut new_statements = patch.new_statements.clone();
-    new_statements.sort_by_key(|s| s.0);
+    let mut new_statements: Vec<_> = patch
+        .new_statements
+        .iter()
+        .map(|(location, _)| *location)
+        .collect();
+    new_statements.sort();
     let mut delta = 0;
     let mut last_bb = mir::START_BLOCK;
-    for (mut loc, stmt) in new_statements {
+    for mut loc in new_statements {
         if loc.block != last_bb {
             delta = 0;
             last_bb = loc.block;

@@ -36,7 +36,6 @@ use prusti_interface::environment::{
             lifetimes::Lifetimes,
         },
         graphviz::to_graphviz,
-        patch::MirPatch,
     },
     mir_dump::graphviz::ToText,
     Procedure,
@@ -45,7 +44,7 @@ use rustc_data_structures::graph::WithStartNode;
 use rustc_hash::FxHashSet;
 use rustc_hir::def_id::DefId;
 use rustc_middle::{mir, ty, ty::subst::SubstsRef};
-use rustc_mir_dataflow::{move_paths::LookupResult, on_all_drop_children_bits, MoveDataParamEnv};
+use rustc_mir_dataflow::MoveDataParamEnv;
 use rustc_span::Span;
 use std::collections::{BTreeMap, BTreeSet};
 use vir_crate::{

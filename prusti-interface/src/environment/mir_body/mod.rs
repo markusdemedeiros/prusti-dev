@@ -19,7 +19,7 @@ pub fn apply_patch<'tcx>(
         borrowck_input_facts,
         location_table,
         &patch,
-        &body,
+        body,
         &patched_body,
     );
     patched_body

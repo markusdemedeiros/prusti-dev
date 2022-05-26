@@ -2,7 +2,6 @@ use polonius_engine::FactTypes;
 use rustc_borrowck::consumers::RustcFacts;
 use rustc_hash::FxHashMap;
 use rustc_middle::mir;
-use std::collections::BTreeMap;
 
 pub mod patch;
 pub mod validation;

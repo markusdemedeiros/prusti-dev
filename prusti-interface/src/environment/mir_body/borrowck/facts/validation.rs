@@ -1,5 +1,4 @@
-use super::{AllInputFacts, BorrowckFacts, LocationTable, Point, RichLocation};
-use crate::environment::mir_body::patch::MirPatch;
+use super::{AllInputFacts, LocationTable, RichLocation};
 use rustc_data_structures::graph::WithSuccessors;
 use rustc_hash::{FxHashMap, FxHashSet};
 use rustc_middle::mir;

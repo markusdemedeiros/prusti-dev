@@ -1,14 +1,10 @@
 use crate::environment::mir_dump::graphviz::{opaque_lifetime_string, ToText};
 // use rustc_borrowck::consumers::{LocationTable, RichLocation};
 use super::facts::{
-    AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, LocationTable, Point, Region, RichLocation,
+    AllInputFacts, BorrowckFacts, Loan, LocationTable, Point, Region, RichLocation,
 };
 use rustc_middle::mir;
-use std::{
-    cell::Ref,
-    collections::{BTreeMap, BTreeSet},
-    rc::Rc,
-};
+use std::collections::{BTreeMap, BTreeSet};
 
 pub struct Lifetimes {
     facts: BorrowckFacts,
@@ -19,7 +15,7 @@ impl Lifetimes {
         let output_facts =
             polonius_engine::Output::compute(&input_facts, polonius_engine::Algorithm::Naive, true);
         Self {
-            facts: BorrowckFacts::new(input_facts.clone(), output_facts, location_table),
+            facts: BorrowckFacts::new(input_facts, output_facts, location_table),
         }
     }
     pub fn get_loan_live_at_start(&self, location: mir::Location) -> BTreeSet<String> {
@@ -113,24 +109,16 @@ impl Lifetimes {
 mod graphviz {
 
     use crate::environment::mir_dump::graphviz::{
-        opaque_lifetime_string,
         to_text::{loan_to_text, to_sorted_text},
         ToText,
     };
     // use rustc_borrowck::consumers::{LocationTable, RichLocation};
     use super::{
-        super::facts::{
-            AllInputFacts, AllOutputFacts, BorrowckFacts, Loan, LocationTable, Point, Region,
-            RichLocation,
-        },
+        super::facts::{Loan, Point, Region, RichLocation},
         Lifetimes,
     };
-    use rustc_middle::mir;
-    use std::{
-        cell::Ref,
-        collections::{BTreeMap, BTreeSet},
-        rc::Rc,
-    };
+
+    use std::collections::{BTreeMap, BTreeSet};
 
     pub struct LifetimeWithInclusions {
         lifetime: Region,
@@ -166,7 +154,7 @@ mod graphviz {
                 .input_facts
                 .cfg_edge
                 .iter()
-                .filter(|(from, to)| *to == point)
+                .filter(|(_from, to)| *to == point)
                 .map(|(from, _)| *from)
                 .collect()
         }
@@ -176,7 +164,7 @@ mod graphviz {
                 .input_facts
                 .cfg_edge
                 .iter()
-                .filter(|(from, to)| *from == point)
+                .filter(|(from, _to)| *from == point)
                 .map(|(_, to)| *to)
                 .collect()
         }
