@@ -365,15 +365,6 @@ impl<'p, 'v, 'tcx> Visitor<'p, 'v, 'tcx> {
             .collect())
     }
 
-    // fn get_predecessors_without(&self, label: &vir_mid::BasicBlockId, predecessor_to_skip: &vir_mid::BasicBlockId) -> Vec<vir_mid::BasicBlockId> {
-    //     self.predecessors.unwrap()[label].iter().filter(|predecessor| predecessor == predecessor_to_skip).collect()
-    // }
-    fn path_disambiguators(
-        &self,
-    ) -> &BTreeMap<(vir_mid::BasicBlockId, vir_mid::BasicBlockId), Vec<vir_mid::BasicBlockId>> {
-        self.path_disambiguators.as_ref().unwrap()
-    }
-
     pub(super) fn cancel_crash_graphviz(mut self) {
         self.graphviz_on_crash = false;
     }
