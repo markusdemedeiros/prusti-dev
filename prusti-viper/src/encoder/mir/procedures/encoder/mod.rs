@@ -126,8 +126,8 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
     let specification_blocks = SpecificationBlocks::build(tcx, mir, &procedure);
     let initialization = compute_definitely_initialized(def_id, mir, encoder.env().tcx());
     let allocation = compute_definitely_allocated(def_id, mir);
-    let drop_flags = DropFlags::build(mir);
-    elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
+    // let drop_flags = DropFlags::build(mir);
+    // elaborate_drops::compiler::collect_drop_flags(tcx, mir, &move_env, &mut init_data);
     // eprintln!("patch: {:?}", drop_patch.patch_map);
     // TODO: Try copying
     // https://github.com/rust-lang/rust/blob/661e8beec1fa5f3c58bf6e4362ae3c3fe0b4b1bd/compiler/rustc_mir_transform/src/elaborate_drops.rs
@@ -143,7 +143,7 @@ pub(super) fn encode_procedure<'v, 'tcx: 'v>(
         init_data,
         initialization,
         allocation,
-        drop_flags,
+        // drop_flags,
         // drop_patch,
         lifetimes,
         reachable_blocks: Default::default(),
@@ -167,7 +167,7 @@ struct ProcedureEncoder<'p, 'v: 'p, 'tcx: 'v> {
     init_data: InitializationData<'p, 'tcx>,
     initialization: DefinitelyInitializedAnalysisResult<'tcx>,
     allocation: DefinitelyAllocatedAnalysisResult,
-    drop_flags: DropFlags<'tcx>,
+    // drop_flags: DropFlags<'tcx>,
     // drop_patch: MirPatch<'tcx>,
     lifetimes: Lifetimes,
     /// Blocks that we managed to reach when traversing from the entry block.
@@ -194,11 +194,11 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         let (allocate_returns, deallocate_returns) = self.encode_returns()?;
         let (assume_preconditions, assert_postconditions) =
             self.encode_functional_specifications()?;
-        let initialize_drop_flags = self.encode_drop_flag_initialization()?;
+        // let initialize_drop_flags = self.encode_drop_flag_initialization()?;
         let mut pre_statements = allocate_parameters;
         pre_statements.extend(assume_preconditions);
         pre_statements.extend(allocate_returns);
-        pre_statements.extend(initialize_drop_flags);
+        // pre_statements.extend(initialize_drop_flags);
         let mut post_statements = assert_postconditions;
         post_statements.extend(deallocate_parameters);
         post_statements.extend(deallocate_returns);
@@ -577,7 +577,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     .encode_place_high(self.mir, *target)?
                     .set_default_position(position);
                 self.encode_statement_assign(block_builder, location, encoded_target, source)?;
-                self.set_drop_flag_true(block_builder, location, *target)?;
+                // self.set_drop_flag_true(block_builder, location, *target)?;
             }
             _ => {
                 block_builder.add_comment("encode_statement: not encoded".to_string());
@@ -874,7 +874,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
 
         match operand {
             mir::Operand::Move(source) => {
-                self.set_drop_flag_false(block_builder, location, *source)?;
+                // self.set_drop_flag_false(block_builder, location, *source)?;
                 let encoded_source = self.encoder.encode_place_high(self.mir, *source)?;
                 block_builder.add_statement(self.set_statement_error(
                     location,
@@ -952,7 +952,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         let span = self.encoder.get_span_of_location(self.mir, location);
         let encoded_operand = match operand {
             mir::Operand::Move(source) => {
-                self.set_drop_flag_false(block_builder, location, *source)?;
+                // self.set_drop_flag_false(block_builder, location, *source)?;
                 let position = self.register_error(location, ErrorCtxt::MovePlace);
                 let encoded_source = self
                     .encoder
@@ -1242,16 +1242,62 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         unwind: &Option<mir::BasicBlock>,
     ) -> SpannedEncodingResult<SuccessorBuilder> {
         let target_block_label = self.encode_basic_block_label(target);
-        let fresh_drop_block_label = self.fresh_basic_block_label();
-        let mut drop_block_builder =
-            block_builder.create_basic_block_builder(fresh_drop_block_label.clone());
-        self.set_drop_flag_false(&mut drop_block_builder, location, place)?;
-        // Inside the drop_block, the place is definitely live, emit the drop
-        // function call.
-        //
-        // FIXME: Assert that the lifetimes used in type of the place are alive
-        // at this point (by exhaling them and inhaling). Do not forget to take
-        // into account
+        // let fresh_drop_block_label = self.fresh_basic_block_label();
+        // let mut drop_block_builder =
+        //     block_builder.create_basic_block_builder(fresh_drop_block_label.clone());
+        // // self.set_drop_flag_false(&mut drop_block_builder, location, place)?;
+        // // Inside the drop_block, the place is definitely live, emit the drop
+        // // function call.
+        // //
+        // // FIXME: Assert that the lifetimes used in type of the place are alive
+        // // at this point (by exhaling them and inhaling). Do not forget to take
+        // // into account
+        // // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.GenericParamDef.html#structfield.pure_wrt_drop
+        // let argument = vir_high::Operand::new(
+        //     vir_high::OperandKind::Move,
+        //     self.encoder.encode_place_high(self.mir, place)?,
+        // );
+        // let statement = self.encoder.set_statement_error_ctxt(
+        //     vir_high::Statement::consume_no_pos(argument),
+        //     span,
+        //     ErrorCtxt::DropCall,
+        //     self.def_id,
+        // )?;
+        // statement.check_no_default_position();
+        // drop_block_builder.add_statement(statement);
+        // if config::check_no_drops() {
+        //     let statement = self.encoder.set_statement_error_ctxt(
+        //         vir_high::Statement::assert_no_pos(false.into()),
+        //         span,
+        //         ErrorCtxt::DropCall,
+        //         self.def_id,
+        //     )?;
+        //     drop_block_builder.add_statement(statement);
+        // }
+        // let drop_block_successor = if let Some(unwind_block) = unwind {
+        //     let encoded_unwind_block = self.encode_basic_block_label(*unwind_block);
+        //     SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
+        //         target_block_label.clone(),
+        //         encoded_unwind_block,
+        //     ))
+        // } else {
+        //     SuccessorBuilder::jump(vir_high::Successor::Goto(target_block_label.clone()))
+        // };
+        // drop_block_builder.set_successor(drop_block_successor);
+        // drop_block_builder.build();
+
+        // let successor = SuccessorBuilder::jump(vir_high::Successor::GotoSwitch(vec![
+        //     (self.get_drop_flag(place)?, fresh_drop_block_label),
+        //     (
+        //         vir_high::Expression::not(self.get_drop_flag(place)?),
+        //         target_block_label,
+        //     ),
+        // ]));
+
+        // FIXME: Assert that the lifetimes used in type
+        // of the place are alive at this point (by
+        // exhaling them and inhaling). Do not forget to
+        // take into account
         // https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/struct.GenericParamDef.html#structfield.pure_wrt_drop
         let argument = vir_high::Operand::new(
             vir_high::OperandKind::Move,
@@ -1264,35 +1310,20 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
             self.def_id,
         )?;
         statement.check_no_default_position();
-        drop_block_builder.add_statement(statement);
-        if config::check_no_drops() {
-            let statement = self.encoder.set_statement_error_ctxt(
-                vir_high::Statement::assert_no_pos(false.into()),
-                span,
-                ErrorCtxt::DropCall,
-                self.def_id,
-            )?;
-            drop_block_builder.add_statement(statement);
-        }
-        let drop_block_successor = if let Some(unwind_block) = unwind {
-            let encoded_unwind_block = self.encode_basic_block_label(*unwind_block);
-            SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
-                target_block_label.clone(),
-                encoded_unwind_block,
-            ))
-        } else {
-            SuccessorBuilder::jump(vir_high::Successor::Goto(target_block_label.clone()))
-        };
-        drop_block_builder.set_successor(drop_block_successor);
-        drop_block_builder.build();
-
-        let successor = SuccessorBuilder::jump(vir_high::Successor::GotoSwitch(vec![
-            (self.get_drop_flag(place)?, fresh_drop_block_label),
-            (
-                vir_high::Expression::not(self.get_drop_flag(place)?),
+        block_builder.add_statement(statement);
+        if let Some(unwind_block) = unwind {
+            let encoded_unwind_block_label =
+                self.encode_basic_block_label(*unwind_block);
+            Ok(SuccessorBuilder::jump(vir_high::Successor::NonDetChoice(
                 target_block_label,
-            ),
-        ]));
+                encoded_unwind_block_label,
+            )))
+        } else {
+            Ok(SuccessorBuilder::jump(vir_high::Successor::Goto(
+                target_block_label,
+            )))
+        }
+
 
         // self.init_data.seek_before(location);
         // let path = self.move_env.move_data.rev_lookup.find(place.as_ref());
@@ -1373,8 +1404,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
         //         })());
         //     },
         // );
-        // successor.unwrap()
-        Ok(successor)
+        // // successor.unwrap()
+        // Ok(successor)
     }
 
     #[allow(clippy::too_many_arguments)]
@@ -1822,7 +1853,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> ProcedureEncoder<'p, 'v, 'tcx> {
                     )?;
                     post_call_block_builder.add_statement(assume_statement);
                 }
-                self.set_drop_flag_true(&mut post_call_block_builder, location, *target_place)?;
+                // self.set_drop_flag_true(&mut post_call_block_builder, location, *target_place)?;
                 post_call_block_builder.build();
 
                 if let Some(cleanup_block) = cleanup {
