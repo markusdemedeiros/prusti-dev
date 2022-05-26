@@ -105,7 +105,7 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
                 while let Some(mpi) = def_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
-                print!("\n");
+                println!();
 
                 print!("\t (PRE EFFECT) Maybe Initialized Places:       ");
                 maybe_init_places_results.seek_before_primary_effect(loc);
@@ -114,7 +114,7 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
                 while let Some(mpi) = maybe_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
-                print!("\n");
+                println!();
 
                 println!("{:#?}", stmt);
 
@@ -125,7 +125,7 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
                 while let Some(mpi) = def_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
-                print!("\n");
+                println!();
 
                 print!("\t (POST EFFECT) Maybe Initialized Places:      ");
                 maybe_init_places_results.seek_after_primary_effect(loc);
@@ -134,8 +134,8 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
                 while let Some(mpi) = maybe_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
-                print!("\n");
-                print!("\n");
+                println!();
+                println!();
 
                 loc.statement_index += 1;
             }
