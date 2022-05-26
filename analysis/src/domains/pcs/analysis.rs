@@ -109,8 +109,8 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
 
                 print!("\t (PRE EFFECT) Maybe Initialized Places:       ");
                 maybe_init_places_results.seek_before_primary_effect(loc);
-                let maybe_init_places: &Dual<BitSet<MovePathIndex>> = def_init_places_results.get();
-                let maybe_mpi_iter = &mut maybe_init_places.0.iter();
+                let maybe_init_places = maybe_init_places_results.get();
+                let maybe_mpi_iter = &mut maybe_init_places.iter();
                 while let Some(mpi) = maybe_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
@@ -129,8 +129,8 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
 
                 print!("\t (POST EFFECT) Maybe Initialized Places:      ");
                 maybe_init_places_results.seek_after_primary_effect(loc);
-                let maybe_init_places: &Dual<BitSet<MovePathIndex>> = def_init_places_results.get();
-                let maybe_mpi_iter = &mut maybe_init_places.0.iter();
+                let maybe_init_places = maybe_init_places_results.get();
+                let maybe_mpi_iter = &mut maybe_init_places.iter();
                 while let Some(mpi) = maybe_mpi_iter.next() {
                     print!("{:#?}, ", mdpe.move_data.move_paths[mpi].place);
                 }
