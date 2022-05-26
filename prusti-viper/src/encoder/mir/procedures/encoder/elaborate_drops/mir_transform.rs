@@ -24,8 +24,6 @@ use rustc_span::Span;
 use rustc_target::abi::VariantIdx;
 use std::fmt;
 
-pub struct ElaborateDrops;
-
 pub(in super::super) fn run_pass<'tcx>(tcx: TyCtxt<'tcx>, body: &Body<'tcx>) -> MirPatch<'tcx> {
     debug!("elaborate_drops({:?} @ {:?})", body.source, body.span);
 

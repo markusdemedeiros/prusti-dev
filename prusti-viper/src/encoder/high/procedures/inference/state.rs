@@ -1,10 +1,7 @@
 use super::permission::{MutBorrowed, Permission, PermissionKind};
 use crate::encoder::errors::SpannedEncodingResult;
 use log::debug;
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    fmt::Write,
-};
+use std::collections::{BTreeMap, BTreeSet};
 use vir_crate::{
     high::{self as vir_high},
     middle as vir_mid,
