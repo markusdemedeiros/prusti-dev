@@ -1,4 +1,10 @@
-use crate::{abstract_interpretation::AnalysisResult, domains::PCSState, PointwiseState};
+use crate::{
+    abstract_interpretation::{AnalysisResult, FixpointEngine},
+    domains::PCSState,
+    mir_utils::get_blocked_place,
+    PointwiseState,
+};
+use log::error;
 use rustc_borrowck::BodyWithBorrowckFacts;
 use rustc_middle::{
     mir::{Rvalue::*, Statement, StatementKind::*},
@@ -12,11 +18,14 @@ use rustc_mir_dataflow::{
     MoveDataParamEnv,
 };
 extern crate rustc_index;
+use rustc_data_structures::fx::FxHashMap;
 use rustc_index::bit_set::BitSet;
 use rustc_middle::mir::Location;
-use rustc_mir_dataflow::move_paths::MovePathIndex;
+use rustc_mir_dataflow::{lattice::Dual, move_paths::MovePathIndex, Analysis};
 
-use rustc_mir_dataflow::{lattice::Dual, Analysis};
+use rustc_borrowck::consumers::RichLocation;
+use rustc_middle::mir;
+
 pub struct PCSAnalysis<'mir, 'tcx: 'mir> {
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
@@ -138,6 +147,96 @@ impl<'mir, 'tcx: 'mir> PCSAnalysis<'mir, 'tcx> {
                 println!();
 
                 loc.statement_index += 1;
+            }
+
+            println!("TERMINATOR: {:#?}", bbdata.terminator().kind);
+        }
+    }
+
+    pub fn pprint_loan_analysis(&self) {
+        let body = &self.body_with_facts.body;
+        let basic_blocks = &self.body_with_facts.body.basic_blocks();
+        let location_table = &self.body_with_facts.location_table;
+        let borrowck_in_facts = &self.body_with_facts.input_facts;
+        let borrowck_out_facts = self.body_with_facts.output_facts.as_ref();
+        let loan_issued_at = &borrowck_in_facts.loan_issued_at;
+        let loan_live_at = &borrowck_out_facts.loan_live_at;
+        let loan_issued_at_location: FxHashMap<_, mir::Location> = loan_issued_at
+            .iter()
+            .map(|&(_, loan, point_index)| {
+                let rich_location = location_table.to_location(point_index);
+                let location = match rich_location {
+                    RichLocation::Start(loc) | RichLocation::Mid(loc) => loc,
+                };
+                (loan, location)
+            })
+            .collect();
+        // let mut analysis_state: PointwiseState<MaybeBorrowedState> = PointwiseState::default(body);
+
+        let mut loc: Location;
+        for (bbno, bbdata) in (&basic_blocks).iter_enumerated() {
+            println!("\n--------------- {:#?} ---------------", bbno);
+            loc = Location {
+                block: bbno,
+                statement_index: 0,
+            };
+
+            /* Copied and modified from maybe_borrowed analysis */
+            for stmt in bbdata.statements.iter() {
+                println!("\t{:#?}", stmt);
+                if let Some(loans) = loan_live_at.get(&location_table.start_index(loc)) {
+                    println!("\t\tStart live loans:");
+                    for loan in loans {
+                        let loan_location = loan_issued_at_location[loan];
+                        let loan_stmt =
+                            &body[loan_location.block].statements[loan_location.statement_index];
+                        if let mir::StatementKind::Assign(box (lhs, rhs)) = &loan_stmt.kind {
+                            if let mir::Rvalue::Ref(_region, borrow_kind, borrowed_place) = rhs {
+                                println!(
+                                    "\t\t\t\tLoan {:?}: {:?} = & {:?} {:?}",
+                                    loan, lhs, borrow_kind, borrowed_place,
+                                );
+                                let blocked_place =
+                                    get_blocked_place(self.tcx, (*borrowed_place).into());
+                                println!("\t\t\t\tBlocking {:?}: {:?}", borrow_kind, blocked_place);
+                            } else {
+                                error!("Unexpected RHS: {:?}", rhs);
+                            }
+                        } else {
+                            error!(
+                                "Loan {:?} issued by an unexpected statement {:?} at {:?}",
+                                loan, loan_stmt, loan_location,
+                            );
+                        }
+                    }
+                }
+
+                if let Some(loans) = loan_live_at.get(&location_table.mid_index(loc)) {
+                    println!("\t\tMid live loans:");
+                    for loan in loans {
+                        let loan_location = loan_issued_at_location[loan];
+                        let loan_stmt =
+                            &body[loan_location.block].statements[loan_location.statement_index];
+                        if let mir::StatementKind::Assign(box (lhs, rhs)) = &loan_stmt.kind {
+                            if let mir::Rvalue::Ref(_region, borrow_kind, borrowed_place) = rhs {
+                                println!(
+                                    "\t\t\t\tLoan {:?}: {:?} = & {:?} {:?}",
+                                    loan, lhs, borrow_kind, borrowed_place,
+                                );
+                                let blocked_place =
+                                    get_blocked_place(self.tcx, (*borrowed_place).into());
+                                println!("\t\t\t\tBlocking {:?}: {:?}", borrow_kind, blocked_place);
+                            } else {
+                                error!("Unexpected RHS: {:?}", rhs);
+                            }
+                        } else {
+                            error!(
+                                "Loan {:?} issued by an unexpected statement {:?} at {:?}",
+                                loan, loan_stmt, loan_location,
+                            );
+                        }
+                    }
+                }
             }
 
             println!("TERMINATOR: {:#?}", bbdata.terminator().kind);

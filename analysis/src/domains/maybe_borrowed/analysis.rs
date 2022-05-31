@@ -47,11 +47,11 @@ impl<'mir, 'tcx: 'mir> MaybeBorrowedAnalysis<'mir, 'tcx> {
             .collect();
         let mut analysis_state: PointwiseState<MaybeBorrowedState> = PointwiseState::default(body);
 
-        trace!("There are {} loan_live_at output facts", loan_live_at.len());
+        println!("There are {} loan_live_at output facts", loan_live_at.len());
         for (&point_index, loans) in loan_live_at.iter() {
             let rich_location = location_table.to_location(point_index);
             if let RichLocation::Start(location) = rich_location {
-                trace!("  Location {:?}:", rich_location);
+                println!("  Location {:?}:", rich_location);
                 let state = analysis_state.lookup_mut_before(location).unwrap();
                 for loan in loans {
                     let loan_location = loan_issued_at_location[loan];
@@ -59,16 +59,13 @@ impl<'mir, 'tcx: 'mir> MaybeBorrowedAnalysis<'mir, 'tcx> {
                         &body[loan_location.block].statements[loan_location.statement_index];
                     if let mir::StatementKind::Assign(box (lhs, rhs)) = &loan_stmt.kind {
                         if let mir::Rvalue::Ref(_region, borrow_kind, borrowed_place) = rhs {
-                            trace!(
+                            println!(
                                 "    Loan {:?}: {:?} = & {:?} {:?}",
-                                loan,
-                                lhs,
-                                borrow_kind,
-                                borrowed_place,
+                                loan, lhs, borrow_kind, borrowed_place,
                             );
                             let blocked_place =
                                 get_blocked_place(self.tcx, (*borrowed_place).into());
-                            trace!("      Blocking {:?}: {:?}", borrow_kind, blocked_place);
+                            println!("      Blocking {:?}: {:?}", borrow_kind, blocked_place);
                             match borrow_kind {
                                 mir::BorrowKind::Shared => {
                                     state.maybe_shared_borrowed.insert(blocked_place);
