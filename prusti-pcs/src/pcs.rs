@@ -7,8 +7,11 @@
 #![allow(unused_imports)]
 #![allow(dead_code)]
 #![allow(unused_variables)]
+use super::pcs::Resource::*;
 use crate::util::EncodingResult;
+use itertools::Either::{Left, Right};
 use prusti_interface::environment::{
+    borrowck::facts::Loan,
     mir_analyses::{
         allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
         initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
@@ -327,7 +330,10 @@ impl<'mir, 'tcx: 'mir> PCSIter<'mir, 'tcx> {
     }
 
     fn push(&mut self, dirty: DirtyBlock<'tcx>) {
-        if !self.done_blocks.contains(dirty.block()) {
+        if !self.done_blocks.contains(dirty.block())
+            && !self.next_blocks.iter().any(|d| d.block() == dirty.block())
+            && !self.dirty_blocks.iter().any(|d| d.block() == dirty.block())
+        {
             self.dirty_blocks.push(dirty);
         }
     }
@@ -335,10 +341,6 @@ impl<'mir, 'tcx: 'mir> PCSIter<'mir, 'tcx> {
     fn finish(&mut self, done: mir::BasicBlock) {
         //  TODO: Runtime check that the key isn't already in there?
         self.done_blocks.push(done);
-    }
-
-    fn is_computed(&self, block: &mir::BasicBlock) -> bool {
-        todo!()
     }
 }
 
@@ -446,6 +448,8 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
         // For each statement:
         println!("Translating block number {:?}", dirty.block());
         // 1. Read and apply Polonius facts
+        // TODO
+
         // 2. Retrieve MicroMir instruction sequence
         // 3. Connstruct an iterator of MicroMirStatements (including terminator)
         // 4. For each MicroMir statement:
@@ -464,4 +468,52 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
 
         CFGBody::default()
     }
+
+    fn flow_join(&self, flows: Vec<(mir::BasicBlock, bool)>) {}
+
+    /// Encodes the body-part of the statement- location can include terminators
+    ///     (but terminator tranlation is a different function)
+    fn translate_location(
+        &self,
+        location: mir::Location,
+    ) -> (Vec<MicroMirStatement<'tcx>>, Option<MicroMirTerminator>) {
+        if let Some(stmt) = self.mir.stmt_at(location).left() {
+            match stmt {
+                Assign(box (p_dest, Use(op))) => (vec![]),
+                StorageDead(local) => todo!(),
+                StorageLive(local) => todo!(),
+                Assign(box (dest, Aggregate(box Adt(_, _, _, _, _), operands))) => todo!(),
+                FakeRead(box (_, _)) => (vec![], None),
+                AscribeUserType(box (_p, _proj), _variance) => (vec![], None),
+                _ => todo!(),
+            }
+        }
+        if let Some(term) = self.mir.stmt_at(location).right() {
+            // compute_framing.visit_terminator(term, location);
+        }
+        todo!()
+    }
+
+    fn translate_operand(&self, operand: mir::Operand<'tcx>) -> MicroMirStatement<'tcx> {
+        match operand {
+            mir::Operand::Copy(p) => MicroMirStatement::Duplicate(Exclusive(p), 1),
+            _ => todo!(),
+        }
+    }
+
+    // match op {
+    //             Copy(p) => {
+    //                 let p_mut = Self::lookup_place_mutability(&p, ctx.mir())?;
+    //                 ctx.push_stmt(MicroMirStatement::Duplicate(p.clone(), into, p_mut));
+    //                 return Ok(p_mut);
+    //             }
+    //             Move(p) => {
+    //                 ctx.push_stmt(MicroMirStatement::Move(p.clone(), into));
+    //                 return Ok(Mut);
+    //             }
+    //             Constant(box k) => {
+    //                 ctx.push_stmt(MicroMirStatement::Constant(*k, into));
+    //                 return Ok(Mut);
+    //             }
+    //         }
 }
