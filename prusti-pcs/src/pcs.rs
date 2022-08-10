@@ -212,7 +212,7 @@ enum GuardExpr {
 
 #[derive(Clone, Debug)]
 struct Guard<'tcx> {
-    loan: usize,
+    label: Loan,
     rhs: Permission<'tcx>,
     // Generalization: guards can be stronger expressions than a single bb
     // Generalization: for struct with borrow RHS can be not top-level place
@@ -228,13 +228,40 @@ impl<'tcx> Default for GuardSet<'tcx> {
     }
 }
 
+impl<'tcx> GuardSet<'tcx> {
+    pub fn get_guarded_places(&self) -> Vec<&Permission<'tcx>> {
+        self.0.iter().map(|g| &g.rhs).collect::<Vec<_>>()
+    }
+
+    pub fn get_loans(&self) -> Vec<&Loan> {
+        self.0.iter().map(|g| &g.label).collect::<Vec<_>>()
+    }
+
+    pub fn insert_guard(&mut self, guard: Guard<'tcx>) {
+        assert!(!self.get_guarded_places().contains(&&guard.rhs));
+        self.0.push(guard);
+    }
+
+    pub fn get_expiry_requirements(&self, label: Loan) -> Vec<Permission<'tcx>> {
+        todo!();
+    }
+
+    pub fn eliminate_hole(&mut self, to_eliminate: PlaceHole<'tcx>) {
+        todo!();
+    }
+
+    pub fn eliminate_loan(&mut self, to_eliminate: Loan) -> Vec<Permission<'tcx>> {
+        todo!();
+    }
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // State
 
 #[derive(Clone, Debug)]
 struct PCSState<'tcx> {
     free: PermissionSet<'tcx>,
-    guarded: GuardSet<'tcx>,
+    pub guarded: GuardSet<'tcx>,
 }
 
 impl<'tcx> Default for PCSState<'tcx> {
@@ -245,6 +272,14 @@ impl<'tcx> Default for PCSState<'tcx> {
             },
             guarded: GuardSet::default(),
         }
+    }
+}
+
+impl<'tcx> PCSState<'tcx> {
+    // Adds in a new loan at the current point
+    // Guards the
+    fn issue_guard_for_loan<'mir>(&mut self, guard: Guard<'tcx>) {
+        self.guarded.insert_guard(guard);
     }
 }
 
@@ -402,8 +437,8 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 statement_index,
             };
 
-            let active_loans = self.polonius_info.get_active_loans(location, false);
-            // print!("\tLoans: ");
+            // let active_loans = self.polonius_info.get_active_loans(location, false);
+            // print!("\t{:?} ========== [", location);
             // for l in active_loans {
             //     if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan(l) {
             //         if let Assign(box (b, _)) = assign.kind {
@@ -415,8 +450,7 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
             //         panic!();
             //     }
             // }
-            // println!();
-            // println!("\t\t pcs {:?}", working_pcs);
+            // println!("]");
 
             // 2. Apply Polonius facts for dying loans at this point
             // 2.1. Remove all guards from GPCS
@@ -441,7 +475,39 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 }
             }
 
+            println!("\t{:?}\t{:?}", location, working_pcs);
             println!("\t{:?} {:?}", location, stmt);
+            let loan_live_at: Vec<Loan> = self.polonius_info.get_active_loans(location, false);
+            let loan_dying_at = self.polonius_info.get_loans_dying_at(location, false);
+            println!("\t{:?}\tlive: {:?}", location, loan_live_at);
+            println!("\t{:?}\tdying: {:?}", location, loan_dying_at);
+
+            // If there's an extra live loan, then issue a new one
+            let mut new_guards: Vec<Guard<'tcx>> = vec![];
+
+            for new in loan_live_at
+                .iter()
+                .filter(|live| !working_pcs.guarded.get_loans().contains(live))
+            {
+                if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan((*new).clone())
+                {
+                    if let Assign(box (b, Ref(_, _, p))) = assign.kind {
+                        new_guards.push(Guard {
+                            label: *new,
+                            lhs: vec![(*dirty.block(), PlaceHole::Linear(b))],
+                            rhs: Exclusive(p),
+                        });
+                    } else {
+                        panic!();
+                    }
+                };
+            }
+            for g in new_guards {
+                working_pcs.guarded.insert_guard(g);
+            }
+
+            // Update loan expiry
+
             // 4. Apply hoare semantics
             for p in self.precondition_statement(&stmt.kind).iter() {
                 if !working_pcs.free.0.remove(p) {
@@ -454,7 +520,45 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 }
             }
 
-            // 5. Add in new loans
+            // Now work through the dying loans
+            //  Note: LHS of loans are always FULL PLACES (not x.f) since we don't support
+            //      borrows in structs yet.
+
+            for dying in loan_dying_at {
+                // (0) (unsoundness for now) find an order to apply loans in and do this procedure greedily
+                // 1. Get all the LHS's the Guarded PCS infers we can no longer use
+                let requirements = working_pcs.guarded.get_expiry_requirements(dying);
+
+                // 1.1. Repack them fully (this is on an mid-edge now?)
+                let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
+                let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
+                packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
+                if edge_statements.len() > 0 {
+                    for e in edge_statements.iter() {
+                        println!("       (edge) {:?}", e);
+                    }
+                }
+
+                // 1.2. Remove them from the free PCS
+                for req in requirements {
+                    assert!(working_pcs.free.0.remove(&req));
+
+                    // 1.3. Update constraints across entire guarded PCS
+                    let hole = match req {
+                        Exclusive(p) => PlaceHole::Linear(p),
+                        _ => todo!(),
+                    };
+                    working_pcs.guarded.eliminate_hole(hole);
+                }
+
+                // 2. Assert that the loan's guard is completely fulfilled
+                let regain_permissions = working_pcs.guarded.eliminate_loan(dying);
+
+                // 3. Reclaim the loan's RHS into free PCS
+                for perm in regain_permissions.into_iter() {
+                    assert!(working_pcs.free.0.insert(perm));
+                }
+            }
         }
 
         // Terminator Owned semantics
@@ -942,9 +1046,8 @@ impl<'tcx> RepackWeaken<'tcx> {
                     kill_a = FxHashSet::from_iter([*a].into_iter());
                     ex_unpack_stack.push((*a, gen_a.iter().cloned().collect()));
                 } else {
-                    //  There are no elements which can be packed and unpacked anymore, but
-                    //   nevertheless set_rc_b is not a subset of set_rc_a.
-                    // We must weaken away all remaining permissions in set_rc_b
+                    // This should never happen if the semantics are sound
+                    println!("Unsoundess: missing {:?}", set_rc_b);
                     panic!();
                 }
 
