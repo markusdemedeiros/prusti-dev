@@ -8,21 +8,28 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 use super::pcs::Resource::*;
-use crate::{syntax::PCSPermission, util::EncodingResult};
+use crate::{pcs::FreeStatement::*, syntax::PCSPermission, util::EncodingResult};
 use core::cell::*;
-use itertools::Either::{Left, Right};
-use prusti_interface::environment::{
-    borrowck::facts::{BorrowckFacts, Loan},
-    mir_analyses::{
-        allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
-        initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
+use itertools::{
+    Either::{Left, Right},
+    Itertools,
+};
+use prusti_interface::{
+    environment::{
+        borrowck::facts::{BorrowckFacts, Loan},
+        mir_analyses::{
+            allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
+            initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
+        },
+        mir_body::borrowck::facts::{
+            LocationTable,
+            RichLocation::{Mid, Start},
+        },
+        polonius_info::PoloniusInfo,
+        Environment, Procedure,
     },
-    mir_body::borrowck::facts::{
-        LocationTable,
-        RichLocation::{Mid, Start},
-    },
-    polonius_info::PoloniusInfo,
-    Environment, Procedure,
+    utils::{expand_one_level, is_prefix},
+    PrustiError,
 };
 use prusti_rustc_interface::{
     data_structures::fx::{FxHashMap, FxHashSet},
@@ -32,6 +39,7 @@ use prusti_rustc_interface::{
             AggregateKind::*, Operand, Operand::*, Rvalue::*, StatementKind::*, Terminator,
             TerminatorKind, TerminatorKind::*,
         },
+        ty::TyCtxt,
     },
 };
 
@@ -146,7 +154,7 @@ fn preprocess_mir<'tcx>(mir: &mut mir::Body<'tcx>) {
 // Permissions (Free PCS)
 
 #[derive(Eq, Hash, PartialEq, Clone, Debug)]
-enum Resource<T>
+pub enum Resource<T>
 where
     T: Clone,
 {
@@ -159,12 +167,20 @@ where
 type Permission<'tcx> = Resource<mir::Place<'tcx>>;
 
 #[derive(Clone, Debug)]
-struct PermissionSet<'tcx>(FxHashSet<Permission<'tcx>>);
+pub struct PermissionSet<'tcx>(FxHashSet<Permission<'tcx>>);
 
 impl<'tcx> Default for PermissionSet<'tcx> {
     fn default() -> Self {
         PermissionSet {
             0: FxHashSet::default(),
+        }
+    }
+}
+
+impl<'tcx> PermissionSet<'tcx> {
+    pub fn from_vec(vec: Vec<Permission<'tcx>>) -> Self {
+        PermissionSet {
+            0: vec.iter().cloned().collect(),
         }
     }
 }
@@ -176,7 +192,7 @@ fn usize_place<'tcx>(id: usize) -> mir::Place<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // Guarded PCS
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 enum PlaceHole<'tcx> {
     Linear(mir::Place<'tcx>),
     NonLinear(mir::Place<'tcx>),
@@ -194,7 +210,7 @@ enum GuardExpr {
     And(Box<GuardExpr>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Guard<'tcx> {
     loan: usize,
     rhs: Permission<'tcx>,
@@ -203,7 +219,7 @@ struct Guard<'tcx> {
     lhs: Vec<(mir::BasicBlock, PlaceHole<'tcx>)>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct GuardSet<'tcx>(Vec<Guard<'tcx>>);
 
 impl<'tcx> Default for GuardSet<'tcx> {
@@ -215,7 +231,7 @@ impl<'tcx> Default for GuardSet<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // State
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct PCSState<'tcx> {
     free: PermissionSet<'tcx>,
     guarded: GuardSet<'tcx>,
@@ -254,10 +270,12 @@ struct EdgeBlock<'tcx> {
     before_pcs: Vec<PCSState<'tcx>>,
 }
 
-enum FreeStatement<'tcx> {
-    Pack(Vec<mir::Place<'tcx>>, mir::Place<'tcx>),
-    Unack(mir::Place<'tcx>, Vec<mir::Place<'tcx>>),
-    Nop,
+#[derive(Debug)]
+pub enum FreeStatement<'tcx> {
+    Pack(Vec<Permission<'tcx>>, Permission<'tcx>),
+    Unpack(Permission<'tcx>, Vec<Permission<'tcx>>),
+    Weaken(Permission<'tcx>, Permission<'tcx>),
+    // Nop,
     // Permission lattice weakening
     // Set control flow variable
 }
@@ -384,35 +402,49 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 statement_index,
             };
 
-            println!("\t{:?} {:?}", location, stmt);
             let active_loans = self.polonius_info.get_active_loans(location, false);
-            print!("\tLoans: ");
-            for l in active_loans {
-                if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan(l) {
-                    if let Assign(box (b, _)) = assign.kind {
-                        print!("{:?} ({:?}), ", l, b);
-                    } else {
-                        panic!();
-                    }
-                } else {
-                    panic!();
-                }
-            }
-            println!();
+            // print!("\tLoans: ");
+            // for l in active_loans {
+            //     if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan(l) {
+            //         if let Assign(box (b, _)) = assign.kind {
+            //             print!("{:?} ({:?}), ", l, b);
+            //         } else {
+            //             panic!();
+            //         }
+            //     } else {
+            //         panic!();
+            //     }
+            // }
+            // println!();
+            // println!("\t\t pcs {:?}", working_pcs);
 
             // 2. Apply Polonius facts for dying loans at this point
             // 2.1. Remove all guards from GPCS
             // 2.2. While we can regain permissions, do so
+            // 2.3. Packup (to get to unique state)
+            // 2.4: Weaken
+            // 2.5. Repack for Hoare condition
+            let packing = RepackWeaken::repack_weaken(
+                self.env.tcx(),
+                self.mir,
+                self.env,
+                working_pcs.free.clone(),
+                PermissionSet::from_vec(self.precondition_statement(&stmt.kind)).clone(),
+            );
 
-            // 3. Repack for Hoare condition
+            let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
+            let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
+            packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
+            if edge_statements.len() > 0 {
+                for e in edge_statements.iter() {
+                    println!("       (edge) {:?}", e);
+                }
+            }
 
-            // 3.5: Weaken
-
+            println!("\t{:?} {:?}", location, stmt);
             // 4. Apply hoare semantics
             for p in self.precondition_statement(&stmt.kind).iter() {
                 if !working_pcs.free.0.remove(p) {
-                    println!("{:?}", working_pcs.free);
-                    println!("{:?}", p);
                     panic!();
                 }
             }
@@ -650,3 +682,717 @@ impl<'tcx> DirtyBlock<'tcx> {
 
 type FlowExclusion = Vec<(mir::BasicBlock, bool)>;
 // interp true iff basic block is previously computed.
+
+// PCS UNIFICATIONS WITH SOUND WEAKENING
+
+// interp. Perfrom these in sequence.
+#[derive(Debug)]
+struct RepackWeaken<'tcx> {
+    exclusive_unpack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
+    exclusive_pack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)>,
+    exclusive_weaken: FxHashSet<mir::Place<'tcx>>,
+    uninit_unpack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
+    uninit_pack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)>,
+}
+
+// Take two PCS's CUR, NEXT
+//
+// We have the following FREE PCS operations at our disposal
+//  { unpack (e p) ...} { e p ...}        PACK   (unpack (e p)) (e p)
+//  { e p ...} { unpack (e p) ...}        UNPACK (e p) (unpack (e p))
+//  { e p } { u p }                       WEAKEN (e p)          (u p)
+//
+// The algorithm is as follows:
+//      1. Turn the two PCS's into their most unpacked state
+//           for uninit perms only ~> PACK + (reverse PACK)
+//      2. Check for any weakening situations (required but not given)
+//      2.5. Add uninit requirements to exclusive problem's postcondition
+//      3. Turn the two PCS's into their most unpack state for
+//          exclusive places only
+//
+//
+// The string of generated annotations must be coherent and it's result
+// should contain pcs_to
+
+// TO DO NEXT:
+//   Encode to the actual list of Free statements with pcs across them
+//   Add in runtime init check (hopefully does nothing but might be needed for
+//      init at loop heads and joins (or maybe just use them at join points lmfao))
+//  Check coherence on examples
+impl<'tcx> RepackWeaken<'tcx> {
+    pub fn repack_weaken<'mir, 'env: 'mir>(
+        // Context
+        tcx: TyCtxt<'tcx>,
+        mir: &'mir mir::Body<'tcx>,
+        env: &'env Environment<'tcx>,
+        // Repack pcs_from into pcs_to
+        mut pcs_from: PermissionSet<'tcx>,
+        mut pcs_to: PermissionSet<'tcx>,
+    ) -> Self
+    where
+        'tcx: 'env,
+    {
+        let mut uninit_problems: FxHashMap<
+            mir::Local,
+            (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<'tcx>>),
+        > = FxHashMap::default();
+
+        // Setup the problem
+        for place in pcs_from
+            .0
+            .iter()
+            .filter_map(|perm| if let Uninit(p) = perm { Some(p) } else { None })
+        {
+            let local = place.local.clone();
+            let set_borrow = uninit_problems
+                .entry(local)
+                .or_insert((FxHashSet::default(), FxHashSet::default()));
+            (*set_borrow).0.insert(place.clone());
+        }
+
+        for place in pcs_to
+            .0
+            .iter()
+            .filter_map(|perm| if let Uninit(p) = perm { Some(p) } else { None })
+        {
+            let local = place.local.clone();
+            let set_borrow = uninit_problems
+                .entry(local)
+                .or_insert((FxHashSet::default(), FxHashSet::default()));
+            (*set_borrow).1.insert(place.clone());
+        }
+
+        // Repack the exclusive permissions
+        let mut uninit_pack_stack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)> =
+            Vec::default();
+        let mut uninit_unpack_stack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)> =
+            Vec::default();
+
+        // Weakening requirements
+        let mut uninit_weakenings: FxHashSet<mir::Place> = FxHashSet::default();
+
+        let mut uninit_problem_iter = uninit_problems.drain();
+        while let Some((rloc, (mut set_rc_a, mut set_rc_b))) = uninit_problem_iter.next() {
+            // Work until b is a subset of a
+            while !set_rc_b.is_subset(&set_rc_a) {
+                // Remove intersection (b still not subset of a afterwards)
+                let mut intersection: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                for x in set_rc_a.intersection(&set_rc_b) {
+                    intersection.insert(x.clone());
+                }
+                for x in intersection.into_iter() {
+                    set_rc_a.remove(&x);
+                    set_rc_b.remove(&x);
+                }
+
+                let mut gen_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut kill_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut gen_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut kill_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                if let Some((a, b)) = set_rc_a
+                    .iter()
+                    .cartesian_product(set_rc_b.iter())
+                    .filter(|(a, b)| is_prefix(**a, **b))
+                    .next()
+                {
+                    // println!("(1) {:#?} is a prefix of {:#?}", b, a);
+                    // expand b
+                    let (expand_b, remainder_b) =
+                        expand_one_level(mir, env.tcx(), (*b).into(), (*a).into());
+                    gen_b = remainder_b.into_iter().collect();
+                    gen_b.insert(expand_b);
+                    kill_b = FxHashSet::from_iter([*b].into_iter());
+                    uninit_pack_stack.push((gen_b.iter().cloned().collect(), *b));
+                } else if let Some((a, b)) = set_rc_a
+                    .iter()
+                    .cartesian_product(set_rc_b.iter())
+                    .filter(|(a, b)| is_prefix(**b, **a))
+                    .next()
+                {
+                    // println!("(2) {:#?} is a prefix of {:#?}", a, b);
+                    // expand a
+                    let (expand_a, remainder_a) =
+                        expand_one_level(mir, env.tcx(), (*a).into(), (*b).into());
+                    gen_a = remainder_a.into_iter().collect();
+                    gen_a.insert(expand_a);
+                    kill_a = FxHashSet::from_iter([*a].into_iter());
+                    uninit_unpack_stack.push((*a, gen_a.iter().cloned().collect()));
+                } else {
+                    //  There are no elements which can be packed and unpacked anymore, but
+                    //   nevertheless set_rc_b is not a subset of set_rc_a.
+                    // We must weaken away all remaining permissions in set_rc_b
+                    uninit_weakenings = set_rc_b.clone();
+                    kill_b = set_rc_b.clone();
+                }
+
+                // Apply the gen/kill operations for this iteration
+
+                for a in kill_a.iter() {
+                    set_rc_a.remove(a);
+                }
+
+                for a in gen_a.iter() {
+                    set_rc_a.insert(*a);
+                }
+
+                for b in kill_b.iter() {
+                    set_rc_b.remove(b);
+                }
+
+                for b in gen_b.iter() {
+                    set_rc_b.insert(*b);
+                }
+            }
+        }
+
+        // Set up exclusive problems
+        let mut ex_problems: FxHashMap<
+            mir::Local,
+            (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<'tcx>>),
+        > = FxHashMap::default();
+
+        // Setup the problem
+        for place in pcs_from.0.iter().filter_map(|perm| {
+            if let Exclusive(p) = perm {
+                Some(p)
+            } else {
+                None
+            }
+        }) {
+            let local = place.local.clone();
+            let set_borrow = ex_problems
+                .entry(local)
+                .or_insert((FxHashSet::default(), FxHashSet::default()));
+            (*set_borrow).0.insert(place.clone());
+        }
+
+        for place in pcs_to.0.iter().filter_map(|perm| {
+            if let Exclusive(p) = perm {
+                Some(p)
+            } else {
+                None
+            }
+        }) {
+            let local = place.local.clone();
+            let set_borrow = ex_problems
+                .entry(local)
+                .or_insert((FxHashSet::default(), FxHashSet::default()));
+            (*set_borrow).1.insert(place.clone());
+        }
+
+        // Add weakening to the exclusive problem requirements
+        for place in uninit_weakenings.iter() {
+            let local = place.local.clone();
+            let set_borrow = ex_problems
+                .entry(local)
+                .or_insert((FxHashSet::default(), FxHashSet::default()));
+            (*set_borrow).1.insert(place.clone());
+        }
+
+        // Solve the exclusive problem
+        let mut ex_pack_stack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)> =
+            Vec::default();
+        let mut ex_unpack_stack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)> =
+            Vec::default();
+
+        let mut ex_problem_iter = ex_problems.drain();
+        while let Some((rloc, (mut set_rc_a, mut set_rc_b))) = ex_problem_iter.next() {
+            // Work until b is a subset of a
+            while !set_rc_b.is_subset(&set_rc_a) {
+                // Remove intersection (b still not subset of a afterwards)
+                let mut intersection: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                for x in set_rc_a.intersection(&set_rc_b) {
+                    intersection.insert(x.clone());
+                }
+                for x in intersection.into_iter() {
+                    set_rc_a.remove(&x);
+                    set_rc_b.remove(&x);
+                }
+
+                let mut gen_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut kill_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut gen_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                let mut kill_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+                if let Some((a, b)) = set_rc_a
+                    .iter()
+                    .cartesian_product(set_rc_b.iter())
+                    .filter(|(a, b)| is_prefix(**a, **b))
+                    .next()
+                {
+                    // println!("(1) {:#?} is a prefix of {:#?}", b, a);
+                    // expand b
+                    let (expand_b, remainder_b) =
+                        expand_one_level(mir, env.tcx(), (*b).into(), (*a).into());
+                    gen_b = remainder_b.into_iter().collect();
+                    gen_b.insert(expand_b);
+                    kill_b = FxHashSet::from_iter([*b].into_iter());
+                    ex_pack_stack.push((gen_b.iter().cloned().collect(), *b));
+                } else if let Some((a, b)) = set_rc_a
+                    .iter()
+                    .cartesian_product(set_rc_b.iter())
+                    .filter(|(a, b)| is_prefix(**b, **a))
+                    .next()
+                {
+                    // println!("(2) {:#?} is a prefix of {:#?}", a, b);
+                    // expand a
+                    let (expand_a, remainder_a) =
+                        expand_one_level(mir, env.tcx(), (*a).into(), (*b).into());
+                    gen_a = remainder_a.into_iter().collect();
+                    gen_a.insert(expand_a);
+                    kill_a = FxHashSet::from_iter([*a].into_iter());
+                    ex_unpack_stack.push((*a, gen_a.iter().cloned().collect()));
+                } else {
+                    //  There are no elements which can be packed and unpacked anymore, but
+                    //   nevertheless set_rc_b is not a subset of set_rc_a.
+                    // We must weaken away all remaining permissions in set_rc_b
+                    panic!();
+                }
+
+                // Apply the gen/kill operations for this iteration
+
+                for a in kill_a.iter() {
+                    set_rc_a.remove(a);
+                }
+
+                for a in gen_a.iter() {
+                    set_rc_a.insert(*a);
+                }
+
+                for b in kill_b.iter() {
+                    set_rc_b.remove(b);
+                }
+
+                for b in gen_b.iter() {
+                    set_rc_b.insert(*b);
+                }
+            }
+        }
+
+        // println!("REPACKING {:?} to {:?}", pcs_from, pcs_to);
+
+        RepackWeaken {
+            exclusive_unpack: ex_unpack_stack,
+            exclusive_pack: ex_pack_stack.into_iter().rev().collect(),
+            exclusive_weaken: uninit_weakenings,
+            uninit_unpack: uninit_unpack_stack,
+            uninit_pack: uninit_pack_stack.into_iter().rev().collect(),
+        }
+    }
+
+    pub fn apply(
+        &self,
+        working_pcs: &mut PCSState<'tcx>,
+        statements: &mut Vec<FreeStatement<'tcx>>,
+        pcs_before: &mut Vec<PCSState<'tcx>>,
+    ) {
+        // 1. EXCLUSIVE UNPACKS
+        for (pre, post) in self.exclusive_unpack.iter() {
+            pcs_before.push(working_pcs.clone());
+            let remove = Exclusive(*pre);
+            let add = (*post).iter().map(|p| Exclusive(*p)).collect::<Vec<_>>();
+            assert!(working_pcs.free.0.remove(&remove));
+            for p in add.iter() {
+                assert!(working_pcs.free.0.insert((*p).clone()));
+            }
+            statements.push(Unpack(remove, add));
+        }
+
+        // 2. EXCLUSIVE PACKS
+        for (pre, post) in self.exclusive_pack.iter() {
+            pcs_before.push(working_pcs.clone());
+            let remove = (*pre).iter().map(|p| Exclusive(*p)).collect::<Vec<_>>();
+            let add = Exclusive(*post);
+            for p in remove.iter() {
+                assert!(working_pcs.free.0.remove(p));
+            }
+            assert!(working_pcs.free.0.insert(add.clone()));
+            statements.push(Pack(remove, add));
+        }
+
+        // 3. WEAKEN
+        for to_weaken in self.exclusive_weaken.iter() {
+            pcs_before.push(working_pcs.clone());
+            let remove = Exclusive(*to_weaken);
+            let add = Uninit(*to_weaken);
+            assert!(working_pcs.free.0.remove(&remove));
+            assert!(working_pcs.free.0.insert(add.clone()));
+            statements.push(Weaken(remove, add));
+        }
+
+        // 4. UNINIT UNPACKS
+        for (pre, post) in self.uninit_unpack.iter() {
+            pcs_before.push(working_pcs.clone());
+            let remove = Uninit(*pre);
+            let add = (*post).iter().map(|p| Uninit(*p)).collect::<Vec<_>>();
+            assert!(working_pcs.free.0.remove(&remove));
+            for p in add.iter() {
+                assert!(working_pcs.free.0.insert((*p).clone()));
+            }
+            statements.push(Unpack(remove, add));
+        }
+
+        // 5. UNINIT PACKS
+        for (pre, post) in self.uninit_pack.iter() {
+            pcs_before.push(working_pcs.clone());
+            let remove = (*pre).iter().map(|p| Uninit(*p)).collect::<Vec<_>>();
+            let add = Uninit(*post);
+            for p in remove.iter() {
+                assert!(working_pcs.free.0.remove(p));
+            }
+            assert!(working_pcs.free.0.insert(add.clone()));
+            statements.push(Pack(remove, add));
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Old Repacker
+
+// Assumption: All places are mutably owned
+// #[derive(Debug)]
+// pub struct RepackUnify<'tcx> {
+//     pub packs: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
+//     pub unpacks: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
+// }
+//
+// impl<'tcx> RepackUnify<'tcx> {
+//     // TODO: Look over this again, many places need improvement
+//     pub fn unify_moves<'mir, 'env: 'mir>(
+//         a_pcs: &PermissionSet<'tcx>,
+//         b_pcs: &PermissionSet<'tcx>,
+//         mir: &'mir mir::Body<'tcx>,
+//         env: &'env Environment<'tcx>,
+//     ) -> RepackUnify<'tcx>
+//     where
+//         'tcx: 'env,
+//     {
+//         let mut mir_problems: FxHashMap<
+//             Resource<mir::Local>,
+//             (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<'tcx>>),
+//         > = FxHashMap::default();
+//
+//         // // Split the problem into independent parts
+//         for pcs_permission in a_pcs.0.iter() {
+//             //let permissionkind = pcs_permission.kind.clone();
+//             match pcs_permission {
+//                 perm @ Exclusive(place) => {
+//                     let local = place.local.clone();
+//                     let set_borrow = mir_problems
+//                         .entry(Exclusive(local))
+//                         .or_insert((FxHashSet::default(), FxHashSet::default()));
+//                     (*set_borrow).0.insert(place.clone());
+//                 }
+//                 perm @ Uninit(place) => {
+//                     let local = place.local.clone();
+//                     let set_borrow = mir_problems
+//                         .entry(Uninit(local))
+//                         .or_insert((FxHashSet::default(), FxHashSet::default()));
+//                     (*set_borrow).0.insert(place.clone());
+//                 }
+//                 _ => todo!(),
+//             }
+//         }
+//
+//         for pcs_permission in b_pcs.0.iter() {
+//             //let permissionkind = pcs_permission.kind.clone();
+//             match pcs_permission {
+//                 perm @ Exclusive(place) => {
+//                     let local = place.local.clone();
+//                     let set_borrow = mir_problems
+//                         .entry(Exclusive(local))
+//                         .or_insert((FxHashSet::default(), FxHashSet::default()));
+//                     (*set_borrow).1.insert(place.clone());
+//                 }
+//                 perm @ Uninit(place) => {
+//                     let local = place.local.clone();
+//                     let set_borrow = mir_problems
+//                         .entry(Uninit(local))
+//                         .or_insert((FxHashSet::default(), FxHashSet::default()));
+//                     (*set_borrow).1.insert(place.clone());
+//                 }
+//                 _ => todo!(),
+//             }
+//         }
+//
+//         let mut a_unpacks: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)> = Vec::default();
+//         let mut b_unpacks: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)> = Vec::default();
+//
+//         // Iterate over subproblems (in any order)
+//         let mut mir_problem_iter = mir_problems.drain();
+//         while let Some((rloc, (mut set_rc_a, mut set_rc_b))) = mir_problem_iter.next() {
+//             // No work to be done when PCS a is a subset of PCS b
+//             while !set_rc_b.is_subset(&set_rc_a) {
+//                 // Remove intersection (b still not subset of a afterwards)
+//                 let mut intersection: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+//                 for x in set_rc_a.intersection(&set_rc_b) {
+//                     intersection.insert(x.clone());
+//                 }
+//                 for x in intersection.into_iter() {
+//                     set_rc_a.remove(&x);
+//                     set_rc_b.remove(&x);
+//                 }
+//
+//                 let mut gen_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+//                 let mut kill_a: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+//                 let mut gen_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+//                 let mut kill_b: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
+//                 if let Some((a, b)) = set_rc_a
+//                     .iter()
+//                     .cartesian_product(set_rc_b.iter())
+//                     .filter(|(a, b)| is_prefix(**a, **b))
+//                     .next()
+//                 {
+//                     // println!("(1) {:#?} is a prefix of {:#?}", b, a);
+//                     // expand b
+//                     let (expand_b, remainder_b) =
+//                         expand_one_level(mir, env.tcx(), (*b).into(), (*a).into());
+//                     gen_b = remainder_b.into_iter().collect();
+//                     gen_b.insert(expand_b);
+//                     kill_b = FxHashSet::from_iter([*b].into_iter());
+//                     b_unpacks.push((*b, gen_b.clone()));
+//                 } else if let Some((a, b)) = set_rc_a
+//                     .iter()
+//                     .cartesian_product(set_rc_b.iter())
+//                     .filter(|(a, b)| is_prefix(**b, **a))
+//                     .next()
+//                 {
+//                     // println!("(2) {:#?} is a prefix of {:#?}", a, b);
+//                     // expand a
+//                     let (expand_a, remainder_a) =
+//                         expand_one_level(mir, env.tcx(), (*a).into(), (*b).into());
+//                     gen_a = remainder_a.into_iter().collect();
+//                     gen_a.insert(expand_a);
+//                     kill_a = FxHashSet::from_iter([*a].into_iter());
+//                     a_unpacks.push((*a, gen_a.clone()));
+//                 } else {
+//                     // We missed a weakening problem!
+//                     println!("{:?}", rloc);
+//                     println!("{:?}", set_rc_a);
+//                     println!("{:?}", set_rc_b);
+//                     panic!();
+//                 }
+//
+//                 for a in kill_a.iter() {
+//                     set_rc_a.remove(a);
+//                 }
+//
+//                 for a in gen_a.iter() {
+//                     set_rc_a.insert(*a);
+//                 }
+//
+//                 for b in kill_b.iter() {
+//                     set_rc_b.remove(b);
+//                 }
+//
+//                 for b in gen_b.iter() {
+//                     set_rc_b.insert(*b);
+//                 }
+//             }
+//         }
+//
+//         RepackUnify {
+//             unpacks: a_unpacks,
+//             packs: b_unpacks,
+//         }
+//     }
+//
+//     /// Apply a PCSRepacker to a state
+//     pub fn apply_packings(
+//         &self,
+//         mut state: &mut PermissionSet<'tcx>,
+//         statements: &mut Vec<FreeStatement<'tcx>>,
+//         before_pcs: &mut Vec<PermissionSet<'tcx>>,
+//     ) {
+//         // TODO: Move insert and remove (guarded with linearity) into PCS
+//
+//         for (p, unpacked_p) in self.unpacks.iter() {
+//             before_pcs.push(state.clone());
+//
+//             let to_lose = p.clone();
+//             // TODO: We're assuming all places are mutably owned right now
+//             if !state.0.remove(&Exclusive(to_lose.into())) {
+//                 panic!();
+//             }
+//             let to_regain: Vec<mir::Place<'tcx>> = unpacked_p.iter().cloned().collect();
+//             for p1 in to_regain.iter() {
+//                 if !state.0.insert(Exclusive((*p1).into())) {
+//                     panic!();
+//                 }
+//             }
+//             statements.push(FreeStatement::Unpack(to_lose, to_regain));
+//         }
+//
+//         for (p, pre_p) in self.packs.iter().rev() {
+//             before_pcs.push(state.clone());
+//
+//             let to_lose: Vec<mir::Place<'tcx>> = pre_p.iter().cloned().collect(); // expand_place(*p, mir, env)?;
+//             for p1 in to_lose.iter() {
+//                 if !state.0.remove(&Exclusive((*p1).into())) {
+//                     panic!();
+//                 }
+//             }
+//
+//             let to_regain = p.clone();
+//             if !state.0.insert(Exclusive(to_regain.into())) {
+//                 panic!();
+//             }
+//             statements.push(FreeStatement::Pack(to_lose, to_regain));
+//         }
+//
+//         // State is correct now
+//     }
+// }
+//
+// // Repacks a PCS so it's maximally packed
+// // pub struct RepackPackup<'tcx> {
+// //     pub packs: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)>,
+// // }
+// //
+// // impl<'tcx> RepackPackup<'tcx> {
+// //     pub fn new<'mir, 'env>(
+// //         tcx: TyCtxt<'tcx>,
+// //         mir: &'mir Body<'tcx>,
+// //         pcs: PermissionSet<'tcx>,
+// //     ) -> EncodingResult<Self>
+// //     where
+// //         'env: 'mir,
+// //         'tcx: 'env,
+// //     {
+// //         // One packup problem for every Local base (uninit and temps are not packed up)
+// //         let mut mir_problems: FxHashMap<Permission<'tcx>, Vec<mir::Place<'tcx>>> =
+// //             FxHashMap::default();
+// //         let mut packs: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)> = Vec::default();
+// //
+// //         // Split the problem into independent parts
+// //         for pcs_permission in pcs.0.iter() {
+// //             match pcs_permission {
+// //                 perm @ Exclusive(p) | perm @ Uninit(p) => {
+// //                     let set_borrow = mir_problems.entry(perm).or_insert(Vec::default());
+// //                     (*set_borrow).push(place.clone());
+// //                 }
+// //                 Shared(_) | Blocked(_) => todo!(),
+// //             }
+// //         }
+// //
+// //         let mut mir_problem_iter = mir_problems.drain();
+// //         while let Some((_local, mut places)) = mir_problem_iter.next() {
+// //             // Fully pack the given place set:
+// //
+// //             // Order the places by length of their projection lists
+// //             places.sort_by(|p0, p1| p0.projection.len().cmp(&p1.projection.len()));
+// //             // Pop the least projected place. Can we pack it?
+// //
+// //             // termination: packs always reduce the length of the projected elements by one
+// //             while let Some(p) = places.pop() {
+// //                 // TODO: This is pretty bad
+// //
+// //                 // Strip the last projection from p -> p'
+// //                 // generate the unpack of p'... is it contained in places?
+// //                 // if so, remove all relevant places and insert packed place
+// //                 if let Some(pack_set) = pack_set(tcx, mir, p) {
+// //                     if pack_set.iter().all(|pm| (*pm == p) || places.contains(pm)) {
+// //                         let to_insert = strip_level(tcx, p)
+// //                             .ok_or(PrustiError::internal("unexpected", MultiSpan::new()))?;
+// //                         packs.push((pack_set.clone(), to_insert));
+// //                         // Remove the pack_set from places
+// //                         for to_remove in pack_set.iter() {
+// //                             if *to_remove != p {
+// //                                 if let Some(pos) = places.iter().position(|p1| *p1 == *to_remove) {
+// //                                     places.remove(pos);
+// //                                 } else {
+// //                                     return Err(PrustiError::internal(
+// //                                         format!(
+// //                                             "tried to remove a nonexistent element {:?}",
+// //                                             to_remove
+// //                                         ),
+// //                                         MultiSpan::new(),
+// //                                     ));
+// //                                 }
+// //                             }
+// //                         }
+// //
+// //                         // Insert the packed permission back into places
+// //                         places.push(to_insert);
+// //                         // ouch
+// //                         places.sort_by(|p0, p1| p0.projection.len().cmp(&p1.projection.len()));
+// //                     }
+// //                 }
+// //             }
+// //         }
+// //
+// //         Ok(RepackPackup { packs })
+// //     }
+// //
+// //     /// Apply a PCSRepacker to a state
+// //     pub fn apply_packings(
+// //         &self,
+// //         mut state: PCS<'tcx>,
+// //         statements: &mut Vec<MicroMirStatement<'tcx>>,
+// //         before_pcs: &mut Vec<PCS<'tcx>>,
+// //     ) -> EncodingResult<PCS<'tcx>> {
+// //         // TODO: Move insert and remove (guarded with linearity) into PCS
+// //         for (pre_p, p) in self.packs.iter() {
+// //             before_pcs.push(state.clone());
+// //
+// //             let to_lose: Vec<Place<'tcx>> = pre_p.iter().cloned().collect(); // expand_place(*p, mir, env)?;
+// //             for p1 in to_lose.iter() {
+// //                 if !state.set.remove(&PCSPermission::new_initialized(
+// //                     Mutability::Mut,
+// //                     (*p1).into(),
+// //                 )) {
+// //                     return Err(PrustiError::internal(
+// //                         format!("prusti generated an incoherent pack precondition {:?}", p1),
+// //                         MultiSpan::new(),
+// //                     ));
+// //                 }
+// //             }
+// //
+// //             let to_regain = p.clone();
+// //
+// //             if !state.set.insert(PCSPermission::new_initialized(
+// //                 Mutability::Mut,
+// //                 to_regain.into(),
+// //             )) {
+// //                 return Err(PrustiError::internal(
+// //                     format!(
+// //                         "prusti generated an incoherent pack postcondition: {:?}",
+// //                         to_regain
+// //                     ),
+// //                     MultiSpan::new(),
+// //                 ));
+// //             }
+// //
+// //             statements.push(MicroMirStatement::Pack(to_lose, to_regain));
+// //         }
+// //         return Ok(state);
+// //     }
+// // }
+// //
+// // fn strip_level<'tcx>(tcx: TyCtxt<'tcx>, place: Place<'tcx>) -> Option<Place<'tcx>> {
+// //     // Place projections use Rust's interned lists, so there can be only one of each list.
+// //     //  (important for correctness! Rust compares projection lists by interned
+// //     //   list address)
+// //     // See implementation of mk_place_elem in rustc_middle/ty/context.rs
+// //     let mut projection = place.projection.to_vec();
+// //     projection.pop()?;
+// //     Some(Place {
+// //         local: place.local,
+// //         projection: tcx.intern_place_elems(&projection),
+// //     })
+// // }
+// //
+// // // Compute the set of places needed to pack a place
+// // fn pack_set<'mir, 'tcx: 'mir>(
+// //     tcx: TyCtxt<'tcx>,
+// //     mir: &'mir Body<'tcx>,
+// //     place: Place<'tcx>,
+// // ) -> Option<FxHashSet<Place<'tcx>>> {
+// //     Some(
+// //         expand_struct_place(strip_level(tcx, place)?, mir, tcx, None)
+// //             .iter()
+// //             .cloned()
+// //             .collect(),
+// //     )
+// // }
+// //
+//
