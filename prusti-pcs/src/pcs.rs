@@ -16,7 +16,7 @@ use itertools::{
 };
 use prusti_interface::{
     environment::{
-        borrowck::facts::{BorrowckFacts, Loan},
+        borrowck::facts::{BorrowckFacts, Loan, PointType},
         mir_analyses::{
             allocation::{compute_definitely_allocated, DefinitelyAllocatedAnalysisResult},
             initialization::{compute_definitely_initialized, DefinitelyInitializedAnalysisResult},
@@ -164,6 +164,20 @@ where
     Blocked(T),
 }
 
+impl<T> Resource<T>
+where
+    T: Clone,
+{
+    pub fn permission_of(&self) -> &T {
+        match self {
+            Exclusive(t) => t,
+            Shared(t) => t,
+            Uninit(t) => t,
+            Blocked(t) => t,
+        }
+    }
+}
+
 type Permission<'tcx> = Resource<mir::Place<'tcx>>;
 
 #[derive(Clone, Debug)]
@@ -192,7 +206,7 @@ fn usize_place<'tcx>(id: usize) -> mir::Place<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // Guarded PCS
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 enum PlaceHole<'tcx> {
     Linear(mir::Place<'tcx>),
     NonLinear(mir::Place<'tcx>),
@@ -210,13 +224,34 @@ enum GuardExpr {
     And(Box<GuardExpr>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 struct Guard<'tcx> {
     label: Loan,
     rhs: Permission<'tcx>,
     // Generalization: guards can be stronger expressions than a single bb
     // Generalization: for struct with borrow RHS can be not top-level place
     lhs: Vec<(mir::BasicBlock, PlaceHole<'tcx>)>,
+}
+
+impl<'tcx> Guard<'tcx> {
+    pub fn expiry_requirements(&self) -> Vec<Permission<'tcx>> {
+        self.lhs
+            .iter()
+            .filter_map(|(_, p)| match p {
+                PlaceHole::None => None,
+                PlaceHole::NonLinear(_) => todo!(),
+                PlaceHole::Linear(pl) => Some(Exclusive((*pl).clone())),
+            })
+            .collect()
+    }
+
+    pub fn fill_hole(&mut self, fill: &PlaceHole<'tcx>) {
+        for (_, h) in self.lhs.iter_mut() {
+            if *h == *fill {
+                *h = PlaceHole::None;
+            }
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -243,15 +278,65 @@ impl<'tcx> GuardSet<'tcx> {
     }
 
     pub fn get_expiry_requirements(&self, label: Loan) -> Vec<Permission<'tcx>> {
-        todo!();
+        // 1. Assert that the loan must be guarded by the GPCS
+        let matches = self
+            .0
+            .iter()
+            .filter(|g| g.label == label)
+            .collect::<Vec<_>>();
+
+        match matches[..] {
+            [v] => v.expiry_requirements(),
+            _ => todo!(),
+        }
     }
 
+    /// Fill a PlaceHole across all loans
     pub fn eliminate_hole(&mut self, to_eliminate: PlaceHole<'tcx>) {
-        todo!();
+        for guard in self.0.iter_mut() {
+            guard.fill_hole(&to_eliminate)
+        }
     }
 
+    /// Expect all preconditions to be None, and remove
     pub fn eliminate_loan(&mut self, to_eliminate: Loan) -> Vec<Permission<'tcx>> {
-        todo!();
+        let mut matches = self
+            .0
+            .iter_mut()
+            .enumerate()
+            .filter(|(_, g)| g.label == to_eliminate);
+
+        let (egi, guard_to_kill) = matches.next().unwrap();
+        assert!(matches.next() == None);
+        assert!(guard_to_kill.expiry_requirements() == vec![]);
+
+        let g = self.0.remove(egi);
+        vec![g.rhs]
+    }
+
+    pub fn move_loan(
+        &mut self,
+        to_eliminate: &mir::Place<'tcx>,
+        new_guard: &mir::Place<'tcx>,
+        bb: mir::BasicBlock,
+    ) {
+        // For an assignment, all the LHS of the to move_loan is eliminated
+        // The loan must exist because no use-after-free
+
+        for p in self.0.iter().map(|g| g.rhs.permission_of()) {
+            println!("\t~~{:?}", p);
+        }
+
+        let mut matches = self
+            .0
+            .iter_mut()
+            .enumerate()
+            .filter(|(_, g)| g.rhs.permission_of() == to_eliminate);
+
+        let (egi, mut guard_to_move) = matches.next().unwrap();
+        assert!(matches.next() == None);
+
+        guard_to_move.lhs = vec![(bb, PlaceHole::Linear((*new_guard).clone()))];
     }
 }
 
@@ -458,142 +543,180 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
             // 2.3. Packup (to get to unique state)
             // 2.4: Weaken
             // 2.5. Repack for Hoare condition
-            let packing = RepackWeaken::repack_weaken(
-                self.env.tcx(),
-                self.mir,
-                self.env,
-                working_pcs.free.clone(),
-                PermissionSet::from_vec(self.precondition_statement(&stmt.kind)).clone(),
-            );
+            // let packing = RepackWeaken::repack_weaken(
+            //     self.env.tcx(),
+            //     self.mir,
+            //     self.env,
+            //     working_pcs.free.clone(),
+            //     PermissionSet::from_vec(self.precondition_statement(&stmt.kind)).clone(),
+            // );
 
-            let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
-            let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
-            packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
-            if edge_statements.len() > 0 {
-                for e in edge_statements.iter() {
-                    println!("       (edge) {:?}", e);
-                }
-            }
+            // let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
+            // let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
+            // packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
+            // if edge_statements.len() > 0 {
+            //     for e in edge_statements.iter() {
+            //         println!("       (edge) {:?}", e);
+            //     }
+            // }
 
             println!("\t{:?}\t{:?}", location, working_pcs);
             println!("\t{:?} {:?}", location, stmt);
-            let loan_live_at: Vec<Loan> = self.polonius_info.get_active_loans(location, false);
-            let loan_dying_at = self.polonius_info.get_loans_dying_at(location, false);
-            println!("\t{:?}\tlive: {:?}", location, loan_live_at);
-            println!("\t{:?}\tdying: {:?}", location, loan_dying_at);
+
+            self.polonius_info
+                .get_loan_live_at(location, PointType::Start);
+            self.polonius_info
+                .get_loan_live_at(location, PointType::Mid);
+            self.polonius_info
+                .get_loan_killed_at(location, PointType::Start);
+            self.polonius_info
+                .get_loan_killed_at(location, PointType::Mid);
+            self.polonius_info
+                .get_loan_issued_at(location, PointType::Start);
+            self.polonius_info
+                .get_loan_issued_at(location, PointType::Mid);
+            self.polonius_info.get_subset(location, PointType::Start);
+            self.polonius_info.get_subset(location, PointType::Mid);
+            self.polonius_info
+                .get_loan_invalidated_at(location, PointType::Start);
+            self.polonius_info
+                .get_loan_invalidated_at(location, PointType::Mid);
+
+            // let st_loan_live_at = self.polonius_info.get_loan_live_at()
+            // let st_loan_dying_at = self.polonius_info.get_loans_dying_at(location, false);
+            // println!("\t{:?}\tlive: {:?}", location, loan_live_at);
+            // println!("\t{:?}\tdying: {:?}", location, loan_dying_at);
 
             // If there's an extra live loan, then issue a new one
             let mut new_guards: Vec<Guard<'tcx>> = vec![];
+            let mut move_guards: Vec<(mir::Place<'tcx>, mir::Place<'tcx>)> = vec![];
+            // for new in loan_live_at
+            //     .iter()
+            //     .filter(|live| !working_pcs.guarded.get_loans().contains(live))
+            // {
+            //     println!("computing {:?}", new);
+            //     if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan((*new).clone())
+            //     {
+            //         match assign.kind {
+            //             Assign(box (b, Ref(_, _, p))) => {
+            //                 new_guards.push(Guard {
+            //                     label: *new,
+            //                     lhs: vec![(*dirty.block(), PlaceHole::Linear(b))],
+            //                     rhs: Exclusive(p),
+            //                 });
+            //             }
+            //             // Note: Moving mut borrows are never copy
+            //             Assign(box (p_to, Use(mir::Operand::Move(p_from)))) => {
+            //                 println!("\t{:?} is a move", new);
+            //                 move_guards.push((p_from, p_to));
+            //             }
+            //             _ => {
+            //                 panic!();
+            //             }
+            //         };
+            //     }
+            // }
+            // for g in new_guards {
+            //     println!("\t working on new loan {:?}", g);
+            //     working_pcs.guarded.insert_guard(g);
+            // }
 
-            for new in loan_live_at
-                .iter()
-                .filter(|live| !working_pcs.guarded.get_loans().contains(live))
-            {
-                if let Ok(Some(assign)) = self.polonius_info.get_assignment_for_loan((*new).clone())
-                {
-                    if let Assign(box (b, Ref(_, _, p))) = assign.kind {
-                        new_guards.push(Guard {
-                            label: *new,
-                            lhs: vec![(*dirty.block(), PlaceHole::Linear(b))],
-                            rhs: Exclusive(p),
-                        });
-                    } else {
-                        panic!();
-                    }
-                };
-            }
-            for g in new_guards {
-                working_pcs.guarded.insert_guard(g);
-            }
+            // for (p_from, p_to) in move_guards {
+            //     println!("\t working on move loan {:?}, {:?}", p_from, p_to);
+            //     working_pcs
+            //         .guarded
+            //         .move_loan(&p_from, &p_to, *dirty.block());
+            // }
 
             // Update loan expiry
 
             // 4. Apply hoare semantics
-            for p in self.precondition_statement(&stmt.kind).iter() {
-                if !working_pcs.free.0.remove(p) {
-                    panic!();
-                }
-            }
-            for p in self.postcondition_statement(&stmt.kind).into_iter() {
-                if !working_pcs.free.0.insert(p) {
-                    panic!();
-                }
-            }
+            // for p in self.precondition_statement(&stmt.kind).iter() {
+            //     if !working_pcs.free.0.remove(p) {
+            //         panic!();
+            //     }
+            // }
+            // for p in self.postcondition_statement(&stmt.kind).into_iter() {
+            //     if !working_pcs.free.0.insert(p) {
+            //         panic!();
+            //     }
+            // }
 
             // Now work through the dying loans
             //  Note: LHS of loans are always FULL PLACES (not x.f) since we don't support
             //      borrows in structs yet.
 
-            for dying in loan_dying_at {
-                // (0) (unsoundness for now) find an order to apply loans in and do this procedure greedily
-                // 1. Get all the LHS's the Guarded PCS infers we can no longer use
-                let requirements = working_pcs.guarded.get_expiry_requirements(dying);
+            // for dying in loan_dying_at {
+            //     // (0) (unsoundness for now) find an order to apply loans in and do this procedure greedily
+            //     // 1. Get all the LHS's the Guarded PCS infers we can no longer use
+            //     let requirements = working_pcs.guarded.get_expiry_requirements(dying);
 
-                // 1.1. Repack them fully (this is on an mid-edge now?)
-                let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
-                let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
-                packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
-                if edge_statements.len() > 0 {
-                    for e in edge_statements.iter() {
-                        println!("       (edge) {:?}", e);
-                    }
-                }
+            //     // 1.1. Repack them fully (this is on an mid-edge now?)
+            //     let mut edge_statements: Vec<FreeStatement<'tcx>> = vec![];
+            //     let mut edge_before_pcs: Vec<PCSState<'tcx>> = vec![];
+            //     packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
+            //     if edge_statements.len() > 0 {
+            //         for e in edge_statements.iter() {
+            //             println!("       (edge) {:?}", e);
+            //         }
+            //     }
 
-                // 1.2. Remove them from the free PCS
-                for req in requirements {
-                    assert!(working_pcs.free.0.remove(&req));
+            //     // 1.2. Remove them from the free PCS
+            //     // 1.2.5 Re-insert Uninit resouce once a loan is applied (we can still write to it after it dies)
+            //     for req in requirements {
+            //         assert!(working_pcs.free.0.remove(&req));
+            //         assert!(working_pcs.free.0.insert(Uninit(*req.permission_of())));
+            //         // 1.3. Update constraints across entire guarded PCS
+            //         let hole = match req {
+            //             Exclusive(p) => PlaceHole::Linear(p),
+            //             _ => todo!(),
+            //         };
+            //         working_pcs.guarded.eliminate_hole(hole);
+            //     }
 
-                    // 1.3. Update constraints across entire guarded PCS
-                    let hole = match req {
-                        Exclusive(p) => PlaceHole::Linear(p),
-                        _ => todo!(),
-                    };
-                    working_pcs.guarded.eliminate_hole(hole);
-                }
+            //     // 2. Assert that the loan's guard is completely fulfilled
+            //     let regain_permissions = working_pcs.guarded.eliminate_loan(dying);
 
-                // 2. Assert that the loan's guard is completely fulfilled
-                let regain_permissions = working_pcs.guarded.eliminate_loan(dying);
+            //     // 3. Reclaim the loan's RHS into free PCS
+            //     for perm in regain_permissions.into_iter() {
+            //         assert!(working_pcs.free.0.insert(perm));
+            //     }
+            // }
 
-                // 3. Reclaim the loan's RHS into free PCS
-                for perm in regain_permissions.into_iter() {
-                    assert!(working_pcs.free.0.insert(perm));
-                }
-            }
+            // // Terminator Owned semantics
+            // let terminator = self
+            //     .mir
+            //     .basic_blocks()
+            //     .get(*dirty.block())
+            //     .unwrap()
+            //     .terminator();
+
+            // for p in self.term_precondition(&terminator.kind).iter() {
+            //     if !working_pcs.free.0.remove(p) {
+            //         panic!();
+            //     }
+            // }
+
+            // for p in self.term_postcondition(&terminator.kind).into_iter() {
+            //     if !working_pcs.free.0.insert(p) {
+            //         panic!();
+            //     }
+            // }
+
+            // 4. For each MicroMir statement:
+            //      4.1. Repack Free PCS to Hoare precondition
+            //              (may be something like "most packed" for drops etc)
+            //      4.2. Apply the Hoare Semantics and wand effects
+            //      4.3. Check lifeness facts
+            //      4.3. Check Polonius facts (origin live at, etc.)
+            //      4.4. Push the MicroMir statement (plus any computed elaborations)
+            // 5. Repack free PCS to terminator precondition
+            // 6. Apply terminator semantics to current PCS
+            // 7. Push terminator
+            // 8. Push dirty blocks with current state
+            // 9. Check intialization requiremtnes
+            // 10. Check midpoint status from Polonius
         }
-
-        // Terminator Owned semantics
-        let terminator = self
-            .mir
-            .basic_blocks()
-            .get(*dirty.block())
-            .unwrap()
-            .terminator();
-
-        for p in self.term_precondition(&terminator.kind).iter() {
-            if !working_pcs.free.0.remove(p) {
-                panic!();
-            }
-        }
-
-        for p in self.term_postcondition(&terminator.kind).into_iter() {
-            if !working_pcs.free.0.insert(p) {
-                panic!();
-            }
-        }
-
-        // 4. For each MicroMir statement:
-        //      4.1. Repack Free PCS to Hoare precondition
-        //              (may be something like "most packed" for drops etc)
-        //      4.2. Apply the Hoare Semantics and wand effects
-        //      4.3. Check lifeness facts
-        //      4.3. Check Polonius facts (origin live at, etc.)
-        //      4.4. Push the MicroMir statement (plus any computed elaborations)
-        // 5. Repack free PCS to terminator precondition
-        // 6. Apply terminator semantics to current PCS
-        // 7. Push terminator
-        // 8. Push dirty blocks with current state
-        // 9. Check intialization requiremtnes
-        // 10. Check midpoint status from Polonius
     }
 
     fn flow_join(&self, flows: Vec<(mir::BasicBlock, bool)>) {}
@@ -689,7 +812,6 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
         }
     }
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 // CFG Iterator
