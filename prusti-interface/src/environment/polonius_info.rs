@@ -867,61 +867,62 @@ impl<'a, 'tcx: 'a> PoloniusInfo<'a, 'tcx> {
     //     Ok(())
     // }
 
-    pub fn get_loan_live_at(&self, location: mir::Location, point_type: facts::PointType) {
-        // -> Vec<facts::Loan>
-        println!(
-            "live {:?}",
-            self.borrowck_out_facts
-                .loan_live_at
-                .get(&self.get_point(location, point_type))
-        );
+    pub fn get_loan_live_at(
+        &self,
+        location: mir::Location,
+        point_type: facts::PointType,
+    ) -> Vec<facts::Loan> {
+        if let Some(r) = self
+            .borrowck_out_facts
+            .loan_live_at
+            .get(&self.get_point(location, point_type))
+        {
+            r.to_vec()
+        } else {
+            vec![]
+        }
     }
 
-    pub fn get_loan_killed_at(&self, location: mir::Location, point_type: facts::PointType) {
+    pub fn get_loan_killed_at(
+        &self,
+        location: mir::Location,
+        point_type: facts::PointType,
+    ) -> Vec<facts::Loan> {
         let loc = self.get_point(location, point_type);
-        let r = self
-            .borrowck_in_facts
+        self.borrowck_in_facts
             .loan_killed_at
             .iter()
             .filter(|(_, p)| p == &loc)
             .map(|(l, _)| (*l).clone())
-            .collect::<Vec<_>>();
-        println!("kill {:?}", r);
+            .collect::<Vec<_>>()
     }
 
-    pub fn get_loan_issued_at(&self, location: mir::Location, point_type: facts::PointType) {
+    pub fn get_loan_issued_at(
+        &self,
+        location: mir::Location,
+        point_type: facts::PointType,
+    ) -> Vec<facts::Loan> {
         let loc = self.get_point(location, point_type);
-        let r = self
-            .borrowck_in_facts
+        self.borrowck_in_facts
             .loan_issued_at
             .iter()
             .filter(|(_, _, p)| p == &loc)
             .map(|(_, l, _)| (*l).clone())
-            .collect::<Vec<_>>();
-        println!("issu {:?}", r);
+            .collect::<Vec<_>>()
     }
 
-    pub fn get_subset(&self, location: mir::Location, point_type: facts::PointType) {
+    pub fn get_loan_invalidated_at(
+        &self,
+        location: mir::Location,
+        point_type: facts::PointType,
+    ) -> Vec<facts::Loan> {
         let loc = self.get_point(location, point_type);
-        let r = self
-            .borrowck_out_facts
-            .subset
-            .iter()
-            .filter(|(p, _)| p == &&loc)
-            .collect::<Vec<_>>();
-        println!("subs {:?}", r);
-    }
-
-    pub fn get_loan_invalidated_at(&self, location: mir::Location, point_type: facts::PointType) {
-        let loc = self.get_point(location, point_type);
-        let r = self
-            .borrowck_in_facts
+        self.borrowck_in_facts
             .loan_invalidated_at
             .iter()
             .filter(|(p, _)| p == &loc)
             .map(|(_, l)| (*l).clone())
-            .collect::<Vec<_>>();
-        println!("invl {:?}", r);
+            .collect::<Vec<_>>()
     }
 
     pub fn get_point(
