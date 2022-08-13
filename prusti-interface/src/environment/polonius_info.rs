@@ -867,6 +867,10 @@ impl<'a, 'tcx: 'a> PoloniusInfo<'a, 'tcx> {
     //     Ok(())
     // }
 
+    pub fn get_reference_moves(&self) -> Vec<facts::Loan> {
+        self.reference_moves.clone()
+    }
+
     pub fn get_loan_live_at(
         &self,
         location: mir::Location,

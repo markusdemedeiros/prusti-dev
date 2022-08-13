@@ -227,13 +227,21 @@ enum GuardExpr {
 #[derive(Clone, Debug, PartialEq)]
 struct Guard<'tcx> {
     label: Loan,
-    rhs: Permission<'tcx>,
+    rhs: Option<Permission<'tcx>>,
     // Generalization: guards can be stronger expressions than a single bb
     // Generalization: for struct with borrow RHS can be not top-level place
     lhs: Vec<(mir::BasicBlock, PlaceHole<'tcx>)>,
 }
 
 impl<'tcx> Guard<'tcx> {
+    pub fn nop_guard(label: Loan) -> Self {
+        Guard {
+            label,
+            rhs: None,
+            lhs: vec![],
+        }
+    }
+
     pub fn expiry_requirements(&self) -> Vec<Permission<'tcx>> {
         self.lhs
             .iter()
@@ -265,7 +273,10 @@ impl<'tcx> Default for GuardSet<'tcx> {
 
 impl<'tcx> GuardSet<'tcx> {
     pub fn get_guarded_places(&self) -> Vec<&Permission<'tcx>> {
-        self.0.iter().map(|g| &g.rhs).collect::<Vec<_>>()
+        self.0
+            .iter()
+            .filter_map(|g| g.rhs.as_ref())
+            .collect::<Vec<_>>()
     }
 
     pub fn get_loans(&self) -> Vec<&Loan> {
@@ -273,7 +284,10 @@ impl<'tcx> GuardSet<'tcx> {
     }
 
     pub fn insert_guard(&mut self, guard: Guard<'tcx>) {
-        assert!(!self.get_guarded_places().contains(&&guard.rhs));
+        // TODO: What happens when we indert a fake loan which is already in there?
+        if let Some(rhs) = &guard.rhs {
+            assert!(!self.get_guarded_places().contains(&rhs));
+        }
         self.0.push(guard);
     }
 
@@ -311,7 +325,7 @@ impl<'tcx> GuardSet<'tcx> {
         assert!(guard_to_kill.expiry_requirements() == vec![]);
 
         let g = self.0.remove(egi);
-        vec![g.rhs]
+        vec![g.rhs.unwrap()]
     }
 
     pub fn move_loan(
@@ -320,23 +334,43 @@ impl<'tcx> GuardSet<'tcx> {
         new_guard: &mir::Place<'tcx>,
         bb: mir::BasicBlock,
     ) {
-        // For an assignment, all the LHS of the to move_loan is eliminated
-        // The loan must exist because no use-after-free
+        // Map over all the possible LHS's.
+        // If to_eliminate is blocking any loan, now new_guard is blocking that loan
+        //  (conditionally)
 
-        for p in self.0.iter().map(|g| g.rhs.permission_of()) {
-            println!("\t~~{:?}", p);
+        for p in self.0.iter_mut() {
+            for (bb, ph) in p.lhs.iter_mut() {
+                match ph {
+                    PlaceHole::Linear(h) => {
+                        *h = *new_guard;
+                    }
+                    PlaceHole::NonLinear(h) => todo!(),
+                    PlaceHole::None => {}
+                }
+            }
         }
 
-        let mut matches = self
-            .0
-            .iter_mut()
-            .enumerate()
-            .filter(|(_, g)| g.rhs.permission_of() == to_eliminate);
+        // for p in self
+        //     .0
+        //     .iter()
+        //     .filter_map(|g| g.rhs.as_ref())
+        //     .map(|g| g.permission_of())
+        // {
+        //     println!("\t all blocked places {:?}", p);
+        // }
 
-        let (egi, mut guard_to_move) = matches.next().unwrap();
-        assert!(matches.next() == None);
+        // let mut matches = self.0.iter_mut().enumerate().filter(|(_, g)| {
+        //     if let Some(rhs) = &g.rhs {
+        //         rhs.permission_of() == to_eliminate
+        //     } else {
+        //         false
+        //     }
+        // });
 
-        guard_to_move.lhs = vec![(bb, PlaceHole::Linear((*new_guard).clone()))];
+        // let (egi, mut guard_to_move) = matches.next().unwrap();
+        // assert!(matches.next() == None);
+
+        // guard_to_move.lhs = vec![(bb, PlaceHole::Linear((*new_guard).clone()))];
     }
 
     /// Return a collection of loans to be culled
@@ -374,7 +408,9 @@ impl<'tcx> GuardSet<'tcx> {
                 lhs_union.insert((req.1).clone());
             }
 
-            free_ensures.insert((g.rhs).clone());
+            if let Some(r) = &g.rhs {
+                free_ensures.insert((*r).clone());
+            }
 
             culled.insert(*loan);
         }
@@ -573,7 +609,10 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
     fn translate_body(&self, dirty: &DirtyBlock, working_pcs: &mut PCSState<'tcx>) {
         // For each statement:
         println!("Translating block number {:?}", dirty.block());
-
+        println!(
+            "Reference Moves: {:?}",
+            self.polonius_info.get_reference_moves()
+        );
         // Block-level weakening
         // (iteration starts on the prior _edges_ through flow exclusion)
 
@@ -715,9 +754,23 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
 
             // Apply guard effects to the PCS
             // 1. New loan issues
+
             let loan_issues = self
                 .polonius_info
                 .get_loan_issued_at(location, PointType::Mid);
+
+            println!("issues {:?}", loan_issues);
+            println!(
+                "live st {:?}",
+                self.polonius_info
+                    .get_loan_live_at(location, PointType::Start)
+            );
+            println!(
+                "live md {:?}",
+                self.polonius_info
+                    .get_loan_live_at(location, PointType::Start)
+            );
+
             let mut loan_issues_it = loan_issues.iter();
             if let Some(new) = loan_issues_it.next() {
                 // For now, the creation of a loan can be decided completely syntactically
@@ -731,12 +784,33 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                         working_pcs.guarded.insert_guard(Guard {
                             label: *new,
                             lhs: vec![(*dirty.block(), PlaceHole::Linear(b))],
-                            rhs: Exclusive(p),
+                            rhs: Some(Exclusive(p)),
                         });
                     }
                     // Note: Moving mut borrows are never copy
                     Assign(box (p_to, Use(mir::Operand::Move(p_from)))) => {
-                        todo!();
+                        // When a borrow is moved, a new loan is made.
+                        // After, we should have permission to write to the previously borrowed-from place
+                        //      even if we didn't before (conditionally blah)
+                        // The old loan can not be applied any longer
+
+                        if self.polonius_info.get_reference_moves().contains(new) {
+                            // The prior guards of the place are no longer guarding it
+                            // The precondition of the move is definitely in the PCS at this point (?)
+
+                            // Reset guards (without filling them)
+                            // We have gotten permissions for the loan precondition
+
+                            working_pcs
+                                .guarded
+                                .move_loan(&p_from, &p_to, *(*dirty).block());
+
+                            // Set the fake loan as one with no pre- or post- condition
+                            working_pcs.issue_guard_for_loan(Guard::nop_guard((*new).clone()));
+                        } else {
+                            // Just a regular, owned, move. Nothing to see here
+                            todo!();
+                        }
                         // move_guards.push((p_from, p_to));
                     }
                     _ => {
