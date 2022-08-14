@@ -21,10 +21,6 @@ extern crate rustc_target;
 extern crate rustc_trait_selection;
 extern crate serde;
 
-pub mod joins;
-mod pcs_analysis;
-pub mod syntax;
-
 mod pcs;
 mod util;
 pub use pcs::dump_pcs;

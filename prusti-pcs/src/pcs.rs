@@ -8,7 +8,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 use super::pcs::Resource::*;
-use crate::{pcs::FreeStatement::*, syntax::PCSPermission, util::EncodingResult};
+use crate::{pcs::FreeStatement::*, util::EncodingResult};
 use core::cell::*;
 use itertools::{
     Either::{Left, Right},
@@ -443,7 +443,11 @@ impl<'tcx> GuardSet<'tcx> {
             }
         }
 
-        (free_requirement, free_ensures)
+        // Ignore intermediate permissions
+        let req_diff = &free_requirement - &free_ensures;
+        let ens_diff = &free_ensures - &free_requirement;
+
+        (req_diff, ens_diff)
     }
 }
 
@@ -637,6 +641,9 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                     .get_loan_live_at(location, PointType::Start),
             );
 
+            // println!("cull_pre:  {:?}", cull_pre);
+            // println!("cull_post: {:?}", cull_post);
+
             let mut cull_statements: Vec<FreeStatement<'tcx>> = vec![];
             let mut cull_before_pcs: Vec<PCSState<'tcx>> = vec![];
             let packing = RepackWeaken::repack_weaken(
@@ -759,17 +766,17 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 .polonius_info
                 .get_loan_issued_at(location, PointType::Mid);
 
-            println!("issues {:?}", loan_issues);
-            println!(
-                "live st {:?}",
-                self.polonius_info
-                    .get_loan_live_at(location, PointType::Start)
-            );
-            println!(
-                "live md {:?}",
-                self.polonius_info
-                    .get_loan_live_at(location, PointType::Start)
-            );
+            // println!("issues {:?}", loan_issues);
+            // println!(
+            //     "live st {:?}",
+            //     self.polonius_info
+            //         .get_loan_live_at(location, PointType::Start)
+            // );
+            // println!(
+            //     "live md {:?}",
+            //     self.polonius_info
+            //         .get_loan_live_at(location, PointType::Start)
+            // );
 
             let mut loan_issues_it = loan_issues.iter();
             if let Some(new) = loan_issues_it.next() {
