@@ -42,6 +42,7 @@ use prusti_rustc_interface::{
         ty::TyCtxt,
     },
 };
+use std::fmt::Debug;
 
 /// Computes the PCS and prints it to the console
 /// Currently the entry point for the compiler
@@ -153,7 +154,7 @@ fn preprocess_mir<'tcx>(mir: &mut mir::Body<'tcx>) {
 ////////////////////////////////////////////////////////////////////////////////
 // Permissions (Free PCS)
 
-#[derive(Eq, Hash, PartialEq, Clone, Debug)]
+#[derive(Eq, Hash, PartialEq, Clone)]
 pub enum Resource<T>
 where
     T: Clone,
@@ -162,6 +163,17 @@ where
     Shared(T),
     Uninit(T),
     Blocked(T),
+}
+
+impl<'tcx> Debug for Resource<mir::Place<'tcx>> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            Exclusive(r) => write!(f, "e {:?}", r),
+            Shared(r) => write!(f, "s {:?}", r),
+            Uninit(r) => write!(f, "u {:?}", r),
+            Blocked(r) => write!(f, "b {:?}", r),
+        }
+    }
 }
 
 impl<T> Resource<T>
@@ -206,11 +218,21 @@ fn usize_place<'tcx>(id: usize) -> mir::Place<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // Guarded PCS
 
-#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, PartialEq, Eq, Hash)]
 enum PlaceHole<'tcx> {
     Linear(mir::Place<'tcx>),
     NonLinear(mir::Place<'tcx>),
     None,
+}
+
+impl<'tcx> Debug for PlaceHole<'tcx> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        match self {
+            PlaceHole::Linear(r) => write!(f, "LN {:?}", r),
+            PlaceHole::NonLinear(r) => write!(f, "NL {:?}", r),
+            PlaceHole::None => write!(f, "NONE"),
+        }
+    }
 }
 
 type JoinPoint = usize;
@@ -224,13 +246,19 @@ enum GuardExpr {
     And(Box<GuardExpr>),
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, PartialEq)]
 struct Guard<'tcx> {
     label: Loan,
     rhs: Option<Permission<'tcx>>,
     // Generalization: guards can be stronger expressions than a single bb
     // Generalization: for struct with borrow RHS can be not top-level place
     lhs: Vec<(mir::BasicBlock, PlaceHole<'tcx>)>,
+}
+
+impl<'tcx> Debug for Guard<'tcx> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{:?}: {:?} --* {:?}", self.label, self.lhs, self.rhs)
+    }
 }
 
 impl<'tcx> Guard<'tcx> {
@@ -454,7 +482,7 @@ impl<'tcx> GuardSet<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // State
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 struct PCSState<'tcx> {
     free: PermissionSet<'tcx>,
     pub guarded: GuardSet<'tcx>,
@@ -476,6 +504,20 @@ impl<'tcx> PCSState<'tcx> {
     // Guards the
     fn issue_guard_for_loan<'mir>(&mut self, guard: Guard<'tcx>) {
         self.guarded.insert_guard(guard);
+    }
+}
+
+impl<'tcx> Debug for PCSState<'tcx> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+        write!(f, "{{ ")?;
+        for s in self.free.0.iter() {
+            write!(f, "{:?}, ", s)?;
+        }
+        write!(f, "}} [ ")?;
+        for l in self.guarded.0.iter() {
+            write!(f, "{:?}, ", l)?;
+        }
+        write!(f, "]")
     }
 }
 
@@ -717,12 +759,12 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
             packing.apply(working_pcs, &mut edge_statements, &mut edge_before_pcs);
             if edge_statements.len() > 0 {
                 for e in edge_statements.iter() {
-                    println!("       (edge) {:?}", e);
+                    println!("\t\t(edge) {:?}", e);
                 }
             }
 
-            println!("\t{:?}\t{:?}", location, working_pcs);
-            println!("\t{:?} {:?}", location, stmt);
+            println!("\t{:?}\tPCS: {:?}", location, working_pcs);
+            println!("\t{:?}\t{:?}", location, stmt);
 
             let st_loan_live_at = self
                 .polonius_info
