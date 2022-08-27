@@ -637,7 +637,13 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                 let st_b = end_states.get(&flow_exclusions[1].0).unwrap().clone();
                 println!("{:?} {:?}", flow_exclusions[0], st_a,);
                 println!("{:?} {:?}", flow_exclusions[1], st_b,);
-                let join = Join::join(self.env.tcx(), self.mir, self.env, &st_a, &st_b);
+                let join = Join::join(
+                    self.env.tcx(),
+                    self.mir,
+                    self.env,
+                    st_a.clone(),
+                    st_b.clone(),
+                );
                 panic!();
             } else {
                 todo!();
@@ -1558,11 +1564,8 @@ impl<'tcx> RepackWeaken<'tcx> {
 
 #[derive(Debug)]
 struct Join<'tcx> {
-    exclusive_unpack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
-    // exclusive_pack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)>,
-    // exclusive_weaken: FxHashSet<mir::Place<'tcx>>,
-    // uninit_unpack: Vec<(mir::Place<'tcx>, FxHashSet<mir::Place<'tcx>>)>,
-    // uninit_pack: Vec<(FxHashSet<mir::Place<'tcx>>, mir::Place<'tcx>)>,
+    exclusive_meet: Meet<'tcx>,
+    uninit_meet: Meet<'tcx>,
 }
 
 impl<'tcx> Join<'tcx> {
@@ -1571,22 +1574,60 @@ impl<'tcx> Join<'tcx> {
         tcx: TyCtxt<'tcx>,
         mir: &'mir mir::Body<'tcx>,
         env: &'env Environment<'tcx>,
-        mut pcs_a: &PCSState<'tcx>,
-        mut pcs_b: &PCSState<'tcx>,
+        mut pcs_a: PCSState<'tcx>,
+        mut pcs_b: PCSState<'tcx>,
     ) -> Self
     where
         'tcx: 'env,
     {
+        // TODO: We'll refactor a place to put the actual annotations sometime else
+        //  when we get rid of that data clump.
+        let mut st_a: Vec<FreeStatement<'tcx>> = vec![];
+        let mut st_b: Vec<FreeStatement<'tcx>> = vec![];
+        let mut bf_a: Vec<PCSState<'tcx>> = vec![];
+        let mut bf_b: Vec<PCSState<'tcx>> = vec![];
+
         println!("  [debug] Performing a join");
-        let mut problems = PCSProblems::new(pcs_a, pcs_b);
-        while let Some((Uninit(l), (pa, pb))) = problems.next_uninit_problem() {
-            println!("{:?}: {:?} / {:?}", l, pa, pb);
+        let mut problems = PCSProblems::new(&pcs_a, &pcs_b);
+
+        // TODO: Collect MEET information into intermediate data structure instead of applying immedately
+        // needed because we reverse the order of their computation and application etc
+
+        while let Some((Uninit(l), inst)) = problems.next_uninit_problem() {
+            println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
+            let m = Meet::new(tcx, mir, env, inst);
+            println!("{:?}: {:?}", l, m);
+
+            m.apply_to_infimum(
+                &mut pcs_a,
+                &mut st_a,
+                &mut bf_a,
+                &mut pcs_b,
+                &mut st_b,
+                &mut bf_b,
+                |p| Uninit(p),
+            );
+        }
+
+        println!("{:?}", problems.is_done());
+        while let Some((Exclusive(l), inst)) = problems.next_exclusive_problem() {
+            println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
+            let m = Meet::new(tcx, mir, env, inst);
+            println!("{:?}: {:?}", l, m);
+            m.apply_to_infimum(
+                &mut pcs_a,
+                &mut st_a,
+                &mut bf_a,
+                &mut pcs_b,
+                &mut st_b,
+                &mut bf_b,
+                |p| Exclusive(p),
+            );
         }
         println!("{:?}", problems.is_done());
-        while let Some((Exclusive(l), (pa, pb))) = problems.next_exclusive_problem() {
-            println!("{:?}: {:?} / {:?}", l, pa, pb);
-        }
-        println!("{:?}", problems.is_done());
+
+        println!("{:?}", pcs_a);
+        println!("{:?}", pcs_b);
         todo!();
     }
 }
@@ -1599,7 +1640,7 @@ struct PCSProblems<'tcx> {
 impl<'tcx> PCSProblems<'tcx> {
     pub fn new(pcs_a: &PCSState<'tcx>, pcs_b: &PCSState<'tcx>) -> Self {
         if !pcs_a.guarded.is_empty() || !pcs_b.guarded.is_empty() {
-            println!("\t[debug] unsupported: joins including the guarded PCS");
+            println!("\t[debug] unsupported: pcs problems generation including the guarded PCS");
         }
 
         let mut free_problems = FxHashMap::default();
@@ -1653,9 +1694,10 @@ type ProblemInstance<'tcx> = (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<
 // to repack from a to b (and if the remainder is ({}, {})) one can
 //  1. perform unpacks_a in order on a to yield infimum
 //  2. perform unpacks_b in reverse order as packs to yield b
+#[derive(Debug)]
 struct Meet<'tcx> {
-    unpacks_a: Vec<Unpacking<'tcx>>,
-    unpacks_b: Vec<Unpacking<'tcx>>,
+    unpacks_a: Vec<RepackLatticeEdge<'tcx>>,
+    unpacks_b: Vec<RepackLatticeEdge<'tcx>>,
     meet: FxHashSet<mir::Place<'tcx>>,
     remainder: ProblemInstance<'tcx>,
 }
@@ -1673,8 +1715,8 @@ impl<'tcx> Meet<'tcx> {
         let mut prob_a = problem.0;
         let mut prob_b = problem.1;
 
-        let mut unpacks_a: Vec<Unpacking<'tcx>> = Vec::default();
-        let mut unpacks_b: Vec<Unpacking<'tcx>> = Vec::default();
+        let mut unpacks_a: Vec<RepackLatticeEdge<'tcx>> = Vec::default();
+        let mut unpacks_b: Vec<RepackLatticeEdge<'tcx>> = Vec::default();
         let mut meet: FxHashSet<mir::Place<'tcx>> = FxHashSet::default();
 
         let mut gen_a: FxHashSet<mir::Place<'tcx>>;
@@ -1715,9 +1757,9 @@ impl<'tcx> Meet<'tcx> {
                 gen_b = remainder_b.into_iter().collect();
                 gen_b.insert(expand_b);
                 kill_b = FxHashSet::from_iter([*b].into_iter());
-                unpacks_b.push(Unpacking {
-                    from: *b,
-                    to: gen_b.iter().cloned().collect(),
+                unpacks_b.push(RepackLatticeEdge {
+                    upper: *b,
+                    lower: gen_b.iter().cloned().collect(),
                 });
             }
             // 1.2 Search for place in A which is a prefix of an element in B
@@ -1732,9 +1774,9 @@ impl<'tcx> Meet<'tcx> {
                 gen_a = remainder_a.into_iter().collect();
                 gen_a.insert(expand_a);
                 kill_a = FxHashSet::from_iter([*a].into_iter());
-                unpacks_a.push(Unpacking {
-                    from: *a,
-                    to: gen_a.iter().cloned().collect(),
+                unpacks_a.push(RepackLatticeEdge {
+                    upper: *a,
+                    lower: gen_a.iter().cloned().collect(),
                 });
             }
             // 1.3 If nothing expands, the remaining problem is the remiander
@@ -1765,9 +1807,86 @@ impl<'tcx> Meet<'tcx> {
             }
         }
     }
+
+    // TODO: The triple (working_pcs, statements, pcs_before) is a data clump
+    // TODO: this function should be a member of that data clump's struct, not the meet
+    pub fn apply_to_infimum(
+        &self,
+        working_pcs_a: &mut PCSState<'tcx>,
+        statements_a: &mut Vec<FreeStatement<'tcx>>,
+        pcs_before_a: &mut Vec<PCSState<'tcx>>,
+        working_pcs_b: &mut PCSState<'tcx>,
+        statements_b: &mut Vec<FreeStatement<'tcx>>,
+        pcs_before_b: &mut Vec<PCSState<'tcx>>,
+        kind_f: fn(mir::Place<'tcx>) -> Resource<mir::Place<'tcx>>,
+    ) {
+        Self::do_apply_downwards(
+            working_pcs_a,
+            statements_a,
+            pcs_before_a,
+            &self.unpacks_a,
+            kind_f,
+        );
+        Self::do_apply_downwards(
+            working_pcs_b,
+            statements_b,
+            pcs_before_b,
+            &self.unpacks_b,
+            kind_f,
+        );
+    }
+
+    // TODO: This also doesn't belong here!
+    fn do_apply_downwards(
+        working: &mut PCSState<'tcx>,
+        statements: &mut Vec<FreeStatement<'tcx>>,
+        before: &mut Vec<PCSState<'tcx>>,
+        edges: &Vec<RepackLatticeEdge<'tcx>>,
+        kind_f: fn(mir::Place<'tcx>) -> Resource<mir::Place<'tcx>>,
+    ) {
+        for edge in edges.iter() {
+            before.push(working.clone());
+            edge.apply_downwards(&mut working.free.0, kind_f);
+            statements.push(edge.as_unpack(kind_f))
+        }
+    }
 }
 
-struct Unpacking<'tcx> {
-    from: mir::Place<'tcx>,
-    to: FxHashSet<mir::Place<'tcx>>,
+#[derive(Debug)]
+struct RepackLatticeEdge<'tcx> {
+    upper: mir::Place<'tcx>,
+    lower: FxHashSet<mir::Place<'tcx>>,
+}
+
+impl<'tcx> RepackLatticeEdge<'tcx> {
+    pub fn apply_downwards(
+        &self,
+        set: &mut FxHashSet<Resource<mir::Place<'tcx>>>,
+        kind_f: fn(mir::Place<'tcx>) -> Resource<mir::Place<'tcx>>,
+    ) {
+        assert!(set.remove(&kind_f(self.upper)));
+        for to in self.lower.iter() {
+            assert!(set.insert(kind_f(*to).clone()));
+        }
+    }
+    pub fn apply_upwards(
+        &self,
+        set: &mut FxHashSet<Resource<mir::Place<'tcx>>>,
+        kind_f: fn(mir::Place<'tcx>) -> Resource<mir::Place<'tcx>>,
+    ) {
+        for from in self.lower.iter() {
+            assert!(set.remove(&kind_f(*from)));
+        }
+        assert!(set.insert(kind_f(self.upper).clone()));
+    }
+
+    pub fn as_unpack(
+        &self,
+        kind_f: fn(mir::Place<'tcx>) -> Resource<mir::Place<'tcx>>,
+    ) -> FreeStatement<'tcx> {
+        Unpack(
+            kind_f(self.upper.clone()),
+            self.lower.iter().map(|p| kind_f(*p)).collect::<Vec<_>>(),
+        )
+    }
 }
