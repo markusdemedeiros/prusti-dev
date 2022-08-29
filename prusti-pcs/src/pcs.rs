@@ -220,7 +220,7 @@ where
 
 type Permission<'tcx> = Resource<mir::Place<'tcx>>;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct PermissionSet<'tcx>(FxHashSet<Permission<'tcx>>);
 
 impl<'tcx> Default for PermissionSet<'tcx> {
@@ -318,7 +318,7 @@ impl<'tcx> Guard<'tcx> {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 struct GuardSet<'tcx>(Vec<Guard<'tcx>>);
 
 impl<'tcx> Default for GuardSet<'tcx> {
@@ -430,7 +430,7 @@ impl<'tcx> GuardSet<'tcx> {
     }
 
     /// Return a collection of loans to be culled
-    pub fn get_cullable_loans(&mut self, mut remaining_loans: Vec<Loan>) -> FxHashSet<Loan> {
+    pub fn get_cullable_loans(&mut self, remaining_loans: Vec<Loan>) -> FxHashSet<Loan> {
         let current_loans = self.0.iter().map(|g| &g.label).collect::<FxHashSet<_>>();
         let rm_loans = remaining_loans.iter().collect::<FxHashSet<_>>();
         assert!(rm_loans.is_subset(&current_loans));
@@ -441,7 +441,7 @@ impl<'tcx> GuardSet<'tcx> {
     ///     Eagerly fill holes and build up a contract for the free PCS
     pub fn cull_loans(
         &mut self,
-        mut remaining_loans: Vec<Loan>,
+        remaining_loans: Vec<Loan>,
     ) -> (FxHashSet<Permission<'tcx>>, FxHashSet<Permission<'tcx>>) {
         let mut free_requirement: FxHashSet<Permission<'tcx>> = FxHashSet::default();
         let mut free_ensures: FxHashSet<Permission<'tcx>> = FxHashSet::default();
@@ -453,7 +453,7 @@ impl<'tcx> GuardSet<'tcx> {
             //      Add the LHS into free requirements
             //      Remove that requirement from every LHS
             //      Pop the culled loans from the list
-            let mut g = self
+            let g = self
                 .0
                 .iter_mut()
                 .filter(|gg| gg.label == *loan)
@@ -514,7 +514,7 @@ impl<'tcx> GuardSet<'tcx> {
 ////////////////////////////////////////////////////////////////////////////////
 // State
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 struct PCSState<'tcx> {
     free: PermissionSet<'tcx>,
     pub guarded: GuardSet<'tcx>,
@@ -644,7 +644,9 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
                     st_a.clone(),
                     st_b.clone(),
                 );
-                panic!();
+                // TODO: Log states from the join to post blocks here
+                //  (possible Join.apply() or something)
+                working_pcs = join.join_pcs;
             } else {
                 todo!();
             }
@@ -818,8 +820,8 @@ impl<'mir, 'env: 'mir, 'tcx: 'env> PCSctx<'mir, 'env, 'tcx> {
             let st_loan_dying_at = self.polonius_info.get_loans_dying_at(location, false);
 
             // If there's an extra live loan, then issue a new one
-            let mut new_guards: Vec<Guard<'tcx>> = vec![];
-            let mut move_guards: Vec<(mir::Place<'tcx>, mir::Place<'tcx>)> = vec![];
+            let new_guards: Vec<Guard<'tcx>> = vec![];
+            let move_guards: Vec<(mir::Place<'tcx>, mir::Place<'tcx>)> = vec![];
 
             // for (p_from, p_to) in move_guards {
             //     println!("\t working on move loan {:?}, {:?}", p_from, p_to);
@@ -1241,8 +1243,8 @@ impl<'tcx> RepackWeaken<'tcx> {
         mir: &'mir mir::Body<'tcx>,
         env: &'env Environment<'tcx>,
         // Repack pcs_from into pcs_to
-        mut pcs_from: PermissionSet<'tcx>,
-        mut pcs_to: PermissionSet<'tcx>,
+        pcs_from: PermissionSet<'tcx>,
+        pcs_to: PermissionSet<'tcx>,
     ) -> Self
     where
         'tcx: 'env,
@@ -1564,8 +1566,8 @@ impl<'tcx> RepackWeaken<'tcx> {
 
 #[derive(Debug)]
 struct Join<'tcx> {
-    exclusive_meet: Meet<'tcx>,
-    uninit_meet: Meet<'tcx>,
+    // TODO: Add the meet details to this somehow
+    pub join_pcs: PCSState<'tcx>,
 }
 
 impl<'tcx> Join<'tcx> {
@@ -1595,10 +1597,8 @@ impl<'tcx> Join<'tcx> {
 
         while let Some((Uninit(l), inst)) = problems.next_uninit_problem() {
             println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
-            let m = Meet::new(tcx, mir, env, inst);
-            println!("{:?}: {:?}", l, m);
-
-            m.apply_to_infimum(
+            let uninit_meet = Meet::new(tcx, mir, env, inst);
+            uninit_meet.apply_to_infimum(
                 &mut pcs_a,
                 &mut st_a,
                 &mut bf_a,
@@ -1612,9 +1612,8 @@ impl<'tcx> Join<'tcx> {
         println!("{:?}", problems.is_done());
         while let Some((Exclusive(l), inst)) = problems.next_exclusive_problem() {
             println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
-            let m = Meet::new(tcx, mir, env, inst);
-            println!("{:?}: {:?}", l, m);
-            m.apply_to_infimum(
+            let exclusive_meet = Meet::new(tcx, mir, env, inst);
+            exclusive_meet.apply_to_infimum(
                 &mut pcs_a,
                 &mut st_a,
                 &mut bf_a,
@@ -1628,6 +1627,10 @@ impl<'tcx> Join<'tcx> {
 
         println!("{:?}", pcs_a);
         println!("{:?}", pcs_b);
+        if pcs_a == pcs_b {
+            println!("Join found: {:?}", pcs_a);
+            return Join { join_pcs: pcs_a };
+        }
         todo!();
     }
 }
