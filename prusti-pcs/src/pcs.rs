@@ -398,7 +398,9 @@ impl<'tcx> GuardSet<'tcx> {
             for (bb, ph) in p.lhs.iter_mut() {
                 match ph {
                     PlaceHole::Linear(h) => {
-                        *h = *new_guard;
+                        if h == to_eliminate {
+                            *h = *new_guard;
+                        }
                     }
                     PlaceHole::NonLinear(h) => todo!(),
                     PlaceHole::None => {}
