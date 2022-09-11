@@ -21,6 +21,9 @@ extern crate rustc_target;
 extern crate rustc_trait_selection;
 extern crate serde;
 
+mod cfgiter;
+mod model;
 mod pcs;
+mod repack;
 mod util;
 pub use pcs::dump_pcs;
