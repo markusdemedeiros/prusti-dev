@@ -4,7 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 use crate::{
     cfgiter::{DirtyBlock, PCSIter},
     model::{FreeStatement::*, Resource::*, *},
@@ -94,6 +95,8 @@ impl<'tcx> RepackWeaken<'tcx> {
     where
         'tcx: 'env,
     {
+        // TODO: Refactor this to use the new Problems API
+
         let mut uninit_problems: FxHashMap<
             mir::Local,
             (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<'tcx>>),
@@ -411,7 +414,7 @@ impl<'tcx> RepackWeaken<'tcx> {
 
 #[derive(Debug)]
 pub struct Join<'tcx> {
-    // TODO: Add the meet details to this somehow
+    // TODO: Add the gcd details to this somehow
     pub join_pcs: PCSState<'tcx>,
 }
 
@@ -438,23 +441,10 @@ impl<'tcx> Join<'tcx> {
         let mut problems = PCSProblems::new(&pcs_a, &pcs_b);
 
         // TODO: Collect MEET information into intermediate data structure instead of applying immedately
-        // needed because we reverse the order of their computation and application etc
+        // needed because we reverse the order of their computation and application etc?
 
-        while let Some((Uninit(l), inst)) = problems.next_uninit_problem() {
-            println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
-            let uninit_meet = Meet::new(tcx, mir, env, inst);
-            uninit_meet.apply_to_infimum(
-                &mut pcs_a,
-                &mut st_a,
-                &mut bf_a,
-                &mut pcs_b,
-                &mut st_b,
-                &mut bf_b,
-                |p| Uninit(p),
-            );
-        }
+        let mut remainders: FxHashMap<mir::Local, ProblemInstance<'tcx>> = FxHashMap::default();
 
-        println!("{:?}", problems.is_done());
         while let Some((Exclusive(l), inst)) = problems.next_exclusive_problem() {
             println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
             let exclusive_meet = Meet::new(tcx, mir, env, inst);
@@ -467,8 +457,41 @@ impl<'tcx> Join<'tcx> {
                 &mut bf_b,
                 |p| Exclusive(p),
             );
+
+            remainders.insert(l, exclusive_meet.remainder);
         }
         println!("{:?}", problems.is_done());
+
+        while let Some((Uninit(l), mut inst)) = problems.next_uninit_problem() {
+            println!("{:?}: {:?} / {:?}", l, inst.0, inst.1);
+
+            if let Some(r) = remainders.remove(&l) {
+                for remove_a in r.0.iter() {
+                    assert!(pcs_a.free.0.remove(&Exclusive(*remove_a)));
+                    assert!(pcs_a.free.0.insert(Uninit((*remove_a).clone())));
+                }
+                for remove_b in r.1.iter() {
+                    assert!(pcs_b.free.0.remove(&Exclusive(*remove_b)));
+                    assert!(pcs_b.free.0.insert(Uninit((*remove_b).clone())));
+                }
+                combine_problems(&mut inst, r);
+                println!(" ~~~~~> {:?}: {:?} / {:?}", l, inst.0, inst.1);
+            }
+
+            let uninit_meet = Meet::new(tcx, mir, env, inst);
+            uninit_meet.apply_to_infimum(
+                &mut pcs_a,
+                &mut st_a,
+                &mut bf_a,
+                &mut pcs_b,
+                &mut st_b,
+                &mut bf_b,
+                |p| Uninit(p),
+            );
+        }
+        println!("{:?}", problems.is_done());
+        // All remainders have to correspond to an exclusive problem. Check that no remainders are left
+        println!("\t\t [dbug] final remainders {:?}", remainders);
 
         println!("{:?}", pcs_a);
         println!("{:?}", pcs_b);
@@ -476,7 +499,7 @@ impl<'tcx> Join<'tcx> {
             println!("Join found: {:?}", pcs_a);
             return Join { join_pcs: pcs_a };
         }
-        todo!();
+        panic!("Join not found!");
     }
 }
 
@@ -537,6 +560,11 @@ impl<'tcx> PCSProblems<'tcx> {
 
 // type of join problems equivalence class (module local and exclusivity)
 type ProblemInstance<'tcx> = (FxHashSet<mir::Place<'tcx>>, FxHashSet<mir::Place<'tcx>>);
+
+fn combine_problems<'tcx>(p_into: &mut ProblemInstance<'tcx>, p_from: ProblemInstance<'tcx>) {
+    p_into.0.extend(p_from.0);
+    p_into.1.extend(p_from.1);
+}
 
 // Represents a basic repacking of places that computes their meet (infimum)
 // to repack from a to b (and if the remainder is ({}, {})) one can

@@ -4,7 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#![allow(dead_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
 use crate::{
     model::Resource::*,
     util::{preprocess_mir, EncodingResult},
@@ -416,8 +417,11 @@ impl<'tcx> GuardSet<'tcx> {
     }
 
     pub fn kill_loan(&mut self, to_kill: Vec<Loan>, location: mir::Location) {
-        // Tag the RHS of all loans killed at this location
-        todo!();
+        if to_kill.len() != 0 {
+            // Tag the RHS of all loans killed at this location
+            println!("Killing loan {:?} in {:?}", to_kill, self);
+            todo!();
+        }
     }
 }
 
