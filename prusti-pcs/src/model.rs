@@ -168,13 +168,6 @@ pub type JoinPoint = usize;
 
 pub type JoinPath = usize;
 
-// Essentially: Tree of join points
-pub enum GuardExpr {
-    Top,
-    ThroughJoin(JoinPoint, JoinPath),
-    And(Box<GuardExpr>),
-}
-
 #[derive(Clone, PartialEq)]
 pub struct Guard<'tcx> {
     pub label: Loan,
