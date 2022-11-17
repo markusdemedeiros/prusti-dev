@@ -162,6 +162,29 @@
 <span id="162">162</span>
 <span id="163">163</span>
 <span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
 </pre><pre class="rust"><code><span class="comment">// © 2019, ETH Zurich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -170,7 +193,30 @@
 
 </span><span class="doccomment">//! This module defines the interface provided to a verifier.
 
-</span><span class="kw">use </span>prusti_rustc_interface::middle::ty::{<a class="self" href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/index.html">self</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/context/struct.TyCtxt.html">TyCtxt</a>};
+</span><span class="kw">use </span>log::{<a href="../../../log/macro.debug.html">debug</a>, <a href="../../../log/macro.trace.html">trace</a>};
+<span class="kw">use </span>prusti_rustc_interface::{
+    errors::{<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_errors/diagnostic_builder/struct.DiagnosticBuilder.html">DiagnosticBuilder</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_errors/diagnostic_builder/trait.EmissionGuarantee.html">EmissionGuarantee</a>, MultiSpan},
+    hir::{
+        def_id::{<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.DefId.html">DefId</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.LocalDefId.html">LocalDefId</a>},
+        hir_id::HirId,
+    },
+    middle::{
+        <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/index.html">mir</a>,
+        ty::{
+            <a class="self" href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/index.html">self</a>,
+            subst::{<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/subst/type.SubstsRef.html">SubstsRef</a>},
+            <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/context/struct.TyCtxt.html">TyCtxt</a>,
+        },
+    },
+    span::{<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/symbol/struct.Symbol.html">symbol::Symbol</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/span_encoding/struct.Span.html">Span</a>},
+    trait_selection::infer::{<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_trait_selection/infer/trait.InferCtxtExt.html">InferCtxtExt</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_infer/infer/trait.TyCtxtInferExt.html">TyCtxtInferExt</a>},
+};
+<span class="kw">use </span>std::{
+    <a href="https://doc.rust-lang.org/nightly/core/cell/struct.RefCell.html">cell::RefCell</a>,
+    collections::{<a href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html">HashMap</a>, <a href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html">HashSet</a>},
+    <a href="https://doc.rust-lang.org/nightly/std/path/struct.PathBuf.html">path::PathBuf</a>,
+    <a href="https://doc.rust-lang.org/nightly/alloc/rc/struct.Rc.html">rc::Rc</a>,
+};
 
 <span class="kw">pub mod </span><a href="body.rs.html#1-351">body</a>;
 <span class="kw">pub mod </span><a href="borrowck/mod.rs.html#7-8">borrowck</a>;
@@ -182,13 +228,13 @@
 <span class="kw">mod </span><a href="loops.rs.html#7-611">loops</a>;
 <span class="kw">mod </span><a href="loops_utils.rs.html#7-534">loops_utils</a>;
 <span class="kw">pub mod </span><a href="mir_analyses/mod.rs.html#7-11">mir_analyses</a>;
-<span class="kw">pub mod </span><a href="mir_body/mod.rs.html#1-4">mir_body</a>;
-<span class="kw">pub mod </span><a href="mir_dump/mod.rs.html#1-39">mir_dump</a>;
-<span class="kw">pub mod </span><a href="mir_sets/mod.rs.html#1-4">mir_sets</a>;
 <span class="kw">pub mod </span><a href="mir_storage.rs.html#1-51">mir_storage</a>;
 <span class="kw">pub mod </span><a href="mir_utils/mod.rs.html#7-24">mir_utils</a>;
+<span class="kw">pub mod </span><a href="mir_body/mod.rs.html#1-4">mir_body</a>;
+<span class="kw">pub mod </span><a href="mir_sets/mod.rs.html#1-4">mir_sets</a>;
+<span class="kw">pub mod </span><a href="mir_dump/mod.rs.html#1-39">mir_dump</a>;
 <span class="kw">mod </span><a href="name.rs.html#1-78">name</a>;
-<span class="kw">pub mod </span><a href="polonius_info.rs.html#7-2395">polonius_info</a>;
+<span class="kw">pub mod </span><a href="polonius_info.rs.html#7-2402">polonius_info</a>;
 <span class="kw">mod </span><a href="procedure.rs.html#7-429">procedure</a>;
 <span class="kw">mod </span><a href="query.rs.html#1-541">query</a>;
 <span class="kw">mod </span><a href="traits/mod.rs.html#1-4">traits</a>;
@@ -197,7 +243,7 @@
     <a href="body.rs.html#87">body::EnvBody</a>,
     <a href="diagnostic.rs.html#7">diagnostic::EnvDiagnostic</a>,
     loops::{<a href="loops.rs.html#20">LoopAnalysisError</a>, <a href="loops.rs.html#77">PlaceAccess</a>, <a href="loops.rs.html#50">PlaceAccessKind</a>, <a href="loops.rs.html#226">ProcedureLoops</a>},
-    <a href="#19">loops_utils</a>::<span class="kw-2">*</span>,
+    <a href="#42">loops_utils</a>::<span class="kw-2">*</span>,
     <a href="name.rs.html#8">name::EnvName</a>,
     procedure::{
         <a href="procedure.rs.html#247-253">get_loop_invariant</a>, <a href="procedure.rs.html#281">is_ghost_begin_marker</a>, <a href="procedure.rs.html#285">is_ghost_end_marker</a>, <a href="procedure.rs.html#273">is_loop_invariant_block</a>,
@@ -206,11 +252,11 @@
     <a href="query.rs.html#29">query::EnvQuery</a>,
 };
 <span class="kw">use </span><span class="self">self</span>::{
-    <a href="collect_closure_defs_visitor.rs.html#14">collect_closure_defs_visitor::CollectClosureDefsVisitor</a>,
+    <a href="borrowck/facts.rs.html#35">borrowck::facts::BorrowckFacts</a>, <a href="collect_closure_defs_visitor.rs.html#14">collect_closure_defs_visitor::CollectClosureDefsVisitor</a>,
     <a href="collect_prusti_spec_visitor.rs.html#19">collect_prusti_spec_visitor::CollectPrustiSpecVisitor</a>,
 };
 <span class="kw">use </span><a href="../data.rs.html#13"><span class="kw">crate</span>::data::ProcedureDefId</a>;
-<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/subst/type.SubstsRef.html">rustc_middle::ty::SubstsRef</a>;
+<span class="kw">pub use </span><a href="polonius_info.rs.html#274-278"><span class="kw">crate</span>::environment::polonius_info::graphviz</a>;
 
 <span class="doccomment">/// Facade to the Rust compiler.
 </span><span class="kw">pub struct </span>Environment&lt;<span class="lifetime">&#39;tcx</span>&gt; {
@@ -224,18 +270,18 @@
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;tcx</span>&gt; Environment&lt;<span class="lifetime">&#39;tcx</span>&gt; {
     <span class="doccomment">/// Builds an environment given a compiler state.
     </span><span class="kw">pub fn </span>new(tcx: TyCtxt&lt;<span class="lifetime">&#39;tcx</span>&gt;, prusti_version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <span class="self">Self </span>{
-        <a href="#52">Environment</a> {
-            <a href="#62">prusti_version</a>,
-            body: EnvBody::new(<a href="#62">tcx</a>),
-            diagnostic: EnvDiagnostic::new(<a href="#62">tcx</a>),
-            name: EnvName::new(<a href="#62">tcx</a>),
-            query: EnvQuery::new(<a href="#62">tcx</a>),
+        <a href="#75">Environment</a> {
+            <a href="#85">prusti_version</a>,
+            body: EnvBody::new(<a href="#85">tcx</a>),
+            diagnostic: EnvDiagnostic::new(<a href="#85">tcx</a>),
+            name: EnvName::new(<a href="#85">tcx</a>),
+            query: EnvQuery::new(<a href="#85">tcx</a>),
         }
     }
 
     <span class="doccomment">/// Returns the typing context
     </span><span class="kw">pub fn </span>tcx(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; TyCtxt&lt;<span class="lifetime">&#39;tcx</span>&gt; {
-        <a class="self" href="#73">self</a>.query.<a href="query.rs.html#39">tcx</a>()
+        <a class="self" href="#96">self</a>.query.<a href="query.rs.html#39">tcx</a>()
     }
 
     <span class="doccomment">/// Dump various information from the borrow checker.
@@ -243,33 +289,33 @@
     /// Mostly used for experiments and debugging.
     </span><span class="kw">pub fn </span>dump_borrowck_info(<span class="kw-2">&amp;</span><span class="self">self</span>, procedures: <span class="kw-2">&amp;</span>[<a href="../data.rs.html#13">ProcedureDefId</a>]) {
         <span class="kw">if </span>prusti_common::config::dump_borrowck_info() {
-            <a href="dump_borrowck_info.rs.html#13">dump_borrowck_info::dump_borrowck_info</a>(<a class="self" href="#80">self</a>, <a href="#80">procedures</a>)
+            <a href="dump_borrowck_info.rs.html#13">dump_borrowck_info::dump_borrowck_info</a>(<a class="self" href="#103">self</a>, <a href="#103">procedures</a>)
         }
     }
 
     <span class="doccomment">/// Get a Procedure.
     </span><span class="kw">pub fn </span>get_procedure(<span class="kw-2">&amp;</span><span class="self">self</span>, proc_def_id: <a href="../data.rs.html#13">ProcedureDefId</a>) -&gt; Procedure&lt;<span class="lifetime">&#39;tcx</span>&gt; {
-        Procedure::new(<a class="self" href="#87">self</a>, <a href="#87">proc_def_id</a>)
+        Procedure::new(<a class="self" href="#110">self</a>, <a href="#110">proc_def_id</a>)
     }
 
     <span class="doccomment">/// Get ids of Rust procedures that are annotated with a Prusti specification
     </span><span class="kw">pub fn </span>get_annotated_procedures_and_types(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (Vec&lt;<a href="../data.rs.html#13">ProcedureDefId</a>&gt;, Vec&lt;ty::Ty&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt;) {
-        <span class="kw">let </span><span class="kw-2">mut </span>visitor = CollectPrustiSpecVisitor::new(<a class="self" href="#92">self</a>);
-        <a href="#93">visitor</a>.<a href="collect_prusti_spec_visitor.rs.html#40">visit_all_item_likes</a>();
+        <span class="kw">let </span><span class="kw-2">mut </span>visitor = CollectPrustiSpecVisitor::new(<a class="self" href="#115">self</a>);
+        <a href="#116">visitor</a>.<a href="collect_prusti_spec_visitor.rs.html#40">visit_all_item_likes</a>();
 
-        <span class="kw">let </span><span class="kw-2">mut </span>cl_visitor = CollectClosureDefsVisitor::new(<a class="self" href="#92">self</a>);
-        <a class="self" href="#92">self</a>.query
+        <span class="kw">let </span><span class="kw-2">mut </span>cl_visitor = CollectClosureDefsVisitor::new(<a class="self" href="#115">self</a>);
+        <a class="self" href="#115">self</a>.query
             .<a href="query.rs.html#44">hir</a>()
-            .visit_all_item_likes_in_crate(<span class="kw-2">&amp;mut </span><a href="#96">cl_visitor</a>);
+            .visit_all_item_likes_in_crate(<span class="kw-2">&amp;mut </span><a href="#119">cl_visitor</a>);
 
-        <span class="kw">let </span>(<span class="kw-2">mut </span>procedures, types) = <a href="#93">visitor</a>.<a href="collect_prusti_spec_visitor.rs.html#36">into_result</a>();
-        <a href="#101">procedures</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#96">cl_visitor</a>.<a href="collect_closure_defs_visitor.rs.html#28">get_closure_defs</a>());
-        (<a href="#101">procedures</a>, <a href="#101">types</a>)
+        <span class="kw">let </span>(<span class="kw-2">mut </span>procedures, types) = <a href="#116">visitor</a>.<a href="collect_prusti_spec_visitor.rs.html#36">into_result</a>();
+        <a href="#124">procedures</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#119">cl_visitor</a>.<a href="collect_closure_defs_visitor.rs.html#28">get_closure_defs</a>());
+        (<a href="#124">procedures</a>, <a href="#124">types</a>)
     }
 
     <span class="doccomment">/// Compare the current version of the `prusti` crate to the given other version
     </span><span class="kw">pub fn </span>compare_prusti_version(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">std::cmp::Ordering</a> {
-        version_compare::compare(<a class="self" href="#107">self</a>.prusti_version, <a href="#107">other</a>)
+        version_compare::compare(<a class="self" href="#130">self</a>.prusti_version, <a href="#130">other</a>)
             .unwrap_or_else(|<span class="kw">_</span>| {
                 <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(
                     <span class="string">&quot;Failed to compare Prusti version &#39;{}&#39; with other version &#39;{other}&#39;!&quot;</span>,
@@ -282,13 +328,13 @@
 
     <span class="doccomment">/// Get the current version of the `prusti` crate
     </span><span class="kw">pub fn </span>get_prusti_version(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
-        <a class="self" href="#120">self</a>.prusti_version
+        <a class="self" href="#143">self</a>.prusti_version
     }
 
     <span class="doccomment">/// Compare to the current version of the `prusti-specs` crate which we&#39;ve been compiled with
     </span><span class="kw">pub fn </span>compare_to_curr_specs_version(other: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">std::cmp::Ordering</a> {
         <span class="kw">let </span>compiled_specs_version = prusti_specs::SPECS_VERSION;
-        version_compare::compare(<a href="#126">compiled_specs_version</a>, <a href="#125">other</a>)
+        version_compare::compare(<a href="#149">compiled_specs_version</a>, <a href="#148">other</a>)
             .unwrap_or_else(|<span class="kw">_</span>| {
                 <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(
                     <span class="string">&quot;Failed to compare `prusti-specs` version &#39;{}&#39; with found version &#39;{other}&#39;!&quot;</span>,
@@ -308,13 +354,13 @@
         <span class="kw">if </span>called_def_id == caller_def_id {
             <span class="bool-val">true
         </span>} <span class="kw">else </span>{
-            <span class="kw">let </span>param_env = <a class="self" href="#139">self</a>.<a href="#73">tcx</a>().param_env(<a href="#140">caller_def_id</a>);
+            <span class="kw">let </span>param_env = <a class="self" href="#162">self</a>.<a href="#96">tcx</a>().param_env(<a href="#163">caller_def_id</a>);
             <span class="kw">if let </span><span class="prelude-val">Some</span>(instance) =
-                <a href="traits/rustc_instance.rs.html#132-135">traits::resolve_instance</a>(<a class="self" href="#139">self</a>.<a href="#73">tcx</a>(), <a href="#147">param_env</a>.and((<a href="#141">called_def_id</a>, <a href="#142">call_substs</a>)))
+                <a href="traits/rustc_instance.rs.html#132-135">traits::resolve_instance</a>(<a class="self" href="#162">self</a>.<a href="#96">tcx</a>(), <a href="#170">param_env</a>.and((<a href="#164">called_def_id</a>, <a href="#165">call_substs</a>)))
                     .unwrap()
             {
-                <a class="self" href="#139">self</a>.<a href="#73">tcx</a>()
-                    .mir_callgraph_reachable((<a href="#148">instance</a>, <a href="#140">caller_def_id</a>.expect_local()))
+                <a class="self" href="#162">self</a>.<a href="#96">tcx</a>()
+                    .mir_callgraph_reachable((<a href="#171">instance</a>, <a href="#163">caller_def_id</a>.expect_local()))
             } <span class="kw">else </span>{
                 <span class="bool-val">true
             </span>}

@@ -1148,7 +1148,7 @@
         <span class="kw">if let </span><span class="prelude-val">Some</span>(paths) = <a href="#507">definitely_initalised_paths</a> {
             <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;definitely_initalised_paths = {:?}&quot;</span>, paths);
             <a href="#532">accesses_pairs</a>.retain(|(place, kind)| {
-                <a href="#537">paths</a>.<a href="mir_sets/place_set.rs.html#55">iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|initialised_place|
+                <a href="#537">paths</a>.<a href="mir_sets/place_set.rs.html#60">iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|initialised_place|
                         <span class="comment">// If the prefix is definitely initialised, then this place is a potential
                         // loop invariant.
                         </span><a href="../utils.rs.html#22">utils::is_prefix</a>(<span class="kw-2">*</span><a href="#539">place</a>, <span class="kw-2">*</span><a href="#540">initialised_place</a>) ||

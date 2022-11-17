@@ -189,6 +189,11 @@
 <span id="189">189</span>
 <span id="190">190</span>
 <span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
 </pre><pre class="rust"><code><span class="comment">// © 2019, ETH Zurich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -223,6 +228,11 @@
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|potential_prefix| <a href="../../utils.rs.html#22">is_prefix</a>(<a href="#30">place</a>, <span class="kw-2">*</span><a href="#33">potential_prefix</a>))
     }
+    <span class="kw">pub fn </span>contains_subplace_of(<span class="kw-2">&amp;</span><span class="self">self</span>, place: mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+        <a class="self" href="#35">self</a>.places
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|potential_subplace| <a href="../../utils.rs.html#22">is_prefix</a>(<span class="kw-2">*</span><a href="#38">potential_subplace</a>, <a href="#35">place</a>))
+    }
     <span class="kw">pub fn </span>check_invariant(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">for </span>place1 <span class="kw">in </span><span class="self">self</span>.places.iter() {
             <span class="kw">for </span>place2 <span class="kw">in </span><span class="self">self</span>.places.iter() {
@@ -244,34 +254,34 @@
         }
     }
     <span class="kw">pub fn </span>iter&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt; {
-        <a class="self" href="#55">self</a>.places.iter()
+        <a class="self" href="#60">self</a>.places.iter()
     }
     <span class="attribute">#[allow(clippy::should_implement_trait)]
     </span><span class="kw">pub fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt; {
-        <a class="self" href="#59">self</a>.places.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
+        <a class="self" href="#64">self</a>.places.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
     }
     <span class="doccomment">/// Insert `place`.
     </span><span class="kw">pub fn </span>insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>, place: mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;, mir: <span class="kw-2">&amp;</span>mir::Body&lt;<span class="lifetime">&#39;tcx</span>&gt;, tcx: TyCtxt&lt;<span class="lifetime">&#39;tcx</span>&gt;) {
-        <a class="self" href="#63">self</a>.<a href="#35">check_invariant</a>();
+        <a class="self" href="#68">self</a>.<a href="#40">check_invariant</a>();
         <span class="comment">// First, check that the place is not already marked as
         // definitely initialized.
         </span><span class="kw">if </span>!<span class="self">self</span>.places.iter().any(|other| is_prefix(place, <span class="kw-2">*</span>other)) {
             <span class="comment">// To maintain the invariant that we do not have a place and its
             // prefix in the set, we remove all places for which the given
             // one is a prefix.
-            </span><a class="self" href="#63">self</a>.places.retain(|other| !<a href="../../utils.rs.html#22">is_prefix</a>(<span class="kw-2">*</span><a href="#71">other</a>, <a href="#63">place</a>));
-            <a class="self" href="#63">self</a>.places.insert(<a href="#63">place</a>);
+            </span><a class="self" href="#68">self</a>.places.retain(|other| !<a href="../../utils.rs.html#22">is_prefix</a>(<span class="kw-2">*</span><a href="#76">other</a>, <a href="#68">place</a>));
+            <a class="self" href="#68">self</a>.places.insert(<a href="#68">place</a>);
             <span class="comment">// If all fields of a struct are definitely initialized,
             // just keep info that the struct is definitely initialized.
-            </span><a href="../../utils.rs.html#122-127">utils::collapse</a>(<a href="#63">mir</a>, <a href="#63">tcx</a>, <span class="kw-2">&amp;mut </span><a class="self" href="#63">self</a>.places, <a href="#63">place</a>);
+            </span><a href="../../utils.rs.html#122-127">utils::collapse</a>(<a href="#68">mir</a>, <a href="#68">tcx</a>, <span class="kw-2">&amp;mut </span><a class="self" href="#68">self</a>.places, <a href="#68">place</a>);
         }
-        <a class="self" href="#63">self</a>.<a href="#35">check_invariant</a>();
+        <a class="self" href="#68">self</a>.<a href="#40">check_invariant</a>();
     }
     <span class="doccomment">/// Remove `place`.
     </span><span class="kw">pub fn </span>remove(<span class="kw-2">&amp;mut </span><span class="self">self</span>, place: mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;, mir: <span class="kw-2">&amp;</span>mir::Body&lt;<span class="lifetime">&#39;tcx</span>&gt;, tcx: TyCtxt&lt;<span class="lifetime">&#39;tcx</span>&gt;) {
-        <a class="self" href="#80">self</a>.<a href="#35">check_invariant</a>();
+        <a class="self" href="#85">self</a>.<a href="#40">check_invariant</a>();
         <span class="kw">let </span><span class="kw-2">mut </span>places = Vec::new();
-        <span class="kw">let </span>old_places = std::mem::take(<span class="kw-2">&amp;mut </span><a class="self" href="#80">self</a>.places);
+        <span class="kw">let </span>old_places = std::mem::take(<span class="kw-2">&amp;mut </span><a class="self" href="#85">self</a>.places);
         <span class="comment">// If needed, split the place whose part got uninitialized into
         // multiple places.
         </span><span class="kw">for </span>other <span class="kw">in </span>old_places.into_iter() {
@@ -314,13 +324,13 @@
             }
         }
 
-        <a class="self" href="#80">self</a>.places = <a href="#82">places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-        <a class="self" href="#80">self</a>.<a href="#35">check_invariant</a>();
+        <a class="self" href="#85">self</a>.places = <a href="#87">places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
+        <a class="self" href="#85">self</a>.<a href="#40">check_invariant</a>();
     }
     <span class="doccomment">/// Compute the intersection of the two place sets.
     </span><span class="kw">pub fn </span>merge(place_set1: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;, place_set2: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;) -&gt; PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt; {
-        <a href="#130">place_set1</a>.<a href="#35">check_invariant</a>();
-        <a href="#130">place_set2</a>.<a href="#35">check_invariant</a>();
+        <a href="#135">place_set1</a>.<a href="#40">check_invariant</a>();
+        <a href="#135">place_set2</a>.<a href="#40">check_invariant</a>();
         <span class="kw">let </span><span class="kw-2">mut </span>places = FxHashSet::default();
         <span class="kw">let </span><span class="kw-2">mut </span>propage_places = |place_set1: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;, place_set2: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;| {
             <span class="kw">for </span>place <span class="kw">in </span>place_set1.iter() {
@@ -332,16 +342,16 @@
                 }
             }
         };
-        <a href="#134">propage_places</a>(<a href="#130">place_set1</a>, <a href="#130">place_set2</a>);
-        <a href="#134">propage_places</a>(<a href="#130">place_set2</a>, <a href="#130">place_set1</a>);
-        <span class="kw">let </span>result = <span class="self">Self </span>{ <a href="#133">places</a> };
-        <a href="#146">result</a>.<a href="#35">check_invariant</a>();
-        <a href="#146">result</a>
+        <a href="#139">propage_places</a>(<a href="#135">place_set1</a>, <a href="#135">place_set2</a>);
+        <a href="#139">propage_places</a>(<a href="#135">place_set2</a>, <a href="#135">place_set1</a>);
+        <span class="kw">let </span>result = <span class="self">Self </span>{ <a href="#138">places</a> };
+        <a href="#151">result</a>.<a href="#40">check_invariant</a>();
+        <a href="#151">result</a>
     }
     <span class="doccomment">/// This function fixes the invariant.
     </span><span class="kw">pub fn </span>deduplicate(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">let </span>old_places = std::mem::take(<span class="kw-2">&amp;mut </span><a class="self" href="#151">self</a>.places);
-        <span class="kw">let </span>places: Vec&lt;<span class="kw">_</span>&gt; = <a href="#152">old_places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
+        <span class="kw">let </span>old_places = std::mem::take(<span class="kw-2">&amp;mut </span><a class="self" href="#156">self</a>.places);
+        <span class="kw">let </span>places: Vec&lt;<span class="kw">_</span>&gt; = <a href="#157">old_places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
         <span class="kw">let </span><span class="kw-2">mut </span>to_remove = FxHashSet::default();
         <span class="kw">for </span>(i, place) <span class="kw">in </span>places.iter().enumerate() {
             <span class="kw">for </span>(j, other) <span class="kw">in </span>places.iter().enumerate() {
@@ -362,22 +372,22 @@
                 <span class="self">self</span>.places.insert(place);
             }
         }
-        <a class="self" href="#151">self</a>.<a href="#35">check_invariant</a>();
+        <a class="self" href="#156">self</a>.<a href="#40">check_invariant</a>();
     }
     <span class="doccomment">/// Compute the union of the two place sets.
     ///
     /// Note that this function may break the invariant that we never
     /// have a place and its descendants in the set.
     </span><span class="kw">pub fn </span>union(place_set1: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;, place_set2: <span class="kw-2">&amp;</span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt;) -&gt; PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>places = <a href="#180">place_set1</a>.places.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-        <a href="#181">places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#180">place_set2</a>.<a href="#55">iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        <span class="self">Self </span>{ <a href="#181">places</a> }
+        <span class="kw">let </span><span class="kw-2">mut </span>places = <a href="#185">place_set1</a>.places.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+        <a href="#186">places</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#185">place_set2</a>.<a href="#60">iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        <span class="self">Self </span>{ <a href="#186">places</a> }
     }
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;tcx</span>&gt; From&lt;FxHashSet&lt;mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt;&gt; <span class="kw">for </span>PlaceSet&lt;<span class="lifetime">&#39;tcx</span>&gt; {
     <span class="kw">fn </span>from(places: FxHashSet&lt;mir::Place&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt;) -&gt; <span class="self">Self </span>{
-        <span class="self">Self </span>{ <a href="#188">places</a> }
+        <span class="self">Self </span>{ <a href="#193">places</a> }
     }
 }
 </code></pre></div>

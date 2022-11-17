@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["main",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["dump_pcs","Computes the PCS and prints it to the console Currently the entry point for the compiler"],["vis_pcs_facts",""]],"mod":[["joins",""],["syntax",""]]};

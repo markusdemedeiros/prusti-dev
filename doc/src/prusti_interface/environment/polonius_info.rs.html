@@ -2393,6 +2393,13 @@
 <span id="2393">2393</span>
 <span id="2394">2394</span>
 <span id="2395">2395</span>
+<span id="2396">2396</span>
+<span id="2397">2397</span>
+<span id="2398">2398</span>
+<span id="2399">2399</span>
+<span id="2400">2400</span>
+<span id="2401">2401</span>
+<span id="2402">2402</span>
 </pre><pre class="rust"><code><span class="comment">// © 2019, ETH Zurich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
@@ -2401,9 +2408,9 @@
 
 </span><span class="kw">use super</span>::{
     borrowck::{<a href="borrowck/mod.rs.html#7">facts</a>, <a href="borrowck/mod.rs.html#8">regions</a>},
-    <a href="mod.rs.html#18">loops</a>,
+    <a href="mod.rs.html#41">loops</a>,
     <a href="procedure.rs.html#27">procedure::Procedure</a>,
-    <a href="mod.rs.html#52">Environment</a>,
+    <a href="mod.rs.html#75">Environment</a>,
 };
 <span class="kw">use crate</span>::{
     environment::{
@@ -2770,16 +2777,16 @@
 <span class="kw">pub struct </span>PoloniusInfo&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub</span>(<span class="kw">crate</span>) tcx: ty::TyCtxt&lt;<span class="lifetime">&#39;tcx</span>&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) mir: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>mir::Body&lt;<span class="lifetime">&#39;tcx</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) borrowck_in_facts: <a href="borrowck/facts.rs.html#20">facts::AllInputFacts</a>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) borrowck_out_facts: <a href="borrowck/facts.rs.html#21">facts::AllOutputFacts</a>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) interner: <a href="borrowck/facts.rs.html#87">facts::Interner</a>,
+    <span class="kw">pub </span>borrowck_in_facts: <a href="borrowck/facts.rs.html#20">facts::AllInputFacts</a>,
+    <span class="kw">pub </span>borrowck_out_facts: <a href="borrowck/facts.rs.html#21">facts::AllOutputFacts</a>,
+    <span class="kw">pub </span>interner: <a href="borrowck/facts.rs.html#87">facts::Interner</a>,
     <span class="doccomment">/// Position at which a specific loan was created.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) loan_position: FxHashMap&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) loan_at_position: FxHashMap&lt;<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>, <a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) call_loan_at_position: FxHashMap&lt;<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>, <a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;,
     <span class="kw">pub</span>(<span class="kw">crate</span>) call_magic_wands: FxHashMap&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Local.html">mir::Local</a>&gt;,
     <span class="kw">pub </span>place_regions: <a href="borrowck/regions.rs.html#13">PlaceRegions</a>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) additional_facts: <a href="#2000">AdditionalFacts</a>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) additional_facts: <a href="#2007">AdditionalFacts</a>,
     <span class="doccomment">/// Loop head → Vector of magic wands in that loop.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) loop_magic_wands: FxHashMap&lt;<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlock.html">mir::BasicBlock</a>, Vec&lt;<a href="#95">LoopMagicWand</a>&gt;&gt;,
     <span class="doccomment">/// Loans that are created inside loops. Loan → loop head.
@@ -2789,7 +2796,7 @@
     <span class="doccomment">/// Fake loans that were created due to arguments moved into calls.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) argument_moves: Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;,
     <span class="doccomment">/// Facts without back edges.
-    </span><span class="kw">pub</span>(<span class="kw">crate</span>) additional_facts_no_back: <a href="#2000">AdditionalFacts</a>,
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) additional_facts_no_back: <a href="#2007">AdditionalFacts</a>,
     <span class="doccomment">/// Two loans are conflicting if they borrow overlapping places and
     /// are alive at overlapping regions.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) loan_conflict_sets: FxHashMap&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>, FxHashSet&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;&gt;,
@@ -3064,17 +3071,24 @@
 }
 
 <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;a</span>&gt; PoloniusInfo&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;tcx</span>&gt; {
+    <span class="kw">pub fn </span>new_without_loop_invariant_block(
+        env: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Environment&lt;<span class="lifetime">&#39;tcx</span>&gt;,
+        procedure: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Procedure&lt;<span class="lifetime">&#39;tcx</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <a href="#254">PoloniusInfoError</a>&gt; {
+        <span class="self">Self</span>::new(<a href="#673">env</a>, <a href="#674">procedure</a>, <span class="kw-2">&amp;</span>FxHashMap::default())
+    }
+
     <span class="kw">pub fn </span>new(
         env: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Environment&lt;<span class="lifetime">&#39;tcx</span>&gt;,
         procedure: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Procedure&lt;<span class="lifetime">&#39;tcx</span>&gt;,
         _loop_invariant_block: <span class="kw-2">&amp;</span>FxHashMap&lt;<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlock.html">mir::BasicBlock</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlock.html">mir::BasicBlock</a>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <a href="#254">PoloniusInfoError</a>&gt; {
-        <span class="kw">let </span>tcx = <a href="#674">procedure</a>.<a href="procedure.rs.html#137">get_tcx</a>();
-        <span class="kw">let </span>def_id = <a href="#674">procedure</a>.<a href="procedure.rs.html#127">get_id</a>();
-        <span class="kw">let </span>mir = <a href="#674">procedure</a>.<a href="procedure.rs.html#132">get_mir</a>();
+        <span class="kw">let </span>tcx = <a href="#681">procedure</a>.<a href="procedure.rs.html#137">get_tcx</a>();
+        <span class="kw">let </span>def_id = <a href="#681">procedure</a>.<a href="procedure.rs.html#127">get_id</a>();
+        <span class="kw">let </span>mir = <a href="#681">procedure</a>.<a href="procedure.rs.html#132">get_mir</a>();
 
         <span class="comment">// Read Polonius facts.
-        </span><span class="kw">let </span>facts = <a href="#673">env</a>.body.<a href="body.rs.html#276">local_mir_borrowck_facts</a>(<a href="#678">def_id</a>.expect_local());
+        </span><span class="kw">let </span>facts = <a href="#680">env</a>.body.<a href="body.rs.html#276">local_mir_borrowck_facts</a>(<a href="#685">def_id</a>.expect_local());
 
         <span class="comment">// // Read relations between region IDs and local variables.
         // let renumber_path = config::log_dir()
@@ -3085,15 +3099,15 @@
         //         def_path.to_filename_friendly_no_crate()
         //     ));
         // debug!(&quot;Renumber path: {:?}&quot;, renumber_path);
-        </span><span class="kw">let </span>place_regions = <a href="borrowck/regions.rs.html#128">regions::load_place_regions</a>(<a href="#679">mir</a>).unwrap();
+        </span><span class="kw">let </span>place_regions = <a href="borrowck/regions.rs.html#128">regions::load_place_regions</a>(<a href="#686">mir</a>).unwrap();
 
         <span class="kw">let </span><span class="kw-2">mut </span>call_magic_wands = FxHashMap::default();
 
-        <span class="kw">let </span><span class="kw-2">mut </span>all_facts = <a href="#682">facts</a>.input_facts.take().unwrap();
-        <span class="kw">let </span>interner = facts::Interner::new(<a href="#682">facts</a>.location_table.take().unwrap());
+        <span class="kw">let </span><span class="kw-2">mut </span>all_facts = <a href="#689">facts</a>.input_facts.take().unwrap();
+        <span class="kw">let </span>interner = facts::Interner::new(<a href="#689">facts</a>.location_table.take().unwrap());
 
-        <span class="kw">let </span>real_edges = RealEdges::new(<a href="#679">mir</a>);
-        <span class="kw">let </span>loop_info = loops::ProcedureLoops::new(<a href="#679">mir</a>, <span class="kw-2">&amp;</span><a href="#700">real_edges</a>);
+        <span class="kw">let </span>real_edges = RealEdges::new(<a href="#686">mir</a>);
+        <span class="kw">let </span>loop_info = loops::ProcedureLoops::new(<a href="#686">mir</a>, <span class="kw-2">&amp;</span><a href="#707">real_edges</a>);
         <span class="kw">let </span>(reference_moves, argument_moves, incompatible_loans) = add_fake_facts(
             <span class="kw-2">&amp;mut </span>all_facts,
             <span class="kw-2">&amp;</span>interner,
@@ -3109,69 +3123,69 @@
         <span class="self">Self</span>::disconnect_universal_regions(tcx, mir, <span class="kw-2">&amp;</span>place_regions, <span class="kw-2">&amp;mut </span>all_facts)
             .map_err(|(err, loc)| PoloniusInfoError::PlaceRegionsError(err, loc))<span class="question-mark">?</span>;
 
-        <span class="kw">let </span>output = Output::compute(<span class="kw-2">&amp;</span><a href="#697">all_facts</a>, Algorithm::Naive, <span class="bool-val">true</span>);
+        <span class="kw">let </span>output = Output::compute(<span class="kw-2">&amp;</span><a href="#704">all_facts</a>, Algorithm::Naive, <span class="bool-val">true</span>);
         <span class="kw">let </span>all_facts_without_back_edges =
-            <a href="#528-532">remove_back_edges</a>(<a href="#697">all_facts</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <span class="kw-2">&amp;</span><a href="#698">interner</a>, <span class="kw-2">&amp;</span><a href="#701">loop_info</a>.back_edges);
+            <a href="#528-532">remove_back_edges</a>(<a href="#704">all_facts</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <span class="kw-2">&amp;</span><a href="#705">interner</a>, <span class="kw-2">&amp;</span><a href="#708">loop_info</a>.back_edges);
         <span class="kw">let </span>output_without_back_edges =
-            Output::compute(<span class="kw-2">&amp;</span><a href="#718">all_facts_without_back_edges</a>, Algorithm::Naive, <span class="bool-val">true</span>);
+            Output::compute(<span class="kw-2">&amp;</span><a href="#725">all_facts_without_back_edges</a>, Algorithm::Naive, <span class="bool-val">true</span>);
 
-        <span class="kw">let </span>loan_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#697">all_facts</a>
+        <span class="kw">let </span>loan_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#704">all_facts</a>
             .loan_issued_at
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, loan, point_index)| {
-                <span class="kw">let </span>point = <a href="#698">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#726">point_index</a>);
-                (<a href="#726">loan</a>, <a href="#727">point</a>.location)
+                <span class="kw">let </span>point = <a href="#705">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#733">point_index</a>);
+                (<a href="#733">loan</a>, <a href="#734">point</a>.location)
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-        <span class="kw">let </span>loan_at_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#697">all_facts</a>
+        <span class="kw">let </span>loan_at_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#704">all_facts</a>
             .loan_issued_at
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, loan, point_index)| {
-                <span class="kw">let </span>point = <a href="#698">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#734">point_index</a>);
-                (<a href="#735">point</a>.location, <a href="#734">loan</a>)
+                <span class="kw">let </span>point = <a href="#705">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#741">point_index</a>);
+                (<a href="#742">point</a>.location, <a href="#741">loan</a>)
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-        <span class="kw">let </span>call_loan_at_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#697">all_facts</a>
+        <span class="kw">let </span>call_loan_at_position: FxHashMap&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt; = <a href="#704">all_facts</a>
             .loan_issued_at
             .iter()
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, loan, <span class="kw">_</span>)| <a href="#695">call_magic_wands</a>.contains_key(<a href="#742">loan</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, loan, <span class="kw">_</span>)| <a href="#702">call_magic_wands</a>.contains_key(<a href="#749">loan</a>))
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, loan, point_index)| {
-                <span class="kw">let </span>point = <a href="#698">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#743">point_index</a>);
-                (<a href="#744">point</a>.location, <a href="#743">loan</a>)
+                <span class="kw">let </span>point = <a href="#705">interner</a>.<a href="borrowck/facts.rs.html#104">get_point</a>(<a href="#750">point_index</a>);
+                (<a href="#751">point</a>.location, <a href="#750">loan</a>)
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
 
-        <span class="kw">let </span>additional_facts = AdditionalFacts::new(<span class="kw-2">&amp;</span><a href="#697">all_facts</a>, <span class="kw-2">&amp;</span><a href="#717">output</a>, <span class="kw-2">&amp;</span><a href="#702">incompatible_loans</a>);
+        <span class="kw">let </span>additional_facts = AdditionalFacts::new(<span class="kw-2">&amp;</span><a href="#704">all_facts</a>, <span class="kw-2">&amp;</span><a href="#724">output</a>, <span class="kw-2">&amp;</span><a href="#709">incompatible_loans</a>);
         <span class="kw">let </span>additional_facts_without_back_edges = AdditionalFacts::new(
-            <span class="kw-2">&amp;</span><a href="#718">all_facts_without_back_edges</a>,
-            <span class="kw-2">&amp;</span><a href="#720">output_without_back_edges</a>,
-            <span class="kw-2">&amp;</span><a href="#702">incompatible_loans</a>,
+            <span class="kw-2">&amp;</span><a href="#725">all_facts_without_back_edges</a>,
+            <span class="kw-2">&amp;</span><a href="#727">output_without_back_edges</a>,
+            <span class="kw-2">&amp;</span><a href="#709">incompatible_loans</a>,
         );
         <span class="comment">// FIXME: Check whether the new info in Polonius could be used for computing initialization.
         </span><span class="kw">let </span>loan_conflict_sets =
             compute_loan_conflict_sets(procedure, <span class="kw-2">&amp;</span>loan_position, <span class="kw-2">&amp;</span>all_facts, <span class="kw-2">&amp;</span>output)<span class="question-mark">?</span>;
 
         <span class="kw">let </span>info = <span class="self">Self </span>{
-            <a href="#677">tcx</a>,
-            <a href="#679">mir</a>,
-            borrowck_in_facts: <a href="#697">all_facts</a>,
-            borrowck_out_facts: <a href="#717">output</a>,
-            <a href="#698">interner</a>,
-            <a href="#723">loan_position</a>,
-            <a href="#731">loan_at_position</a>,
-            <a href="#739">call_loan_at_position</a>,
-            <a href="#695">call_magic_wands</a>,
-            <a href="#693">place_regions</a>,
-            <a href="#749">additional_facts</a>,
+            <a href="#684">tcx</a>,
+            <a href="#686">mir</a>,
+            borrowck_in_facts: <a href="#704">all_facts</a>,
+            borrowck_out_facts: <a href="#724">output</a>,
+            <a href="#705">interner</a>,
+            <a href="#730">loan_position</a>,
+            <a href="#738">loan_at_position</a>,
+            <a href="#746">call_loan_at_position</a>,
+            <a href="#702">call_magic_wands</a>,
+            <a href="#700">place_regions</a>,
+            <a href="#756">additional_facts</a>,
             loop_magic_wands: FxHashMap::default(),
-            additional_facts_no_back: <a href="#750">additional_facts_without_back_edges</a>,
-            loops: <a href="#701">loop_info</a>,
-            <a href="#702">reference_moves</a>,
-            <a href="#702">argument_moves</a>,
-            <a href="#756">loan_conflict_sets</a>,
+            additional_facts_no_back: <a href="#757">additional_facts_without_back_edges</a>,
+            loops: <a href="#708">loop_info</a>,
+            <a href="#709">reference_moves</a>,
+            <a href="#709">argument_moves</a>,
+            <a href="#763">loan_conflict_sets</a>,
         };
         <span class="comment">// info.compute_loop_magic_wands(loop_invariant_block)?; FIXME
-        </span><span class="prelude-val">Ok</span>(<a href="#759">info</a>)
+        </span><span class="prelude-val">Ok</span>(<a href="#766">info</a>)
     }
 
     <span class="kw">fn </span>disconnect_universal_regions(
@@ -3181,7 +3195,7 @@
         all_facts: <span class="kw-2">&amp;mut </span><a href="borrowck/facts.rs.html#20">AllInputFacts</a>,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), (<a href="borrowck/regions.rs.html#16">PlaceRegionsError</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/span_encoding/struct.Span.html">Span</a>)&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>return_regions = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
-        <span class="kw">let </span>return_span = <a href="#784">mir</a>.local_decls[mir::RETURN_PLACE].source_info.span;
+        <span class="kw">let </span>return_span = <a href="#791">mir</a>.local_decls[mir::RETURN_PLACE].source_info.span;
         <span class="kw">for </span>place <span class="kw">in </span>mir::RETURN_PLACE.all_places(tcx, mir).into_iter() {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(region) = place_regions
                 .for_place(place)
@@ -3191,21 +3205,21 @@
             }
         }
 
-        <span class="kw">let </span>input_regions = (<span class="number">1</span>..=<a href="#784">mir</a>.arg_count)
+        <span class="kw">let </span>input_regions = (<span class="number">1</span>..=<a href="#791">mir</a>.arg_count)
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(mir::Local::new)
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter_map</a>(|l| <a href="#785">place_regions</a>.<a href="borrowck/regions.rs.html#33">for_local</a>(<a href="#801">l</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter_map</a>(|l| <a href="#792">place_regions</a>.<a href="borrowck/regions.rs.html#33">for_local</a>(<a href="#808">l</a>))
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
         <span class="comment">// Disconnect return regions from universal regions.
-        </span><span class="kw">let </span>universal_region = <span class="kw-2">&amp;</span><a href="#786">all_facts</a>.universal_region;
-        <span class="kw">let </span>is_universal = |r: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#14">facts::Region</a>| <a href="#805">universal_region</a>.contains(<a href="#806">r</a>);
-        <span class="kw">let </span>is_input_region = |r: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#14">facts::Region</a>| <a href="#799">input_regions</a>.contains(<a href="#807">r</a>);
-        <a href="#786">all_facts</a>.subset_base.retain(|(r1, r2, <span class="kw">_</span>)| {
-            (!<a href="#806">is_universal</a>(<a href="#808">r1</a>) || <a href="#807">is_input_region</a>(<a href="#808">r2</a>)) &amp;&amp; (!<a href="#806">is_universal</a>(<a href="#808">r2</a>))
+        </span><span class="kw">let </span>universal_region = <span class="kw-2">&amp;</span><a href="#793">all_facts</a>.universal_region;
+        <span class="kw">let </span>is_universal = |r: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#14">facts::Region</a>| <a href="#812">universal_region</a>.contains(<a href="#813">r</a>);
+        <span class="kw">let </span>is_input_region = |r: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#14">facts::Region</a>| <a href="#806">input_regions</a>.contains(<a href="#814">r</a>);
+        <a href="#793">all_facts</a>.subset_base.retain(|(r1, r2, <span class="kw">_</span>)| {
+            (!<a href="#813">is_universal</a>(<a href="#815">r1</a>) || <a href="#814">is_input_region</a>(<a href="#815">r2</a>)) &amp;&amp; (!<a href="#813">is_universal</a>(<a href="#815">r2</a>))
         });
 
         <span class="comment">// Add return regions to universal regions.
-        </span><a href="#786">all_facts</a>.universal_region.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#788">return_regions</a>);
+        </span><a href="#793">all_facts</a>.universal_region.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#795">return_regions</a>);
         <span class="prelude-val">Ok</span>(())
     }
 
@@ -3261,10 +3275,10 @@
         point_type: <a href="borrowck/facts.rs.html#47">facts::PointType</a>,
     ) -&gt; <a href="borrowck/facts.rs.html#16">facts::PointIndex</a> {
         <span class="kw">let </span>point = <a href="borrowck/facts.rs.html#72">facts::Point</a> {
-            <a href="#865">location</a>,
-            typ: <a href="#866">point_type</a>,
+            <a href="#872">location</a>,
+            typ: <a href="#873">point_type</a>,
         };
-        <a class="self" href="#864">self</a>.interner.<a href="borrowck/facts.rs.html#96">get_point_index</a>(<span class="kw-2">&amp;</span><a href="#868">point</a>)
+        <a class="self" href="#871">self</a>.interner.<a href="borrowck/facts.rs.html#96">get_point_index</a>(<span class="kw-2">&amp;</span><a href="#875">point</a>)
     }
 
     <span class="kw">pub fn </span>get_all_loans_kept_alive_by(
@@ -3272,15 +3286,15 @@
         point: <a href="borrowck/facts.rs.html#16">facts::PointIndex</a>,
         region: <a href="borrowck/facts.rs.html#14">facts::Region</a>,
     ) -&gt; (Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;, Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;) {
-        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#876">self</a>.<a href="#892-900">get_loans_kept_alive_by</a>(
-            <a href="#877">point</a>,
-            <a href="#878">region</a>,
-            <span class="kw-2">&amp;</span><a class="self" href="#876">self</a>.borrowck_out_facts.origin_contains_loan_at,
+        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#883">self</a>.<a href="#899-907">get_loans_kept_alive_by</a>(
+            <a href="#884">point</a>,
+            <a href="#885">region</a>,
+            <span class="kw-2">&amp;</span><a class="self" href="#883">self</a>.borrowck_out_facts.origin_contains_loan_at,
         );
         <span class="kw">let </span>zombie_loans =
-            <a class="self" href="#876">self</a>.<a href="#892-900">get_loans_kept_alive_by</a>(<a href="#877">point</a>, <a href="#878">region</a>, <span class="kw-2">&amp;</span><a class="self" href="#876">self</a>.additional_facts.zombie_requires);
-        <a href="#880">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#885">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        (<a href="#880">loans</a>, <a href="#885">zombie_loans</a>)
+            <a class="self" href="#883">self</a>.<a href="#899-907">get_loans_kept_alive_by</a>(<a href="#884">point</a>, <a href="#885">region</a>, <span class="kw-2">&amp;</span><a class="self" href="#883">self</a>.additional_facts.zombie_requires);
+        <a href="#887">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#892">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        (<a href="#887">loans</a>, <a href="#892">zombie_loans</a>)
     }
 
     <span class="doccomment">/// Get loans that are kept alive by the given region.
@@ -3293,11 +3307,11 @@
             BTreeMap&lt;<a href="borrowck/facts.rs.html#14">facts::Region</a>, BTreeSet&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;&gt;,
         &gt;,
     ) -&gt; Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <a href="#896">restricts_map</a>
-            .get(<span class="kw-2">&amp;</span><a href="#894">point</a>)
+        <a href="#903">restricts_map</a>
+            .get(<span class="kw-2">&amp;</span><a href="#901">point</a>)
             .as_ref()
-            .and_then(|origin_contains_loan_at| <a href="#904">origin_contains_loan_at</a>.get(<span class="kw-2">&amp;</span><a href="#895">region</a>))
-            .map(|loans| <a href="#905">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>())
+            .and_then(|origin_contains_loan_at| <a href="#911">origin_contains_loan_at</a>.get(<span class="kw-2">&amp;</span><a href="#902">region</a>))
+            .map(|loans| <a href="#912">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>())
             .unwrap_or_default()
     }
 
@@ -3306,10 +3320,10 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; (Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;, Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;) {
-        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#911">self</a>.<a href="#933">get_active_loans</a>(<a href="#912">location</a>, <span class="bool-val">false</span>);
-        <span class="kw">let </span>zombie_loans = <a class="self" href="#911">self</a>.<a href="#933">get_active_loans</a>(<a href="#912">location</a>, <span class="bool-val">true</span>);
-        <a href="#914">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#915">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        (<a href="#914">loans</a>, <a href="#915">zombie_loans</a>)
+        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#918">self</a>.<a href="#940">get_active_loans</a>(<a href="#919">location</a>, <span class="bool-val">false</span>);
+        <span class="kw">let </span>zombie_loans = <a class="self" href="#918">self</a>.<a href="#940">get_active_loans</a>(<a href="#919">location</a>, <span class="bool-val">true</span>);
+        <a href="#921">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#922">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        (<a href="#921">loans</a>, <a href="#922">zombie_loans</a>)
     }
 
     <span class="kw">fn </span>get_borrow_live_at(
@@ -3318,32 +3332,32 @@
     ) -&gt; <span class="kw-2">&amp;</span>prusti_rustc_interface::data_structures::fx::FxHashMap&lt;<a href="borrowck/facts.rs.html#16">facts::PointIndex</a>, Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;&gt;
     {
         <span class="kw">if </span>zombie {
-            <span class="kw-2">&amp;</span><a class="self" href="#921">self</a>.additional_facts.zombie_borrow_live_at
+            <span class="kw-2">&amp;</span><a class="self" href="#928">self</a>.additional_facts.zombie_borrow_live_at
         } <span class="kw">else </span>{
-            <span class="kw-2">&amp;</span><a class="self" href="#921">self</a>.borrowck_out_facts.loan_live_at
+            <span class="kw-2">&amp;</span><a class="self" href="#928">self</a>.borrowck_out_facts.loan_live_at
         }
     }
 
     <span class="doccomment">/// Get loans that are active (including those that are about to die) at the given location.
     </span><span class="kw">pub fn </span>get_active_loans(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>, zombie: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <span class="kw">let </span>loan_live_at = <a class="self" href="#933">self</a>.<a href="#920-923">get_borrow_live_at</a>(<a href="#933">zombie</a>);
-        <span class="kw">let </span>start_point = <a class="self" href="#933">self</a>.<a href="#863-867">get_point</a>(<a href="#933">location</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
-        <span class="kw">let </span>mid_point = <a class="self" href="#933">self</a>.<a href="#863-867">get_point</a>(<a href="#933">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
+        <span class="kw">let </span>loan_live_at = <a class="self" href="#940">self</a>.<a href="#927-930">get_borrow_live_at</a>(<a href="#940">zombie</a>);
+        <span class="kw">let </span>start_point = <a class="self" href="#940">self</a>.<a href="#870-874">get_point</a>(<a href="#940">location</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
+        <span class="kw">let </span>mid_point = <a class="self" href="#940">self</a>.<a href="#870-874">get_point</a>(<a href="#940">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>loans = <span class="kw">if let </span><span class="prelude-val">Some</span>(mid_loans) = <a href="#934">loan_live_at</a>.get(<span class="kw-2">&amp;</span><a href="#936">mid_point</a>) {
-            <span class="kw">let </span><span class="kw-2">mut </span>mid_loans = <a href="#938">mid_loans</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-            <a href="#939">mid_loans</a>.sort();
+        <span class="kw">let </span><span class="kw-2">mut </span>loans = <span class="kw">if let </span><span class="prelude-val">Some</span>(mid_loans) = <a href="#941">loan_live_at</a>.get(<span class="kw-2">&amp;</span><a href="#943">mid_point</a>) {
+            <span class="kw">let </span><span class="kw-2">mut </span>mid_loans = <a href="#945">mid_loans</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+            <a href="#946">mid_loans</a>.sort();
             <span class="kw">let </span>default_vec = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
-            <span class="kw">let </span>start_loans = <a href="#934">loan_live_at</a>.get(<span class="kw-2">&amp;</span><a href="#935">start_point</a>).unwrap_or(<span class="kw-2">&amp;</span><a href="#941">default_vec</a>);
-            <span class="kw">let </span><span class="kw-2">mut </span>start_loans = <a href="#942">start_loans</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-            <a href="#943">start_loans</a>.sort();
+            <span class="kw">let </span>start_loans = <a href="#941">loan_live_at</a>.get(<span class="kw-2">&amp;</span><a href="#942">start_point</a>).unwrap_or(<span class="kw-2">&amp;</span><a href="#948">default_vec</a>);
+            <span class="kw">let </span><span class="kw-2">mut </span>start_loans = <a href="#949">start_loans</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+            <a href="#950">start_loans</a>.sort();
             <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;start_loans = {:?}&quot;</span>, start_loans);
             <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;mid_loans = {:?}&quot;</span>, mid_loans);
             <span class="comment">// Loans are created in mid point, so mid_point may contain more loans than the start
             // point.
             </span><a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(start_loans.iter().all(|loan| mid_loans.contains(loan)));
 
-            <a href="#939">mid_loans</a>
+            <a href="#946">mid_loans</a>
         } <span class="kw">else </span>{
             <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(loan_live_at.get(<span class="kw-2">&amp;</span>start_point).is_none());
             <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[]
@@ -3355,7 +3369,7 @@
                 }
             }
         }
-        <a href="#938">loans</a>
+        <a href="#945">loans</a>
     }
 
     <span class="doccomment">/// Get loans including the zombies ``(all_loans, zombie_loans)``.
@@ -3363,10 +3377,10 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; (Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;, Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;) {
-        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#968">self</a>.<a href="#1004">get_loans_dying_at</a>(<a href="#969">location</a>, <span class="bool-val">false</span>);
-        <span class="kw">let </span>zombie_loans = <a class="self" href="#968">self</a>.<a href="#1004">get_loans_dying_at</a>(<a href="#969">location</a>, <span class="bool-val">true</span>);
-        <a href="#971">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#972">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        (<a href="#971">loans</a>, <a href="#972">zombie_loans</a>)
+        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#975">self</a>.<a href="#1011">get_loans_dying_at</a>(<a href="#976">location</a>, <span class="bool-val">false</span>);
+        <span class="kw">let </span>zombie_loans = <a class="self" href="#975">self</a>.<a href="#1011">get_loans_dying_at</a>(<a href="#976">location</a>, <span class="bool-val">true</span>);
+        <a href="#978">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#979">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        (<a href="#978">loans</a>, <a href="#979">zombie_loans</a>)
     }
 
     <span class="doccomment">/// Get loans including the zombies ``(all_loans, zombie_loans)``.
@@ -3381,9 +3395,9 @@
             final_loc
         );
 
-        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#979">self</a>.<a href="#1031-1036">get_loans_dying_between</a>(<a href="#980">initial_loc</a>, <a href="#981">final_loc</a>, <span class="bool-val">false</span>);
-        <span class="kw">let </span>zombie_loans = <a class="self" href="#979">self</a>.<a href="#1031-1036">get_loans_dying_between</a>(<a href="#980">initial_loc</a>, <a href="#981">final_loc</a>, <span class="bool-val">true</span>);
-        <a href="#989">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#990">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        <span class="kw">let </span><span class="kw-2">mut </span>loans = <a class="self" href="#986">self</a>.<a href="#1038-1043">get_loans_dying_between</a>(<a href="#987">initial_loc</a>, <a href="#988">final_loc</a>, <span class="bool-val">false</span>);
+        <span class="kw">let </span>zombie_loans = <a class="self" href="#986">self</a>.<a href="#1038-1043">get_loans_dying_between</a>(<a href="#987">initial_loc</a>, <a href="#988">final_loc</a>, <span class="bool-val">true</span>);
+        <a href="#996">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#997">zombie_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
         <a class="macro" href="../../../log/macro.trace.html">trace!</a>(
             <span class="string">&quot;[exit] get_all_loans_dying_between \
              initial_loc={:?} final_loc={:?} all={:?} zombie={:?}&quot;</span>,
@@ -3392,33 +3406,33 @@
             loans,
             zombie_loans
         );
-        (<a href="#989">loans</a>, <a href="#990">zombie_loans</a>)
+        (<a href="#996">loans</a>, <a href="#997">zombie_loans</a>)
     }
 
     <span class="doccomment">/// Get loans that die *at* (that is, exactly after) the given location.
     </span><span class="kw">pub fn </span>get_loans_dying_at(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>, zombie: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <span class="kw">let </span>loan_live_at = <a class="self" href="#1004">self</a>.<a href="#920-923">get_borrow_live_at</a>(<a href="#1004">zombie</a>);
-        <span class="kw">let </span>successors = <a class="self" href="#1004">self</a>.<a href="#1854">get_successors</a>(<a href="#1004">location</a>);
-        <span class="kw">let </span>is_return = <a href="#1915">is_return</a>(<a class="self" href="#1004">self</a>.mir, <a href="#1004">location</a>);
-        <span class="kw">let </span>mid_point = <a class="self" href="#1004">self</a>.<a href="#863-867">get_point</a>(<a href="#1004">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
-        <span class="kw">let </span>becoming_zombie_loans = <span class="self"><a href="#1004">self</a>
+        <span class="kw">let </span>loan_live_at = <a class="self" href="#1011">self</a>.<a href="#927-930">get_borrow_live_at</a>(<a href="#1011">zombie</a>);
+        <span class="kw">let </span>successors = <a class="self" href="#1011">self</a>.<a href="#1861">get_successors</a>(<a href="#1011">location</a>);
+        <span class="kw">let </span>is_return = <a href="#1922">is_return</a>(<a class="self" href="#1011">self</a>.mir, <a href="#1011">location</a>);
+        <span class="kw">let </span>mid_point = <a class="self" href="#1011">self</a>.<a href="#870-874">get_point</a>(<a href="#1011">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
+        <span class="kw">let </span>becoming_zombie_loans = <span class="self"><a href="#1011">self</a>
             </span>.additional_facts
             .borrow_become_zombie_at
-            .get(<span class="kw-2">&amp;</span><a href="#1008">mid_point</a>)
+            .get(<span class="kw-2">&amp;</span><a href="#1015">mid_point</a>)
             .cloned()
             .unwrap_or_default();
-        <a class="self" href="#1004">self</a>.<a href="#933">get_active_loans</a>(<a href="#1004">location</a>, <a href="#1004">zombie</a>)
+        <a class="self" href="#1011">self</a>.<a href="#940">get_active_loans</a>(<a href="#1011">location</a>, <a href="#1011">zombie</a>)
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| {
-                <span class="kw">let </span>alive_in_successor = <a href="#1006">successors</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|successor_location| {
-                    <span class="kw">let </span>point = <a class="self" href="#1004">self</a>.<a href="#863-867">get_point</a>(<span class="kw-2">*</span><a href="#1018">successor_location</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
-                    <a href="#1005">loan_live_at</a>
-                        .get(<span class="kw-2">&amp;</span><a href="#1019">point</a>)
-                        .map_or(<span class="bool-val">false</span>, |successor_loans| <a href="#1022">successor_loans</a>.contains(<a href="#1017">loan</a>))
+                <span class="kw">let </span>alive_in_successor = <a href="#1013">successors</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|successor_location| {
+                    <span class="kw">let </span>point = <a class="self" href="#1011">self</a>.<a href="#870-874">get_point</a>(<span class="kw-2">*</span><a href="#1025">successor_location</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
+                    <a href="#1012">loan_live_at</a>
+                        .get(<span class="kw-2">&amp;</span><a href="#1026">point</a>)
+                        .map_or(<span class="bool-val">false</span>, |successor_loans| <a href="#1029">successor_loans</a>.contains(<a href="#1024">loan</a>))
                 });
-                !(<a href="#1018">alive_in_successor</a> || (<a href="#1006">successors</a>.is_empty() &amp;&amp; <a href="#1007">is_return</a>))
+                !(<a href="#1025">alive_in_successor</a> || (<a href="#1013">successors</a>.is_empty() &amp;&amp; <a href="#1014">is_return</a>))
             })
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| !<a href="#1009">becoming_zombie_loans</a>.contains(<a href="#1026">loan</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| !<a href="#1016">becoming_zombie_loans</a>.contains(<a href="#1033">loan</a>))
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
     }
 
@@ -3436,28 +3450,28 @@
             zombie
         );
         <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.debug_assert.html">debug_assert!</a>(<span class="self">self</span>.get_successors(initial_loc).contains(<span class="kw-2">&amp;</span>final_loc));
-        <span class="kw">let </span>mid_point = <a class="self" href="#1032">self</a>.<a href="#863-867">get_point</a>(<a href="#1033">initial_loc</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
-        <span class="kw">let </span>becoming_zombie_loans = <span class="self"><a href="#1032">self</a>
+        <span class="kw">let </span>mid_point = <a class="self" href="#1039">self</a>.<a href="#870-874">get_point</a>(<a href="#1040">initial_loc</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
+        <span class="kw">let </span>becoming_zombie_loans = <span class="self"><a href="#1039">self</a>
             </span>.additional_facts
             .borrow_become_zombie_at
-            .get(<span class="kw-2">&amp;</span><a href="#1044">mid_point</a>)
+            .get(<span class="kw-2">&amp;</span><a href="#1051">mid_point</a>)
             .cloned()
             .unwrap_or_default();
         <a class="macro" href="../../../log/macro.trace.html">trace!</a>(<span class="string">&quot;becoming_zombie_loans={:?}&quot;</span>, becoming_zombie_loans);
-        <span class="kw">let </span>final_loc_point = <a class="self" href="#1032">self</a>.<a href="#863-867">get_point</a>(<a href="#1034">final_loc</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
+        <span class="kw">let </span>final_loc_point = <a class="self" href="#1039">self</a>.<a href="#870-874">get_point</a>(<a href="#1041">final_loc</a>, <a href="borrowck/facts.rs.html#48">facts::PointType::Start</a>);
         <a class="macro" href="../../../log/macro.trace.html">trace!</a>(
             <span class="string">&quot;loan_live_at final {:?}&quot;</span>,
             <span class="self">self</span>.borrowck_out_facts.loan_live_at.get(<span class="kw-2">&amp;</span>final_loc_point)
         );
-        <span class="kw">let </span>dying_loans = <span class="self"><a href="#1032">self</a>
-            </span>.<a href="#933">get_active_loans</a>(<a href="#1033">initial_loc</a>, <a href="#1035">zombie</a>)
+        <span class="kw">let </span>dying_loans = <span class="self"><a href="#1039">self</a>
+            </span>.<a href="#940">get_active_loans</a>(<a href="#1040">initial_loc</a>, <a href="#1042">zombie</a>)
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| {
-                <a class="self" href="#1032">self</a>.<a href="#920-923">get_borrow_live_at</a>(<a href="#1035">zombie</a>)
-                    .get(<span class="kw-2">&amp;</span><a href="#1052">final_loc_point</a>)
-                    .map_or(<span class="bool-val">true</span>, |successor_loans| !<a href="#1063">successor_loans</a>.contains(<a href="#1060">loan</a>))
+                <a class="self" href="#1039">self</a>.<a href="#927-930">get_borrow_live_at</a>(<a href="#1042">zombie</a>)
+                    .get(<span class="kw-2">&amp;</span><a href="#1059">final_loc_point</a>)
+                    .map_or(<span class="bool-val">true</span>, |successor_loans| !<a href="#1070">successor_loans</a>.contains(<a href="#1067">loan</a>))
             })
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| !<a href="#1045">becoming_zombie_loans</a>.contains(<a href="#1065">loan</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| !<a href="#1052">becoming_zombie_loans</a>.contains(<a href="#1072">loan</a>))
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
         <a class="macro" href="../../../log/macro.trace.html">trace!</a>(
             <span class="string">&quot;[exit] get_loans_dying_between {:?}, {:?}, {}, dying_loans={:?}&quot;</span>,
@@ -3466,7 +3480,7 @@
             zombie,
             dying_loans
         );
-        <a href="#1057">dying_loans</a>
+        <a href="#1064">dying_loans</a>
     }
 
     <span class="comment">//     /// Get loans including the zombies ``(all_loans, zombie_loans)``.
@@ -3513,9 +3527,9 @@
     //     }
 
     </span><span class="kw">pub fn </span>get_conflicting_loans(<span class="kw-2">&amp;</span><span class="self">self</span>, loan: <a href="borrowck/facts.rs.html#15">facts::Loan</a>) -&gt; Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <a class="self" href="#1120">self</a>.loan_conflict_sets
-            .get(<span class="kw-2">&amp;</span><a href="#1120">loan</a>)
-            .map(|set| <a href="#1123">set</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>())
+        <a class="self" href="#1127">self</a>.loan_conflict_sets
+            .get(<span class="kw-2">&amp;</span><a href="#1127">loan</a>)
+            .map(|set| <a href="#1130">set</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>())
             .unwrap_or_default()
     }
 
@@ -3524,12 +3538,12 @@
         loan: <a href="borrowck/facts.rs.html#15">facts::Loan</a>,
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(all_conflicting_loans) = <a class="self" href="#1128">self</a>.loan_conflict_sets.get(<span class="kw-2">&amp;</span><a href="#1129">loan</a>) {
-            <span class="kw">let </span>point = <a class="self" href="#1128">self</a>.<a href="#863-867">get_point</a>(<a href="#1130">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
-            <span class="kw">if let </span><span class="prelude-val">Some</span>(alive_loans) = <a class="self" href="#1128">self</a>.borrowck_out_facts.loan_live_at.get(<span class="kw-2">&amp;</span><a href="#1133">point</a>) {
-                <span class="kw">let </span>alive_conflicting_loans = <a href="#1132">all_conflicting_loans</a>
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(all_conflicting_loans) = <a class="self" href="#1135">self</a>.loan_conflict_sets.get(<span class="kw-2">&amp;</span><a href="#1136">loan</a>) {
+            <span class="kw">let </span>point = <a class="self" href="#1135">self</a>.<a href="#870-874">get_point</a>(<a href="#1137">location</a>, <a href="borrowck/facts.rs.html#49">facts::PointType::Mid</a>);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(alive_loans) = <a class="self" href="#1135">self</a>.borrowck_out_facts.loan_live_at.get(<span class="kw-2">&amp;</span><a href="#1140">point</a>) {
+                <span class="kw">let </span>alive_conflicting_loans = <a href="#1139">all_conflicting_loans</a>
                     .iter()
-                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| <a href="#1134">alive_loans</a>.contains(<a href="#1137">loan</a>))
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| <a href="#1141">alive_loans</a>.contains(<a href="#1144">loan</a>))
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
                 <a class="macro" href="../../../log/macro.trace.html">trace!</a>(
@@ -3538,32 +3552,32 @@
                     location,
                     alive_conflicting_loans
                 );
-                <span class="kw">return </span><a href="#1135">alive_conflicting_loans</a>;
+                <span class="kw">return </span><a href="#1142">alive_conflicting_loans</a>;
             }
         }
         Vec::new()
     }
 
     <span class="kw">pub fn </span>get_loan_location(<span class="kw-2">&amp;</span><span class="self">self</span>, loan: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#15">facts::Loan</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a> {
-        <span class="kw-2">*</span><span class="self"><a href="#1152">self</a>
+        <span class="kw-2">*</span><span class="self"><a href="#1159">self</a>
             </span>.loan_position
-            .get(<a href="#1152">loan</a>)
+            .get(<a href="#1159">loan</a>)
             .unwrap_or_else(|| <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;not found: {:?}&quot;</span>, loan))
     }
 
     <span class="kw">pub fn </span>get_loan_at_location(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; <a href="borrowck/facts.rs.html#15">facts::Loan</a> {
         <span class="comment">// TODO: For aggregates (where two loans are created at the same location) this only finds one loan.
-        </span><a class="self" href="#1159">self</a>.loan_at_position[<span class="kw-2">&amp;</span><a href="#1159">location</a>]
+        </span><a class="self" href="#1166">self</a>.loan_at_position[<span class="kw-2">&amp;</span><a href="#1166">location</a>]
     }
 
     <span class="kw">pub fn </span>get_call_loan_at_location(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; <span class="prelude-ty">Option</span>&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt; {
-        <a class="self" href="#1164">self</a>.call_loan_at_position.get(<span class="kw-2">&amp;</span><a href="#1164">location</a>).cloned()
+        <a class="self" href="#1171">self</a>.call_loan_at_position.get(<span class="kw-2">&amp;</span><a href="#1171">location</a>).cloned()
     }
 
     <span class="kw">pub fn </span>loan_locations(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; FxHashMap&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>&gt; {
-        <a class="self" href="#1168">self</a>.loan_position
+        <a class="self" href="#1175">self</a>.loan_position
             .iter()
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(loan, location)| (<span class="kw-2">*</span><a href="#1171">loan</a>, <span class="kw-2">*</span><a href="#1171">location</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(loan, location)| (<span class="kw-2">*</span><a href="#1178">loan</a>, <span class="kw-2">*</span><a href="#1178">location</a>))
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
     }
 
@@ -3584,18 +3598,18 @@
         // can simply read off the loan places as before.
 
         </span><span class="kw">let </span>assignment = <span class="kw">if let </span><span class="prelude-val">Some</span>(loan_assignment) = <span class="self">self</span>.get_assignment_for_loan(<span class="kw-2">*</span>loan)<span class="question-mark">? </span>{
-            <a href="#1191">loan_assignment</a>
+            <a href="#1198">loan_assignment</a>
         } <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         };
-        <span class="kw">let </span>(dest, source) = <a href="#1191">assignment</a>.<a href="mir_utils/statement_as_assign.rs.html#5">as_assign</a>().unwrap();
-        <span class="kw">let </span>dest = <a href="#1196">dest</a>;
-        <span class="kw">let </span>source = <a href="#1196">source</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-        <span class="kw">let </span>location = <a class="self" href="#1177">self</a>.loan_position[<a href="#1178">loan</a>];
+        <span class="kw">let </span>(dest, source) = <a href="#1198">assignment</a>.<a href="mir_utils/statement_as_assign.rs.html#5">as_assign</a>().unwrap();
+        <span class="kw">let </span>dest = <a href="#1203">dest</a>;
+        <span class="kw">let </span>source = <a href="#1203">source</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+        <span class="kw">let </span>location = <a class="self" href="#1184">self</a>.loan_position[<a href="#1185">loan</a>];
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<a href="#46">LoanPlaces</a> {
-            <a href="#1197">dest</a>,
-            <a href="#1198">source</a>,
-            <a href="#1199">location</a>,
+            <a href="#1204">dest</a>,
+            <a href="#1205">source</a>,
+            <a href="#1206">location</a>,
         }))
     }
 
@@ -3605,17 +3619,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         loan: <a href="borrowck/facts.rs.html#15">facts::Loan</a>,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;mir::Statement&lt;<span class="lifetime">&#39;tcx</span>&gt;&gt;, <a href="borrowck/regions.rs.html#16">PlaceRegionsError</a>&gt; {
-        <span class="kw">let </span><span class="kw-2">&amp;</span>location = <span class="kw">if let </span><span class="prelude-val">Some</span>(loc) = <a class="self" href="#1210">self</a>.loan_position.get(<span class="kw-2">&amp;</span><a href="#1211">loan</a>) {
-            <a href="#1213">loc</a>
+        <span class="kw">let </span><span class="kw-2">&amp;</span>location = <span class="kw">if let </span><span class="prelude-val">Some</span>(loc) = <a class="self" href="#1217">self</a>.loan_position.get(<span class="kw-2">&amp;</span><a href="#1218">loan</a>) {
+            <a href="#1220">loc</a>
         } <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         };
-        <span class="kw">let </span>stmt = <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = <a class="self" href="#1210">self</a>.mir.<a href="mir_utils/statement_at.rs.html#6">statement_at</a>(<a href="#1213">location</a>) {
-            <a href="#1218">s</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+        <span class="kw">let </span>stmt = <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = <a class="self" href="#1217">self</a>.mir.<a href="mir_utils/statement_at.rs.html#6">statement_at</a>(<a href="#1220">location</a>) {
+            <a href="#1225">s</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
         } <span class="kw">else </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         };
-        <span class="kw">let </span><span class="kw-2">mut </span>assignments: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1218">stmt</a>.<a href="mir_utils/split_aggregate_assignment.rs.html#24-28">split_assignment</a>(<a class="self" href="#1210">self</a>.tcx, <a class="self" href="#1210">self</a>.mir);
+        <span class="kw">let </span><span class="kw-2">mut </span>assignments: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1225">stmt</a>.<a href="mir_utils/split_aggregate_assignment.rs.html#24-28">split_assignment</a>(<a class="self" href="#1217">self</a>.tcx, <a class="self" href="#1217">self</a>.mir);
 
         <span class="comment">// TODO: This is a workaround. It seems like some local variables don&#39;t have a local
         //  variable declaration in the MIR. One example of this can be observed in the
@@ -3626,10 +3640,10 @@
         //  region information. Of course once a local variable that is a tuple is not declared
         //  explicitly, this will fail again.
         </span><span class="kw">if </span>assignments.len() == <span class="number">1 </span>{
-            <span class="kw">return </span><span class="prelude-val">Ok</span>(<a href="#1223">assignments</a>.pop());
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<a href="#1230">assignments</a>.pop());
         }
 
-        <span class="kw">let </span>region = <a class="self" href="#1210">self</a>.<a href="#1274">get_loan_issued_at_for_loan</a>(<a href="#1211">loan</a>);
+        <span class="kw">let </span>region = <a class="self" href="#1217">self</a>.<a href="#1281">get_loan_issued_at_for_loan</a>(<a href="#1218">loan</a>);
 
         <span class="comment">// Drops all assignments where the LHS region isn&#39;t equal to the region of the loan we&#39;re
         // interested in. The reason this works is a bit subtle. First, if execution reaches this
@@ -3655,7 +3669,7 @@
             }
         }
 
-        <span class="prelude-val">Ok</span>(<a href="#1253">retained_assignments</a>.pop())
+        <span class="prelude-val">Ok</span>(<a href="#1260">retained_assignments</a>.pop())
     }
 
     <span class="doccomment">/// Returns the borrow region that requires the terms of the given loan to be enforced. This
@@ -3667,22 +3681,22 @@
     /// _1 = &amp;&#39;2rv 123;
     /// ```
     </span><span class="kw">fn </span>get_loan_issued_at_for_loan(<span class="kw-2">&amp;</span><span class="self">self</span>, loan: <a href="borrowck/facts.rs.html#15">facts::Loan</a>) -&gt; <a href="borrowck/facts.rs.html#14">facts::Region</a> {
-        <span class="kw">let </span>location = <a class="self" href="#1274">self</a>.<a href="#1152">get_loan_location</a>(<span class="kw-2">&amp;</span><a href="#1274">loan</a>);
-        <span class="kw">let </span>point = <a class="self" href="#1274">self</a>.<a href="#863-867">get_point</a>(<a href="#1275">location</a>, <a href="borrowck/facts.rs.html#49">PointType::Mid</a>);
-        <span class="kw">let </span>regions = <span class="self"><a href="#1274">self</a>
+        <span class="kw">let </span>location = <a class="self" href="#1281">self</a>.<a href="#1159">get_loan_location</a>(<span class="kw-2">&amp;</span><a href="#1281">loan</a>);
+        <span class="kw">let </span>point = <a class="self" href="#1281">self</a>.<a href="#870-874">get_point</a>(<a href="#1282">location</a>, <a href="borrowck/facts.rs.html#49">PointType::Mid</a>);
+        <span class="kw">let </span>regions = <span class="self"><a href="#1281">self</a>
             </span>.borrowck_in_facts
             .loan_issued_at
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter_map</a>(|<span class="kw-2">&amp;</span>(r, l, p)| {
                 <span class="kw">if </span>p == point &amp;&amp; l == loan {
-                    <span class="prelude-val">Some</span>(<a href="#1281">r</a>)
+                    <span class="prelude-val">Some</span>(<a href="#1288">r</a>)
                 } <span class="kw">else </span>{
                     <span class="prelude-val">None
                 </span>}
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
         <span class="kw">if </span>regions.len() == <span class="number">1 </span>{
-            <a href="#1277">regions</a>[<span class="number">0</span>]
+            <a href="#1284">regions</a>[<span class="number">0</span>]
         } <span class="kw">else </span>{
             <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unreachable.html">unreachable!</a>(
                 <span class="string">&quot;Cannot determine region for loan {:?}, because there is not exactly one possible option: {:?}&quot;</span>,
@@ -3704,7 +3718,7 @@
                 roots.push(loan);
             }
         }
-        <a href="#1300">roots</a>
+        <a href="#1307">roots</a>
     }
 
     <span class="doccomment">/// Find a variable that has the given region in its type.
@@ -3738,11 +3752,11 @@
         zombie_loans: <span class="kw-2">&amp;</span>[<a href="borrowck/facts.rs.html#15">facts::Loan</a>],
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<a href="#222">ReborrowingDAG</a>, <a href="#254">PoloniusInfoError</a>&gt; {
-        <a class="self" href="#1341">self</a>.<a href="#1403-1409">construct_reborrowing_dag_custom_reborrows</a>(
-            <a href="#1342">loans</a>,
-            <a href="#1343">zombie_loans</a>,
-            <a href="#1344">location</a>,
-            <span class="kw-2">&amp;</span><a class="self" href="#1341">self</a>.additional_facts.reborrows_direct,
+        <a class="self" href="#1348">self</a>.<a href="#1410-1416">construct_reborrowing_dag_custom_reborrows</a>(
+            <a href="#1349">loans</a>,
+            <a href="#1350">zombie_loans</a>,
+            <a href="#1351">location</a>,
+            <span class="kw-2">&amp;</span><a class="self" href="#1348">self</a>.additional_facts.reborrows_direct,
         )
     }
 
@@ -3752,11 +3766,11 @@
         zombie_loans: <span class="kw-2">&amp;</span>[<a href="borrowck/facts.rs.html#15">facts::Loan</a>],
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<a href="#222">ReborrowingDAG</a>, <a href="#254">PoloniusInfoError</a>&gt; {
-        <a class="self" href="#1355">self</a>.<a href="#1403-1409">construct_reborrowing_dag_custom_reborrows</a>(
-            <a href="#1356">loans</a>,
-            <a href="#1357">zombie_loans</a>,
-            <a href="#1358">location</a>,
-            <span class="kw-2">&amp;</span><a class="self" href="#1355">self</a>.additional_facts_no_back.reborrows_direct,
+        <a class="self" href="#1362">self</a>.<a href="#1410-1416">construct_reborrowing_dag_custom_reborrows</a>(
+            <a href="#1363">loans</a>,
+            <a href="#1364">zombie_loans</a>,
+            <a href="#1365">location</a>,
+            <span class="kw-2">&amp;</span><a class="self" href="#1362">self</a>.additional_facts_no_back.reborrows_direct,
         )
     }
 
@@ -3765,19 +3779,19 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         loans: <span class="kw-2">&amp;</span>[<a href="borrowck/facts.rs.html#15">facts::Loan</a>],
     ) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;(<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlock.html">mir::BasicBlock</a>)&gt;, <a href="#254">PoloniusInfoError</a>&gt; {
-        <span class="kw">let </span>pairs: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1371">loans</a>
+        <span class="kw">let </span>pairs: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1378">loans</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|loan| {
-                <span class="kw">let </span>loan_location = <span class="kw">if let </span><span class="prelude-val">Some</span>(location) = <a class="self" href="#1370">self</a>.loan_position.get(<a href="#1375">loan</a>) {
-                    <a href="#1376">location</a>
+                <span class="kw">let </span>loan_location = <span class="kw">if let </span><span class="prelude-val">Some</span>(location) = <a class="self" href="#1377">self</a>.loan_position.get(<a href="#1382">loan</a>) {
+                    <a href="#1383">location</a>
                 } <span class="kw">else </span>{
                     <span class="comment">// FIXME (Vytautas): This is likely to be wrong.
                     </span><a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;ERROR: not found for loan: {:?}&quot;</span>, loan);
                     <span class="kw">return </span><span class="prelude-val">None</span>;
                 };
-                <a class="self" href="#1370">self</a>.loops
-                    .<a href="loops.rs.html#433">get_loop_head</a>(<a href="#1376">loan_location</a>.block)
-                    .map(|loop_head| (<span class="kw-2">*</span><a href="#1375">loan</a>, <a href="#1385">loop_head</a>))
+                <a class="self" href="#1377">self</a>.loops
+                    .<a href="loops.rs.html#433">get_loop_head</a>(<a href="#1383">loan_location</a>.block)
+                    .map(|loop_head| (<span class="kw-2">*</span><a href="#1382">loan</a>, <a href="#1392">loop_head</a>))
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
         <span class="kw">for </span>(loan1, loop1) <span class="kw">in </span>pairs.iter() {
@@ -3791,7 +3805,7 @@
                 }
             }
         }
-        <span class="prelude-val">Ok</span>(<a href="#1373">pairs</a>)
+        <span class="prelude-val">Ok</span>(<a href="#1380">pairs</a>)
     }
 
     <span class="doccomment">/// ``loans`` – all loans, including the zombie loans.
@@ -3810,14 +3824,14 @@
             location
         );
 
-        <span class="kw">let </span><span class="kw-2">mut </span>loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1405">loans</a>
+        <span class="kw">let </span><span class="kw-2">mut </span>loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1412">loans</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|loan| {
                 <span class="comment">// FIXME: This is most likely wrong. Filtering out placeholder loans.
-                </span><a class="self" href="#1404">self</a>.borrowck_in_facts
+                </span><a class="self" href="#1411">self</a>.borrowck_in_facts
                     .placeholder
                     .iter()
-                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(|(_origin, placeholder_loan)| <a href="#1425">placeholder_loan</a> != <span class="kw-2">*</span><a href="#1420">loan</a>)
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(|(_origin, placeholder_loan)| <a href="#1432">placeholder_loan</a> != <span class="kw-2">*</span><a href="#1427">loan</a>)
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
@@ -3827,8 +3841,8 @@
         // reborrows_direct relation (because of the cycles), it needs
         // manual treatment in the visit function.
         </span><span class="kw">let </span><span class="kw-2">mut </span>representative_loan = <span class="prelude-val">None</span>;
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(loop_head) = <a class="self" href="#1404">self</a>.loops.<a href="loops.rs.html#433">get_loop_head</a>(<a href="#1407">location</a>.block) {
-            <span class="kw">let </span>depth = <a class="self" href="#1404">self</a>.loops.<a href="loops.rs.html#441">get_loop_head_depth</a>(<a href="#1435">loop_head</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(loop_head) = <a class="self" href="#1411">self</a>.loops.<a href="loops.rs.html#433">get_loop_head</a>(<a href="#1414">location</a>.block) {
+            <span class="kw">let </span>depth = <a class="self" href="#1411">self</a>.loops.<a href="loops.rs.html#441">get_loop_head_depth</a>(<a href="#1442">loop_head</a>);
             <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;loop_head: {:?} depth: {:?}&quot;</span>, loop_head, depth);
             <span class="comment">// It is fine to have loans defined in an outer loop that is not `loop_head`, because
             // `return` or panic statements might need to jump out of many loops at once.
@@ -3838,25 +3852,25 @@
                 <span class="kw">for </span>(loan, loop_head) <span class="kw">in </span>loan_loops.iter() {
                     <span class="macro">debug!</span>(<span class="string">&quot;loan={:?} loop_head={:?}&quot;</span>, loan, loop_head);
                 }
-                <span class="kw">let </span>(<span class="kw">_</span>, loop_head) = <a href="#1441">loan_loops</a>[<span class="number">0</span>];
+                <span class="kw">let </span>(<span class="kw">_</span>, loop_head) = <a href="#1448">loan_loops</a>[<span class="number">0</span>];
                 <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;loop_head = {:?}&quot;</span>, loop_head);
                 <span class="kw">if </span><span class="self">self</span>.loop_magic_wands.is_empty() {
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#266">PoloniusInfoError::ReborrowingDagHasNoMagicWands</a>(<a href="#1407">location</a>));
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#266">PoloniusInfoError::ReborrowingDagHasNoMagicWands</a>(<a href="#1414">location</a>));
                 }
-                <span class="kw">let </span>loop_magic_wands = <span class="kw-2">&amp;</span><a class="self" href="#1404">self</a>.loop_magic_wands[<span class="kw-2">&amp;</span><a href="#1446">loop_head</a>];
+                <span class="kw">let </span>loop_magic_wands = <span class="kw-2">&amp;</span><a class="self" href="#1411">self</a>.loop_magic_wands[<span class="kw-2">&amp;</span><a href="#1453">loop_head</a>];
                 <span class="kw">if </span>loop_magic_wands.len() != <span class="number">1 </span>{
-                    <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#268">PoloniusInfoError::MultipleMagicWandsPerLoop</a>(<a href="#1407">location</a>));
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#268">PoloniusInfoError::MultipleMagicWandsPerLoop</a>(<a href="#1414">location</a>));
                 }
-                <span class="kw">let </span>magic_wand = <span class="kw-2">&amp;</span><a href="#1451">loop_magic_wands</a>[<span class="number">0</span>];
-                <a href="#1434">representative_loan</a> = <span class="prelude-val">Some</span>(<a href="#1455">magic_wand</a>.root_loan);
+                <span class="kw">let </span>magic_wand = <span class="kw-2">&amp;</span><a href="#1458">loop_magic_wands</a>[<span class="number">0</span>];
+                <a href="#1441">representative_loan</a> = <span class="prelude-val">Some</span>(<a href="#1462">magic_wand</a>.root_loan);
                 <span class="kw">if </span>representative_loan.is_none() {
                     <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#269">PoloniusInfoError::MagicWandHasNoRepresentativeLoan</a>(
-                        <a href="#1407">location</a>,
+                        <a href="#1414">location</a>,
                     ));
                 }
-                <a href="#1418">loans</a>.retain(|loan| {
-                    !<a href="#1441">loan_loops</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|(loop_loan, <span class="kw">_</span>)| {
-                        <a href="#1463">loop_loan</a> == <a href="#1462">loan</a> &amp;&amp; <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a href="#1462">loan</a>) != <a href="#1434">representative_loan</a>
+                <a href="#1425">loans</a>.retain(|loan| {
+                    !<a href="#1448">loan_loops</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|(loop_loan, <span class="kw">_</span>)| {
+                        <a href="#1470">loop_loan</a> == <a href="#1469">loan</a> &amp;&amp; <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a href="#1469">loan</a>) != <a href="#1441">representative_loan</a>
                     })
                 });
             }
@@ -3892,8 +3906,8 @@
                 temporary_mark,
                 this.loan_position
             );
-            <a href="#1483">temporary_mark</a>[<a href="#1480">current</a>] = <span class="bool-val">true</span>;
-            <span class="kw">let </span>current_loan = <a href="#1479">loans</a>[<a href="#1480">current</a>];
+            <a href="#1490">temporary_mark</a>[<a href="#1487">current</a>] = <span class="bool-val">true</span>;
+            <span class="kw">let </span>current_loan = <a href="#1486">loans</a>[<a href="#1487">current</a>];
             <span class="kw">if </span><span class="prelude-val">Some</span>(current_loan) == <span class="kw-2">*</span>representative_loan {
                 <span class="kw">for </span>(new_current, <span class="kw-2">&amp;</span>loan) <span class="kw">in </span>loans.iter().enumerate() {
                     <span class="kw">if </span>loan == current_loan {
@@ -3950,8 +3964,8 @@
                     }
                 }
             }
-            <a href="#1482">permanent_mark</a>[<a href="#1480">current</a>] = <span class="bool-val">true</span>;
-            <a href="#1481">sorted_loans</a>.push(<a href="#1479">loans</a>[<a href="#1480">current</a>]);
+            <a href="#1489">permanent_mark</a>[<a href="#1487">current</a>] = <span class="bool-val">true</span>;
+            <a href="#1488">sorted_loans</a>.push(<a href="#1486">loans</a>[<a href="#1487">current</a>]);
         }
         <span class="kw">while let </span><span class="prelude-val">Some</span>(index) = permanent_mark.iter().position(|x| !<span class="kw-2">*</span>x) {
             visit(
@@ -3965,36 +3979,36 @@
                 <span class="kw-2">&amp;mut </span>temporary_mark,
             );
         }
-        <a href="#1471">sorted_loans</a>.reverse();
-        <span class="kw">let </span>nodes: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1471">sorted_loans</a>
+        <a href="#1478">sorted_loans</a>.reverse();
+        <span class="kw">let </span>nodes: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1478">sorted_loans</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>loan| {
-                <span class="kw">let </span>reborrowing_loans = <a href="#1471">sorted_loans</a>
+                <span class="kw">let </span>reborrowing_loans = <a href="#1478">sorted_loans</a>
                     .iter()
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
-                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>l| <a class="self" href="#1404">self</a>.additional_facts.reborrows_direct.contains(<span class="kw-2">&amp;</span>(<a href="#1580">l</a>, <a href="#1576">loan</a>)))
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>l| <a class="self" href="#1411">self</a>.additional_facts.reborrows_direct.contains(<span class="kw-2">&amp;</span>(<a href="#1587">l</a>, <a href="#1583">loan</a>)))
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                <span class="kw">let </span>reborrowed_loans = <a href="#1471">sorted_loans</a>
+                <span class="kw">let </span>reborrowed_loans = <a href="#1478">sorted_loans</a>
                     .iter()
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
-                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>l| <a class="self" href="#1404">self</a>.additional_facts.reborrows_direct.contains(<span class="kw-2">&amp;</span>(<a href="#1576">loan</a>, <a href="#1585">l</a>)))
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>l| <a class="self" href="#1411">self</a>.additional_facts.reborrows_direct.contains(<span class="kw-2">&amp;</span>(<a href="#1583">loan</a>, <a href="#1592">l</a>)))
                     .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-                <span class="kw">let </span>kind = <a class="self" href="#1404">self</a>.<a href="#1605-1609">construct_reborrowing_kind</a>(<a href="#1576">loan</a>, <a href="#1434">representative_loan</a>);
+                <span class="kw">let </span>kind = <a class="self" href="#1411">self</a>.<a href="#1612-1616">construct_reborrowing_kind</a>(<a href="#1583">loan</a>, <a href="#1441">representative_loan</a>);
                 <span class="kw">let </span>zombity =
-                    <a class="self" href="#1404">self</a>.<a href="#1635-1641">construct_reborrowing_zombity</a>(<a href="#1576">loan</a>, <span class="kw-2">&amp;</span><a href="#1418">loans</a>, <a href="#1406">zombie_loans</a>, <a href="#1407">location</a>);
+                    <a class="self" href="#1411">self</a>.<a href="#1642-1648">construct_reborrowing_zombity</a>(<a href="#1583">loan</a>, <span class="kw-2">&amp;</span><a href="#1425">loans</a>, <a href="#1413">zombie_loans</a>, <a href="#1414">location</a>);
                 <span class="kw">let </span>incoming_zombies =
-                    <a class="self" href="#1404">self</a>.<a href="#1654-1660">check_incoming_zombies</a>(<a href="#1576">loan</a>, <span class="kw-2">&amp;</span><a href="#1418">loans</a>, <a href="#1406">zombie_loans</a>, <a href="#1407">location</a>);
+                    <a class="self" href="#1411">self</a>.<a href="#1661-1667">check_incoming_zombies</a>(<a href="#1583">loan</a>, <span class="kw-2">&amp;</span><a href="#1425">loans</a>, <a href="#1413">zombie_loans</a>, <a href="#1414">location</a>);
                 <a href="#150">ReborrowingDAGNode</a> {
-                    <a href="#1576">loan</a>,
-                    <a href="#1587">kind</a>,
-                    <a href="#1588">zombity</a>,
-                    <a href="#1590">incoming_zombies</a>,
-                    <a href="#1577">reborrowing_loans</a>,
-                    <a href="#1582">reborrowed_loans</a>,
+                    <a href="#1583">loan</a>,
+                    <a href="#1594">kind</a>,
+                    <a href="#1595">zombity</a>,
+                    <a href="#1597">incoming_zombies</a>,
+                    <a href="#1584">reborrowing_loans</a>,
+                    <a href="#1589">reborrowed_loans</a>,
                 }
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-        <span class="prelude-val">Ok</span>(<a href="#222">ReborrowingDAG</a> { <a href="#1574">nodes</a> })
+        <span class="prelude-val">Ok</span>(<a href="#222">ReborrowingDAG</a> { <a href="#1581">nodes</a> })
     }
 
     <span class="kw">fn </span>construct_reborrowing_kind(
@@ -4002,15 +4016,15 @@
         loan: <a href="borrowck/facts.rs.html#15">facts::Loan</a>,
         representative_loan: <span class="prelude-ty">Option</span>&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;,
     ) -&gt; <a href="#117">ReborrowingKind</a> {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(local) = <a class="self" href="#1606">self</a>.call_magic_wands.get(<span class="kw-2">&amp;</span><a href="#1607">loan</a>) {
-            <span class="kw">let </span>region = <a class="self" href="#1606">self</a>.place_regions.<a href="borrowck/regions.rs.html#33">for_local</a>(<span class="kw-2">*</span><a href="#1610">local</a>).unwrap();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(local) = <a class="self" href="#1613">self</a>.call_magic_wands.get(<span class="kw-2">&amp;</span><a href="#1614">loan</a>) {
+            <span class="kw">let </span>region = <a class="self" href="#1613">self</a>.place_regions.<a href="borrowck/regions.rs.html#33">for_local</a>(<span class="kw-2">*</span><a href="#1617">local</a>).unwrap();
             <a href="#127">ReborrowingKind::Call</a> {
-                <a href="#1607">loan</a>,
-                variable: <span class="kw-2">*</span><a href="#1610">local</a>,
-                <a href="#1611">region</a>,
+                <a href="#1614">loan</a>,
+                variable: <span class="kw-2">*</span><a href="#1617">local</a>,
+                <a href="#1618">region</a>,
             }
         } <span class="kw">else if </span><span class="self">self</span>.argument_moves.contains(<span class="kw-2">&amp;</span>loan) {
-            <a href="#123">ReborrowingKind::ArgumentMove</a> { <a href="#1607">loan</a> }
+            <a href="#123">ReborrowingKind::ArgumentMove</a> { <a href="#1614">loan</a> }
         } <span class="kw">else if </span><span class="prelude-val">Some</span>(loan) == representative_loan {
             <span class="kw">for </span>magic_wands <span class="kw">in </span><span class="self">self</span>.loop_magic_wands.values() {
                 <span class="kw">for </span>magic_wand <span class="kw">in </span>magic_wands.iter() {
@@ -4023,7 +4037,7 @@
             }
             <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unreachable.html">unreachable!</a>(<span class="string">&quot;Bug&quot;</span>);
         } <span class="kw">else </span>{
-            <a href="#118">ReborrowingKind::Assignment</a> { <a href="#1607">loan</a> }
+            <a href="#118">ReborrowingKind::Assignment</a> { <a href="#1614">loan</a> }
         }
     }
 
@@ -4036,11 +4050,11 @@
     ) -&gt; <a href="#141">ReborrowingZombity</a> {
         <span class="comment">// Is the loan is a move of a reference, then this source is moved out and,
         // therefore, a zombie.
-        </span><span class="kw">let </span>is_reference_move = <a class="self" href="#1636">self</a>.reference_moves.contains(<span class="kw-2">&amp;</span><a href="#1637">loan</a>);
+        </span><span class="kw">let </span>is_reference_move = <a class="self" href="#1643">self</a>.reference_moves.contains(<span class="kw-2">&amp;</span><a href="#1644">loan</a>);
 
         <a class="macro" href="../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;loan={:?} is_reference_move={:?}&quot;</span>, loan, is_reference_move);
         <span class="kw">if </span>zombie_loans.contains(<span class="kw-2">&amp;</span>loan) || is_reference_move {
-            <a href="#147">ReborrowingZombity::Zombie</a>(<a class="self" href="#1636">self</a>.loan_position[<span class="kw-2">&amp;</span><a href="#1637">loan</a>])
+            <a href="#147">ReborrowingZombity::Zombie</a>(<a class="self" href="#1643">self</a>.loan_position[<span class="kw-2">&amp;</span><a href="#1644">loan</a>])
         } <span class="kw">else </span>{
             <a href="#144">ReborrowingZombity::Real</a>
         }
@@ -4053,17 +4067,17 @@
         zombie_loans: <span class="kw-2">&amp;</span>[<a href="borrowck/facts.rs.html#15">facts::Loan</a>],
         location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
     ) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-        <span class="kw">let </span>incoming_loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1657">loans</a>
+        <span class="kw">let </span>incoming_loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#1664">loans</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|&amp;&amp;incoming_loan| {
-                <a class="self" href="#1655">self</a>.additional_facts
+                <a class="self" href="#1662">self</a>.additional_facts
                     .reborrows_direct
-                    .contains(<span class="kw-2">&amp;</span>(<a href="#1663">incoming_loan</a>, <a href="#1656">loan</a>))
+                    .contains(<span class="kw-2">&amp;</span>(<a href="#1670">incoming_loan</a>, <a href="#1663">loan</a>))
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|incoming_loan| {
-                <a href="#1658">zombie_loans</a>.contains(<a href="#1668">incoming_loan</a>)
-                    || <a class="self" href="#1655">self</a>.reference_moves.contains(<a href="#1668">incoming_loan</a>)
-                    || <a class="self" href="#1655">self</a>.argument_moves.contains(<a href="#1668">incoming_loan</a>)
+                <a href="#1665">zombie_loans</a>.contains(<a href="#1675">incoming_loan</a>)
+                    || <a class="self" href="#1662">self</a>.reference_moves.contains(<a href="#1675">incoming_loan</a>)
+                    || <a class="self" href="#1662">self</a>.argument_moves.contains(<a href="#1675">incoming_loan</a>)
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
 
@@ -4071,31 +4085,31 @@
         // that this loan is an argument to that call and the reference
         // that created it was moved into the call and as a result is a
         // zombie now.
-        </span><span class="kw">let </span>has_incoming_call = <a href="#1657">loans</a>
+        </span><span class="kw">let </span>has_incoming_call = <a href="#1664">loans</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|&amp;&amp;incoming_loan| {
-                <a class="self" href="#1655">self</a>.additional_facts
+                <a class="self" href="#1662">self</a>.additional_facts
                     .reborrows_direct
-                    .contains(<span class="kw-2">&amp;</span>(<a href="#1681">incoming_loan</a>, <a href="#1656">loan</a>))
+                    .contains(<span class="kw-2">&amp;</span>(<a href="#1688">incoming_loan</a>, <a href="#1663">loan</a>))
             })
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|incoming_loan| <a class="self" href="#1655">self</a>.call_magic_wands.contains_key(<a href="#1686">incoming_loan</a>));
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|incoming_loan| <a class="self" href="#1662">self</a>.call_magic_wands.contains_key(<a href="#1693">incoming_loan</a>));
 
         <span class="comment">// If a root loan dies at a call, this means that it is kept
         // alive by a reference that was moved into the call and,
         // therefore, its blocking reference is now a zombie.
         </span><span class="kw">let </span>root_die_at_call =
-            { <a href="#1930">is_call</a>(<a class="self" href="#1655">self</a>.mir, <a href="#1659">location</a>) &amp;&amp; <a class="self" href="#1655">self</a>.<a href="#1299">find_loan_roots</a>(<a href="#1657">loans</a>).contains(<span class="kw-2">&amp;</span><a href="#1656">loan</a>) };
+            { <a href="#1937">is_call</a>(<a class="self" href="#1662">self</a>.mir, <a href="#1666">location</a>) &amp;&amp; <a class="self" href="#1662">self</a>.<a href="#1306">find_loan_roots</a>(<a href="#1664">loans</a>).contains(<span class="kw-2">&amp;</span><a href="#1663">loan</a>) };
 
         <span class="kw">if </span>root_die_at_call || has_incoming_call {
             <span class="bool-val">true
         </span>} <span class="kw">else if </span>!incoming_loans.is_empty() {
-            <span class="kw">let </span>incoming_zombies = <a href="#1661">incoming_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|<span class="kw-2">&amp;</span>b| <a href="#1697">b</a>);
+            <span class="kw">let </span>incoming_zombies = <a href="#1668">incoming_loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|<span class="kw-2">&amp;</span>b| <a href="#1704">b</a>);
             <a class="macro" href="../../../log/macro.debug.html">debug!</a>(
                 <span class="string">&quot;incoming_loans={:?} loan={:?} zombie_loans={:?}&quot;</span>,
                 incoming_loans, loan, zombie_loans
             );
             <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert_eq.html">assert_eq!</a>(incoming_zombies, incoming_loans.iter().all(|<span class="kw-2">&amp;</span>b| b));
-            <a href="#1697">incoming_zombies</a>
+            <a href="#1704">incoming_zombies</a>
         } <span class="kw">else </span>{
             <span class="bool-val">false
         </span>}
@@ -4247,7 +4261,7 @@
     //     }
 
     </span><span class="kw">fn </span>get_successors(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; Vec&lt;<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>&gt; {
-        <span class="kw">let </span>statements_len = <a class="self" href="#1854">self</a>.mir[<a href="#1854">location</a>.block].statements.len();
+        <span class="kw">let </span>statements_len = <a class="self" href="#1861">self</a>.mir[<a href="#1861">location</a>.block].statements.len();
         <span class="kw">if </span>location.statement_index &lt; statements_len {
             <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[mir::Location {
                 statement_index: location.statement_index + <span class="number">1</span>,
@@ -4266,7 +4280,7 @@
                     statement_index: <span class="number">0</span>,
                 });
             }
-            <a href="#1862">successors</a>
+            <a href="#1869">successors</a>
         }
     }
 
@@ -4296,7 +4310,7 @@
 
 <span class="doccomment">/// Check if the statement is assignment.
 </span><span class="kw">fn </span>is_assignment(mir: <span class="kw-2">&amp;</span>mir::Body&lt;<span class="lifetime">&#39;_</span>&gt;, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-    <span class="kw">let </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlockData.html">mir::BasicBlockData</a> { <span class="kw-2">ref </span>statements, .. } = <a href="#1903">mir</a>[<a href="#1903">location</a>.block];
+    <span class="kw">let </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.BasicBlockData.html">mir::BasicBlockData</a> { <span class="kw-2">ref </span>statements, .. } = <a href="#1910">mir</a>[<a href="#1910">location</a>.block];
     <span class="kw">if </span>statements.len() == location.statement_index {
         <span class="kw">return </span><span class="bool-val">false</span>;
     }
@@ -4312,7 +4326,7 @@
         <span class="kw-2">ref </span>statements,
         <span class="kw-2">ref </span>terminator,
         ..
-    } = <a href="#1915">mir</a>[<a href="#1915">location</a>.block];
+    } = <a href="#1922">mir</a>[<a href="#1922">location</a>.block];
     <span class="kw">if </span>statements.len() != location.statement_index {
         <span class="kw">return </span><span class="bool-val">false</span>;
     }
@@ -4327,7 +4341,7 @@
         <span class="kw-2">ref </span>statements,
         <span class="kw-2">ref </span>terminator,
         ..
-    } = <a href="#1930">mir</a>[<a href="#1930">location</a>.block];
+    } = <a href="#1937">mir</a>[<a href="#1937">location</a>.block];
     <span class="kw">if </span>statements.len() != location.statement_index {
         <span class="kw">return </span><span class="bool-val">false</span>;
     }
@@ -4346,16 +4360,16 @@
         <span class="kw-2">ref </span>statements,
         <span class="kw-2">ref </span>terminator,
         ..
-    } = <a href="#1947">mir</a>[<a href="#1948">location</a>.block];
+    } = <a href="#1954">mir</a>[<a href="#1955">location</a>.block];
     <span class="kw">if </span>statements.len() != location.statement_index {
         <span class="kw">return </span><span class="prelude-val">None</span>;
     }
-    <span class="kw">match </span><a href="#1952">terminator</a>.as_ref().unwrap().kind {
+    <span class="kw">match </span><a href="#1959">terminator</a>.as_ref().unwrap().kind {
         <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/syntax/enum.TerminatorKind.html">mir::TerminatorKind::Call</a> {
             <span class="kw-2">ref </span>destination,
             target,
             ..
-        } =&gt; <a href="#1961">target</a>.map(|<span class="kw">_</span>| <span class="kw-2">*</span><a href="#1960">destination</a>),
+        } =&gt; <a href="#1968">target</a>.map(|<span class="kw">_</span>| <span class="kw-2">*</span><a href="#1967">destination</a>),
         <span class="kw-2">ref </span>x =&gt; {
             <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;Expected call, got {:?} at {:?}&quot;</span>, x, location);
         }
@@ -4368,9 +4382,9 @@
         <span class="kw-2">ref </span>statements,
         <span class="kw-2">ref </span>terminator,
         ..
-    } = <a href="#1971">mir</a>[<a href="#1971">location</a>.block];
+    } = <a href="#1978">mir</a>[<a href="#1978">location</a>.block];
     <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(statements.len() == location.statement_index);
-    <span class="kw">match </span><a href="#1974">terminator</a>.as_ref().unwrap().kind {
+    <span class="kw">match </span><a href="#1981">terminator</a>.as_ref().unwrap().kind {
         <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/syntax/enum.TerminatorKind.html">mir::TerminatorKind::Call</a> { <span class="kw-2">ref </span>args, .. } =&gt; {
             <span class="kw">let </span><span class="kw-2">mut </span>reference_args = Vec::new();
             <span class="kw">for </span>arg <span class="kw">in </span>args {
@@ -4383,7 +4397,7 @@
                     mir::Operand::Constant(<span class="kw">_</span>) =&gt; {}
                 }
             }
-            <a href="#1980">reference_args</a>
+            <a href="#1987">reference_args</a>
         }
         <span class="kw-2">ref </span>x =&gt; {
             <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;Expected call, got {:?} at {:?}&quot;</span>, x, location);
@@ -4450,7 +4464,7 @@
         prusti_rustc_interface::data_structures::fx::FxHashMap&lt;<a href="borrowck/facts.rs.html#16">facts::PointIndex</a>, Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;&gt;,
 }
 
-<span class="kw">impl </span><a href="#2000">AdditionalFacts</a> {
+<span class="kw">impl </span><a href="#2007">AdditionalFacts</a> {
     <span class="doccomment">/// Derive ``zombie_requires``.
     </span><span class="attribute">#[allow(clippy::type_complexity)]
     </span><span class="kw">fn </span>derive_zombie_requires(
@@ -4470,57 +4484,57 @@
         <span class="kw">let </span><span class="kw-2">mut </span>iteration = Iteration::new();
 
         <span class="comment">// Variables that are outputs of our computation.
-        </span><span class="kw">let </span>zombie_requires = <a href="#2075">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;zombie_requires&quot;</span>);
-        <span class="kw">let </span>zombie_borrow_live_at = <a href="#2075">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;zombie_borrow_live_at&quot;</span>);
+        </span><span class="kw">let </span>zombie_requires = <a href="#2082">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;zombie_requires&quot;</span>);
+        <span class="kw">let </span>zombie_borrow_live_at = <a href="#2082">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;zombie_borrow_live_at&quot;</span>);
         <span class="kw">let </span>borrow_become_zombie_at =
-            <a href="#2075">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;borrow_become_zombie_at&quot;</span>);
+            <a href="#2082">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;borrow_become_zombie_at&quot;</span>);
 
         <span class="comment">// Variables for initial data.
-        </span><span class="kw">let </span>requires_lp = <a href="#2075">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>), <a href="borrowck/facts.rs.html#14">Region</a>)&gt;(<span class="string">&quot;requires_lp&quot;</span>);
-        <span class="kw">let </span>loan_killed_at = <a href="#2075">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>), ())&gt;(<span class="string">&quot;loan_killed_at&quot;</span>);
-        <span class="kw">let </span>cfg_edge_p = <a href="#2075">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;cfg_edge_p&quot;</span>);
+        </span><span class="kw">let </span>requires_lp = <a href="#2082">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>), <a href="borrowck/facts.rs.html#14">Region</a>)&gt;(<span class="string">&quot;requires_lp&quot;</span>);
+        <span class="kw">let </span>loan_killed_at = <a href="#2082">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#16">Point</a>), ())&gt;(<span class="string">&quot;loan_killed_at&quot;</span>);
+        <span class="kw">let </span>cfg_edge_p = <a href="#2082">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#16">Point</a>)&gt;(<span class="string">&quot;cfg_edge_p&quot;</span>);
         <span class="kw">let </span>origin_live_on_entry =
-            <a href="#2075">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#16">Point</a>), ())&gt;(<span class="string">&quot;origin_live_on_entry&quot;</span>);
-        <span class="kw">let </span>subset_r1p = <a href="#2075">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#16">Point</a>), <a href="borrowck/facts.rs.html#14">Region</a>)&gt;(<span class="string">&quot;subset_r1p&quot;</span>);
+            <a href="#2082">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#16">Point</a>), ())&gt;(<span class="string">&quot;origin_live_on_entry&quot;</span>);
+        <span class="kw">let </span>subset_r1p = <a href="#2082">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#14">Region</a>, <a href="borrowck/facts.rs.html#16">Point</a>), <a href="borrowck/facts.rs.html#14">Region</a>)&gt;(<span class="string">&quot;subset_r1p&quot;</span>);
 
         <span class="comment">// Temporaries as we perform a multi-way join.
-        </span><span class="kw">let </span>zombie_requires_rp = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_rp&quot;</span>);
-        <span class="kw">let </span>zombie_requires_p = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_p&quot;</span>);
-        <span class="kw">let </span>zombie_requires_1 = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_1&quot;</span>);
-        <span class="kw">let </span>zombie_requires_2 = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_2&quot;</span>);
-        <span class="kw">let </span>zombie_requires_3 = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_3&quot;</span>);
-        <span class="kw">let </span>zombie_requires_4 = <a href="#2075">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_4&quot;</span>);
+        </span><span class="kw">let </span>zombie_requires_rp = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_rp&quot;</span>);
+        <span class="kw">let </span>zombie_requires_p = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_p&quot;</span>);
+        <span class="kw">let </span>zombie_requires_1 = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_1&quot;</span>);
+        <span class="kw">let </span>zombie_requires_2 = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_2&quot;</span>);
+        <span class="kw">let </span>zombie_requires_3 = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_3&quot;</span>);
+        <span class="kw">let </span>zombie_requires_4 = <a href="#2082">iteration</a>.variable_indistinct(<span class="string">&quot;zombie_requires_4&quot;</span>);
 
         <span class="comment">// Load initial facts.
-        </span><a href="#2084">requires_lp</a>.insert(Relation::from_iter(
-            <a href="#2063">output</a>
+        </span><a href="#2091">requires_lp</a>.insert(Relation::from_iter(
+            <a href="#2070">output</a>
                 .origin_contains_loan_at
                 .iter()
                 .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|(<span class="kw-2">&amp;</span>point, region_map)| {
-                    <a href="#2104">region_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region, loans)| {
-                        <a href="#2105">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>loan| ((<a href="#2106">loan</a>, <a href="#2104">point</a>), <a href="#2105">region</a>))
+                    <a href="#2111">region_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region, loans)| {
+                        <a href="#2112">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>loan| ((<a href="#2113">loan</a>, <a href="#2111">point</a>), <a href="#2112">region</a>))
                     })
                 }),
         ));
-        <a href="#2085">loan_killed_at</a>.insert(Relation::from_iter(
-            <a href="#2062">all_facts</a>
+        <a href="#2092">loan_killed_at</a>.insert(Relation::from_iter(
+            <a href="#2069">all_facts</a>
                 .loan_killed_at
                 .iter()
-                .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(loan, point)| ((<a href="#2114">loan</a>, <a href="#2114">point</a>), ())),
+                .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(loan, point)| ((<a href="#2121">loan</a>, <a href="#2121">point</a>), ())),
         ));
-        <a href="#2086">cfg_edge_p</a>.insert(<a href="#2062">all_facts</a>.cfg_edge.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>());
+        <a href="#2093">cfg_edge_p</a>.insert(<a href="#2069">all_facts</a>.cfg_edge.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>());
 
         <span class="kw">let </span>origin_live_on_entry_vec = {
-            <a href="#2063">output</a>
+            <a href="#2070">output</a>
                 .origin_live_on_entry
                 .iter()
                 .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|(point, origins)| {
-                    <span class="kw">let </span>points: Vec&lt;<span class="kw">_</span>&gt; = <a href="#2122">origins</a>
+                    <span class="kw">let </span>points: Vec&lt;<span class="kw">_</span>&gt; = <a href="#2129">origins</a>
                         .iter()
                         .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
-                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|origin| (<a href="#2126">origin</a>, <span class="kw-2">*</span><a href="#2122">point</a>))
+                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|origin| (<a href="#2133">origin</a>, <span class="kw-2">*</span><a href="#2129">point</a>))
                         .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-                    <a href="#2123">points</a>
+                    <a href="#2130">points</a>
                 })
             <span class="comment">// let mut origin_live_on_entry = output.origin_live_on_entry.clone();
             // let all_points: BTreeSet&lt;Point&gt; = all_facts
@@ -4538,15 +4552,15 @@
             // }
             // origin_live_on_entry
         </span>};
-        <a href="#2087">origin_live_on_entry</a>.insert(Relation::from_iter(
-            <a href="#2118">origin_live_on_entry_vec</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(r, p)| ((<a href="#2147">r</a>, <a href="#2147">p</a>), ())),
+        <a href="#2094">origin_live_on_entry</a>.insert(Relation::from_iter(
+            <a href="#2125">origin_live_on_entry_vec</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(r, p)| ((<a href="#2154">r</a>, <a href="#2154">p</a>), ())),
         ));
-        <a href="#2089">subset_r1p</a>.insert(Relation::from_iter(<a href="#2063">output</a>.subset.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(
+        <a href="#2096">subset_r1p</a>.insert(Relation::from_iter(<a href="#2070">output</a>.subset.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(
             |(<span class="kw-2">&amp;</span>point, subset_map)| {
-                <a href="#2150">subset_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region1, regions)| {
-                    <a href="#2151">regions</a>
+                <a href="#2157">subset_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region1, regions)| {
+                    <a href="#2158">regions</a>
                         .iter()
-                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>region2| ((<a href="#2151">region1</a>, <a href="#2150">point</a>), <a href="#2154">region2</a>))
+                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>region2| ((<a href="#2158">region1</a>, <a href="#2157">point</a>), <a href="#2161">region2</a>))
                 })
             },
         )));
@@ -4609,7 +4623,7 @@
             );
         }
 
-        <span class="kw">let </span>zombie_requires = <a href="#2078">zombie_requires</a>.complete();
+        <span class="kw">let </span>zombie_requires = <a href="#2085">zombie_requires</a>.complete();
         <span class="kw">let </span><span class="kw-2">mut </span>zombie_requires_map =
             prusti_rustc_interface::data_structures::fx::FxHashMap::default();
         <span class="kw">for </span>(region, loan, point) <span class="kw">in </span><span class="kw-2">&amp;</span>zombie_requires.elements {
@@ -4621,7 +4635,7 @@
                 .insert(<span class="kw-2">*</span>loan);
         }
 
-        <span class="kw">let </span>zombie_borrow_live_at = <a href="#2079">zombie_borrow_live_at</a>.complete();
+        <span class="kw">let </span>zombie_borrow_live_at = <a href="#2086">zombie_borrow_live_at</a>.complete();
         <span class="kw">let </span><span class="kw-2">mut </span>zombie_borrow_live_at_map =
             prusti_rustc_interface::data_structures::fx::FxHashMap::default();
         <span class="kw">for </span>(loan, point) <span class="kw">in </span><span class="kw-2">&amp;</span>zombie_borrow_live_at.elements {
@@ -4631,7 +4645,7 @@
                 .push(<span class="kw-2">*</span>loan);
         }
 
-        <span class="kw">let </span>borrow_become_zombie_at = <a href="#2080">borrow_become_zombie_at</a>.complete();
+        <span class="kw">let </span>borrow_become_zombie_at = <a href="#2087">borrow_become_zombie_at</a>.complete();
         <span class="kw">let </span><span class="kw-2">mut </span>borrow_become_zombie_at_map =
             prusti_rustc_interface::data_structures::fx::FxHashMap::default();
         <span class="kw">for </span>(loan, point) <span class="kw">in </span><span class="kw-2">&amp;</span>borrow_become_zombie_at.elements {
@@ -4642,9 +4656,9 @@
         }
 
         (
-            <a href="#2218">zombie_requires_map</a>,
-            <a href="#2230">zombie_borrow_live_at_map</a>,
-            <a href="#2240">borrow_become_zombie_at_map</a>,
+            <a href="#2225">zombie_requires_map</a>,
+            <a href="#2237">zombie_borrow_live_at_map</a>,
+            <a href="#2247">borrow_become_zombie_at_map</a>,
         )
     }
 
@@ -4653,41 +4667,41 @@
         all_facts: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#20">facts::AllInputFacts</a>,
         output: <span class="kw-2">&amp;</span><a href="borrowck/facts.rs.html#21">facts::AllOutputFacts</a>,
         incompatible_loans: <span class="kw-2">&amp;</span>[Vec&lt;<a href="borrowck/facts.rs.html#15">facts::Loan</a>&gt;],
-    ) -&gt; <a href="#2000">AdditionalFacts</a> {
+    ) -&gt; <a href="#2007">AdditionalFacts</a> {
         <span class="kw">let </span>(zombie_requires, zombie_borrow_live_at, borrow_become_zombie_at) =
-            <span class="self">Self</span>::derive_zombie_requires(<a href="#2258">all_facts</a>, <a href="#2259">output</a>);
+            <span class="self">Self</span>::derive_zombie_requires(<a href="#2265">all_facts</a>, <a href="#2266">output</a>);
 
-        <span class="kw">let </span>origin_contains_loan_at = <a href="#2259">output</a>
+        <span class="kw">let </span>origin_contains_loan_at = <a href="#2266">output</a>
             .origin_contains_loan_at
             .iter()
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">chain</a>(<a href="#2262">zombie_requires</a>.iter());
-        <span class="kw">let </span>loan_issued_ats = <a href="#2258">all_facts</a>.loan_issued_at.iter();
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">chain</a>(<a href="#2269">zombie_requires</a>.iter());
+        <span class="kw">let </span>loan_issued_ats = <a href="#2265">all_facts</a>.loan_issued_at.iter();
         <span class="kw">let </span>reborrows =
-            <span class="self">Self</span>::load_reborrows(<a href="#2265">origin_contains_loan_at</a>, <a href="#2269">loan_issued_ats</a>, <a href="#2260">incompatible_loans</a>);
+            <span class="self">Self</span>::load_reborrows(<a href="#2272">origin_contains_loan_at</a>, <a href="#2276">loan_issued_ats</a>, <a href="#2267">incompatible_loans</a>);
 
-        <span class="kw">let </span><span class="kw-2">mut </span>reborrows = <span class="self">Self</span>::transitive_closure(<a href="#2270">reborrows</a>);
+        <span class="kw">let </span><span class="kw-2">mut </span>reborrows = <span class="self">Self</span>::transitive_closure(<a href="#2277">reborrows</a>);
 
         <span class="comment">// Remove reflexive edges.
-        </span><a href="#2273">reborrows</a>.retain(|(l1, l2)| <a href="#2276">l1</a> != <a href="#2276">l2</a>);
+        </span><a href="#2280">reborrows</a>.retain(|(l1, l2)| <a href="#2283">l1</a> != <a href="#2283">l2</a>);
 
         <span class="comment">// A non-transitive version of reborrows.
-        </span><span class="kw">let </span>reborrows_direct = <span class="self">Self</span>::derive_nontransitive(<span class="kw-2">&amp;</span><a href="#2273">reborrows</a>);
+        </span><span class="kw">let </span>reborrows_direct = <span class="self">Self</span>::derive_nontransitive(<span class="kw-2">&amp;</span><a href="#2280">reborrows</a>);
 
         <span class="comment">// Compute the sorted list of all loans.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#2258">all_facts</a>
+        </span><span class="kw">let </span><span class="kw-2">mut </span>loans: Vec&lt;<span class="kw">_</span>&gt; = <a href="#2265">all_facts</a>
             .loan_issued_at
             .iter()
-            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, l, <span class="kw">_</span>)| <a href="#2285">l</a>)
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, l, <span class="kw">_</span>)| <a href="#2292">l</a>)
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-        <a href="#2282">loans</a>.sort();
+        <a href="#2289">loans</a>.sort();
 
-        <a href="#2000">AdditionalFacts</a> {
-            <a href="#2282">loans</a>,
-            <a href="#2273">reborrows</a>,
-            <a href="#2279">reborrows_direct</a>,
-            <a href="#2262">zombie_requires</a>,
-            <a href="#2262">zombie_borrow_live_at</a>,
-            <a href="#2262">borrow_become_zombie_at</a>,
+        <a href="#2007">AdditionalFacts</a> {
+            <a href="#2289">loans</a>,
+            <a href="#2280">reborrows</a>,
+            <a href="#2286">reborrows_direct</a>,
+            <a href="#2269">zombie_requires</a>,
+            <a href="#2269">zombie_borrow_live_at</a>,
+            <a href="#2269">borrow_become_zombie_at</a>,
         }
     }
 
@@ -4706,22 +4720,22 @@
         <span class="kw">let </span><span class="kw-2">mut </span>iteration = datafrog::Iteration::new();
 
         <span class="comment">// Variables that are outputs of our computation.
-        </span><span class="kw">let </span>v_reborrows = <a href="#2311">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;reborrows&quot;</span>);
+        </span><span class="kw">let </span>v_reborrows = <a href="#2318">iteration</a>.variable::&lt;(<a href="borrowck/facts.rs.html#15">Loan</a>, <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;reborrows&quot;</span>);
 
         <span class="comment">// Variables for initial data.
-        </span><span class="kw">let </span>v_restricts = <a href="#2311">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#14">Region</a>), <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;origin_contains_loan_at&quot;</span>);
-        <span class="kw">let </span>v_loan_issued_at = <a href="#2311">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#14">Region</a>), <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;loan_issued_at&quot;</span>);
+        </span><span class="kw">let </span>v_restricts = <a href="#2318">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#14">Region</a>), <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;origin_contains_loan_at&quot;</span>);
+        <span class="kw">let </span>v_loan_issued_at = <a href="#2318">iteration</a>.variable::&lt;((<a href="borrowck/facts.rs.html#16">Point</a>, <a href="borrowck/facts.rs.html#14">Region</a>), <a href="borrowck/facts.rs.html#15">Loan</a>)&gt;(<span class="string">&quot;loan_issued_at&quot;</span>);
 
         <span class="comment">// Load initial data.
-        </span><span class="kw">let </span>restricts_items = <a href="#2300">origin_contains_loan_at</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|(<span class="kw-2">&amp;</span>point, region_map)| {
-            <a href="#2321">region_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region, loans)| {
-                <a href="#2322">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>loan| ((<a href="#2321">point</a>, <a href="#2322">region</a>), <a href="#2323">loan</a>))
+        </span><span class="kw">let </span>restricts_items = <a href="#2307">origin_contains_loan_at</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|(<span class="kw-2">&amp;</span>point, region_map)| {
+            <a href="#2328">region_map</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="kw">move </span>|(<span class="kw-2">&amp;</span>region, loans)| {
+                <a href="#2329">loans</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="kw">move </span>|<span class="kw-2">&amp;</span>loan| ((<a href="#2328">point</a>, <a href="#2329">region</a>), <a href="#2330">loan</a>))
             })
         });
-        <a href="#2317">v_restricts</a>.insert(datafrog::Relation::from_iter(<a href="#2321">restricts_items</a>));
+        <a href="#2324">v_restricts</a>.insert(datafrog::Relation::from_iter(<a href="#2328">restricts_items</a>));
 
-        <span class="kw">let </span>loan_issued_at_items = <a href="#2306">loan_issued_ats</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(r, l, p)| ((<a href="#2328">p</a>, <a href="#2328">r</a>), <a href="#2328">l</a>));
-        <a href="#2318">v_loan_issued_at</a>.insert(datafrog::Relation::from_iter(<a href="#2328">loan_issued_at_items</a>));
+        <span class="kw">let </span>loan_issued_at_items = <a href="#2313">loan_issued_ats</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|<span class="kw-2">&amp;</span>(r, l, p)| ((<a href="#2335">p</a>, <a href="#2335">r</a>), <a href="#2335">l</a>));
+        <a href="#2325">v_loan_issued_at</a>.insert(datafrog::Relation::from_iter(<a href="#2335">loan_issued_at_items</a>));
 
         <span class="kw">while </span>iteration.changed() {
             <span class="comment">// reborrows(L1, L2) :-
@@ -4730,7 +4744,7 @@
             </span>v_reborrows.from_join(<span class="kw-2">&amp;</span>v_loan_issued_at, <span class="kw-2">&amp;</span>v_restricts, |<span class="kw">_</span>, <span class="kw-2">&amp;</span>l1, <span class="kw-2">&amp;</span>l2| (l1, l2));
         }
 
-        <span class="kw">let </span><span class="kw-2">mut </span>reborrows = <a href="#2314">v_reborrows</a>.complete().elements;
+        <span class="kw">let </span><span class="kw-2">mut </span>reborrows = <a href="#2321">v_reborrows</a>.complete().elements;
 
         <span class="comment">// Remove incompatible reborrows. This is necessary because a tuple assignment like
         //   let _3 = (move _4, move _5);
@@ -4741,13 +4755,13 @@
         // means we will infer reborrows(L1, L2) and reborrows(L2, L1), even though neither loan
         // reborrows the other. This would not happen if L1 and L2 were created at different
         // program locations, which is why this problem is unique to references in tuples.
-        </span><a href="#2338">reborrows</a>.retain(|(l1, l2)| {
-            !<a href="#2307">incompatible_loans</a>
+        </span><a href="#2345">reborrows</a>.retain(|(l1, l2)| {
+            !<a href="#2314">incompatible_loans</a>
                 .iter()
-                .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|s| <a href="#2352">s</a>.contains(<a href="#2349">l1</a>) &amp;&amp; <a href="#2352">s</a>.contains(<a href="#2349">l2</a>))
+                .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|s| <a href="#2359">s</a>.contains(<a href="#2356">l1</a>) &amp;&amp; <a href="#2359">s</a>.contains(<a href="#2356">l2</a>))
         });
 
-        <a href="#2338">reborrows</a>
+        <a href="#2345">reborrows</a>
     }
 
     <span class="kw">fn </span>transitive_closure(
@@ -4755,11 +4769,11 @@
     ) -&gt; Vec&lt;(<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="borrowck/facts.rs.html#15">facts::Loan</a>)&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>iteration = datafrog::Iteration::new();
 
-        <span class="kw">let </span>v_reborrows = <a href="#2361">iteration</a>.variable(<span class="string">&quot;reborrows&quot;</span>);
-        <a href="#2363">v_reborrows</a>.insert(<a href="#2359">reborrows</a>.<a href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>());
+        <span class="kw">let </span>v_reborrows = <a href="#2368">iteration</a>.variable(<span class="string">&quot;reborrows&quot;</span>);
+        <a href="#2370">v_reborrows</a>.insert(<a href="#2366">reborrows</a>.<a href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>());
 
-        <span class="kw">let </span>v_reborrows_1 = <a href="#2361">iteration</a>.variable_indistinct(<span class="string">&quot;reborrows_1&quot;</span>);
-        <span class="kw">let </span>v_reborrows_2 = <a href="#2361">iteration</a>.variable_indistinct(<span class="string">&quot;reborrows_2&quot;</span>);
+        <span class="kw">let </span>v_reborrows_1 = <a href="#2368">iteration</a>.variable_indistinct(<span class="string">&quot;reborrows_1&quot;</span>);
+        <span class="kw">let </span>v_reborrows_2 = <a href="#2368">iteration</a>.variable_indistinct(<span class="string">&quot;reborrows_2&quot;</span>);
 
         <span class="comment">// Compute transitive closure of reborrows:
         // reborrows(L1, L3) :-
@@ -4771,19 +4785,19 @@
             v_reborrows.from_join(<span class="kw-2">&amp;</span>v_reborrows_1, <span class="kw-2">&amp;</span>v_reborrows_2, |<span class="kw">_</span>, <span class="kw-2">&amp;</span>l1, <span class="kw-2">&amp;</span>l3| (l1, l3));
         }
 
-        <a href="#2363">v_reborrows</a>.complete().elements
+        <a href="#2370">v_reborrows</a>.complete().elements
     }
 
     <span class="kw">fn </span>derive_nontransitive(
         reborrows: <span class="kw-2">&amp;</span>[(<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="borrowck/facts.rs.html#15">facts::Loan</a>)],
     ) -&gt; Vec&lt;(<a href="borrowck/facts.rs.html#15">facts::Loan</a>, <a href="borrowck/facts.rs.html#15">facts::Loan</a>)&gt; {
-        <a href="#2383">reborrows</a>
+        <a href="#2390">reborrows</a>
             .iter()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|<span class="kw-2">&amp;</span>(l1, l2)| {
-                !<a href="#2383">reborrows</a>
+                !<a href="#2390">reborrows</a>
                     .iter()
-                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|<span class="kw-2">&amp;</span>(l3, l4)| <a href="#2391">l4</a> == <a href="#2388">l2</a> &amp;&amp; <a href="#2383">reborrows</a>.contains(<span class="kw-2">&amp;</span>(<a href="#2388">l1</a>, <a href="#2391">l3</a>)))
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(|<span class="kw-2">&amp;</span>(l3, l4)| <a href="#2398">l4</a> == <a href="#2395">l2</a> &amp;&amp; <a href="#2390">reborrows</a>.contains(<span class="kw-2">&amp;</span>(<a href="#2395">l1</a>, <a href="#2398">l3</a>)))
             })
             .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
     }

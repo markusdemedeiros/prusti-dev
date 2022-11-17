@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"struct":[["PermissionSet",""],["RepackJoin",""],["RepackPackup","Repacks a PCS so it’s maximally packed"],["RepackUnify",""],["RepackWeaken",""]],"trait":[["Repacking","Represents any transformation of the free PCS we are permitted to do"]]};

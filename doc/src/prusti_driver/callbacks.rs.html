@@ -113,12 +113,22 @@
 <span id="113">113</span>
 <span id="114">114</span>
 <span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
 </pre><pre class="rust"><code><span class="kw">use </span><a href="verifier.rs.html#12"><span class="kw">crate</span>::verifier::verify</a>;
 <span class="kw">use </span><a href="../../prusti_utils/config/index.html">prusti_common::config</a>;
 <span class="kw">use </span>prusti_interface::{
     environment::{<a href="../../prusti_interface/environment/mir_storage/index.html">mir_storage</a>, <a href="../../prusti_interface/environment/struct.Environment.html">Environment</a>},
     specs::{<a class="self" href="../../prusti_interface/specs/index.html">self</a>, cross_crate::CrossCrateSpecs, <a href="../../prusti_interface/specs/fn.is_spec_fn.html">is_spec_fn</a>},
 };
+<span class="kw">use </span>prusti_pcs::{<a href="../../prusti_pcs/pcs/fn.dump_pcs.html">dump_pcs</a>, <a href="../../prusti_pcs/pcs/fn.vis_pcs_facts.html">vis_pcs_facts</a>};
 <span class="kw">use </span>prusti_rustc_interface::{
     <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/enum.Compilation.html">driver::Compilation</a>,
     <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.LocalDefId.html">hir::def_id::LocalDefId</a>,
@@ -143,31 +153,31 @@
     </span><span class="kw">if </span>!is_spec_fn(tcx, def_id.to_def_id()) {
         <span class="kw">let </span>body_with_facts =
             prusti_rustc_interface::borrowck::consumers::get_body_with_borrowck_facts(
-                <a href="#26">tcx</a>,
-                ty::WithOptConstParam::unknown(<a href="#26">def_id</a>),
+                <a href="#27">tcx</a>,
+                ty::WithOptConstParam::unknown(<a href="#27">def_id</a>),
             );
         <span class="comment">// SAFETY: This is safe because we are feeding in the same `tcx` that is
         // going to be used as a witness when pulling out the data.
         </span><span class="kw">unsafe </span>{
-            mir_storage::store_mir_body(<a href="#26">tcx</a>, <a href="#26">def_id</a>, <a href="#29">body_with_facts</a>);
+            mir_storage::store_mir_body(<a href="#27">tcx</a>, <a href="#27">def_id</a>, <a href="#30">body_with_facts</a>);
         }
     }
     <span class="kw">let </span><span class="kw-2">mut </span>providers = Providers::default();
-    prusti_rustc_interface::borrowck::provide(<span class="kw-2">&amp;mut </span><a href="#40">providers</a>);
-    <span class="kw">let </span>original_mir_borrowck = <a href="#40">providers</a>.mir_borrowck;
-    <a href="#42">original_mir_borrowck</a>(<a href="#26">tcx</a>, <a href="#26">def_id</a>)
+    prusti_rustc_interface::borrowck::provide(<span class="kw-2">&amp;mut </span><a href="#41">providers</a>);
+    <span class="kw">let </span>original_mir_borrowck = <a href="#41">providers</a>.mir_borrowck;
+    <a href="#43">original_mir_borrowck</a>(<a href="#27">tcx</a>, <a href="#27">def_id</a>)
 }
 
 <span class="kw">fn </span>override_queries(_session: <span class="kw-2">&amp;</span>Session, local: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/query/struct.Providers.html">Providers</a>, _external: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/ty/query/struct.ExternProviders.html">ExternProviders</a>) {
-    <a href="#46">local</a>.mir_borrowck = <a href="#26">mir_borrowck</a>;
+    <a href="#47">local</a>.mir_borrowck = <a href="#27">mir_borrowck</a>;
 }
 
-<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/trait.Callbacks.html">prusti_rustc_interface::driver::Callbacks</a> <span class="kw">for </span><a href="#20">PrustiCompilerCalls</a> {
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/trait.Callbacks.html">prusti_rustc_interface::driver::Callbacks</a> <span class="kw">for </span><a href="#21">PrustiCompilerCalls</a> {
     <span class="kw">fn </span>config(<span class="kw-2">&amp;mut </span><span class="self">self</span>, config: <span class="kw-2">&amp;mut </span>Config) {
         <span class="comment">// *Don&#39;t take MIR bodies with borrowck info if we won&#39;t need them*
         </span><span class="kw">if </span>!config::no_verify() {
             <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(config.override_queries.is_none());
-            <a href="#51">config</a>.override_queries = <span class="prelude-val">Some</span>(<a href="#46">override_queries</a>);
+            <a href="#52">config</a>.override_queries = <span class="prelude-val">Some</span>(<a href="#47">override_queries</a>);
         }
     }
     <span class="kw">fn </span>after_expansion&lt;<span class="lifetime">&#39;tcx</span>&gt;(
@@ -175,13 +185,13 @@
         compiler: <span class="kw-2">&amp;</span>Compiler,
         queries: <span class="kw-2">&amp;</span><span class="lifetime">&#39;tcx </span>Queries&lt;<span class="lifetime">&#39;tcx</span>&gt;,
     ) -&gt; <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/enum.Compilation.html">Compilation</a> {
-        <a href="#60">compiler</a>.session().abort_if_errors();
-        <span class="kw">let </span>(krate, _resolver, _lint_store) = <span class="kw-2">&amp;mut *</span><a href="#61">queries</a>.expansion().unwrap().peek_mut();
+        <a href="#61">compiler</a>.session().abort_if_errors();
+        <span class="kw">let </span>(krate, _resolver, _lint_store) = <span class="kw-2">&amp;mut *</span><a href="#62">queries</a>.expansion().unwrap().peek_mut();
         <span class="kw">if </span>config::print_desugared_specs() {
             prusti_rustc_interface::driver::pretty::print_after_parsing(
-                <a href="#60">compiler</a>.session(),
-                <a href="#60">compiler</a>.input(),
-                <a href="#64">krate</a>,
+                <a href="#61">compiler</a>.session(),
+                <a href="#61">compiler</a>.input(),
+                <a href="#65">krate</a>,
                 prusti_rustc_interface::session::config::PpMode::Source(
                     prusti_rustc_interface::session::config::PpSourceMode::Normal,
                 ),
@@ -195,32 +205,40 @@
         compiler: <span class="kw-2">&amp;</span>Compiler,
         queries: <span class="kw-2">&amp;</span><span class="lifetime">&#39;tcx </span>Queries&lt;<span class="lifetime">&#39;tcx</span>&gt;,
     ) -&gt; <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_driver/enum.Compilation.html">Compilation</a> {
-        <a href="#80">compiler</a>.session().abort_if_errors();
-        <a href="#81">queries</a>.global_ctxt().unwrap().peek_mut().enter(|tcx| {
-            <span class="kw">let </span><span class="kw-2">mut </span>env = Environment::new(<a href="#84">tcx</a>, <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.env.html">env!</a>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>));
+        <a href="#81">compiler</a>.session().abort_if_errors();
+        <a href="#82">queries</a>.global_ctxt().unwrap().peek_mut().enter(|tcx| {
+            <span class="kw">let </span><span class="kw-2">mut </span>env = Environment::new(<a href="#85">tcx</a>, <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.env.html">env!</a>(<span class="string">&quot;CARGO_PKG_VERSION&quot;</span>));
             <span class="kw">let </span>spec_checker = specs::checker::SpecChecker::new();
-            <a href="#86">spec_checker</a>.check(<span class="kw-2">&amp;</span><a href="#85">env</a>);
-            <a href="#80">compiler</a>.session().abort_if_errors();
+            <a href="#87">spec_checker</a>.check(<span class="kw-2">&amp;</span><a href="#86">env</a>);
+            <a href="#81">compiler</a>.session().abort_if_errors();
 
-            <span class="kw">let </span>hir = <a href="#85">env</a>.query.hir();
-            <span class="kw">let </span><span class="kw-2">mut </span>spec_collector = specs::SpecCollector::new(<span class="kw-2">&amp;mut </span><a href="#85">env</a>);
-            <a href="#90">hir</a>.walk_toplevel_module(<span class="kw-2">&amp;mut </span><a href="#91">spec_collector</a>);
-            <a href="#90">hir</a>.walk_attributes(<span class="kw-2">&amp;mut </span><a href="#91">spec_collector</a>);
+            <span class="kw">let </span>hir = <a href="#86">env</a>.query.hir();
+            <span class="kw">let </span><span class="kw-2">mut </span>spec_collector = specs::SpecCollector::new(<span class="kw-2">&amp;mut </span><a href="#86">env</a>);
+            <a href="#91">hir</a>.walk_toplevel_module(<span class="kw-2">&amp;mut </span><a href="#92">spec_collector</a>);
+            <a href="#91">hir</a>.walk_attributes(<span class="kw-2">&amp;mut </span><a href="#92">spec_collector</a>);
 
-            <span class="kw">let </span><span class="kw-2">mut </span>def_spec = <a href="#91">spec_collector</a>.build_def_specs();
+            <span class="kw">let </span><span class="kw-2">mut </span>def_spec = <a href="#92">spec_collector</a>.build_def_specs();
             <span class="comment">// Do print_typeckd_specs prior to importing cross crate
             </span><span class="kw">if </span>config::print_typeckd_specs() {
                 <span class="kw">for </span>value <span class="kw">in </span>def_spec.all_values_debug(config::hide_uuids()) {
                     <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, value);
                 }
             }
-            CrossCrateSpecs::import_export_cross_crate(<span class="kw-2">&amp;mut </span><a href="#85">env</a>, <span class="kw-2">&amp;mut </span><a href="#95">def_spec</a>);
-            <span class="kw">if </span>!config::no_verify() {
-                <a href="verifier.rs.html#12">verify</a>(<a href="#85">env</a>, <a href="#95">def_spec</a>);
+
+            CrossCrateSpecs::import_export_cross_crate(<span class="kw-2">&amp;mut </span><a href="#86">env</a>, <span class="kw-2">&amp;mut </span><a href="#96">def_spec</a>);
+            <span class="kw">if </span>config::vis_pcs_facts() {
+                <a href="../../prusti_pcs/pcs/fn.vis_pcs_facts.html">vis_pcs_facts</a>(<span class="kw-2">&amp;</span><a href="#86">env</a>).unwrap();
+            } <span class="kw">else if </span>config::dump_operational_pcs() {
+                <span class="kw">match </span><a href="../../prusti_pcs/pcs/fn.dump_pcs.html">dump_pcs</a>(<span class="kw-2">&amp;</span><a href="#86">env</a>) {
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.println.html">println!</a>(<span class="string">&quot;Operational PCS done!&quot;</span>),
+                    <span class="prelude-val">Err</span>(e) =&gt; <a href="#110">e</a>.emit(<span class="kw-2">&amp;</span><a href="#86">env</a>.diagnostic),
+                }
+            } <span class="kw">else if </span>!config::no_verify() {
+                <a href="verifier.rs.html#12">verify</a>(<a href="#86">env</a>, <a href="#96">def_spec</a>);
             }
         });
 
-        <a href="#80">compiler</a>.session().abort_if_errors();
+        <a href="#81">compiler</a>.session().abort_if_errors();
         <span class="kw">if </span>config::full_compilation() {
             Compilation::Continue
         } <span class="kw">else </span>{
