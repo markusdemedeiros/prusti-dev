@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["graphviz",""],["lifetimes",""]]});
+window.SIDEBAR_ITEMS = {};

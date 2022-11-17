@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/ensurer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ensurer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script src="../../../../../../crates.js"></script><script defer src="../../../../../../main.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/ensurer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>ensurer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script><script defer src="../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -333,334 +326,711 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#4-10">action::Action</a>,
-    <span class="ident">permission</span>::{<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#4-8">Permission</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>},
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#14-18">state::PredicateState</a>,
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#21-38">FoldUnfoldState</a>,
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+</pre><pre class="rust"><code><span class="kw">use super</span>::{
+    <a href="action.rs.html#8">action::Action</a>,
+    permission::{<a href="permission.rs.html#4">Permission</a>, <a href="permission.rs.html#43">PermissionKind</a>},
+    <a href="state/predicate_state_on_path.rs.html#15">state::PredicateStateOnPath</a>,
+    <a href="state/fold_unfold_state.rs.html#14">FoldUnfoldState</a>,
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::encoder::errors</span>::{<a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/error_manager.rs.html#46-155">ErrorCtxt</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#16-21">SpannedEncodingError</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#23">SpannedEncodingResult</a>};
-<span class="kw">use</span> <span class="ident">log::debug</span>;
-<span class="kw">use</span> <span class="ident">vir_crate</span>::{
-    <a class="ident" href="../../../../../../vir/common/position/trait.Positioned.html">common::position::Positioned</a>,
-    <span class="ident">high</span>::{<a class="self" href="../../../../../../vir/high/index.html">self</a> <span class="kw">as</span> <span class="ident">vir_high</span>, <a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">operations::ty::Typed</a>},
+<span class="kw">use </span><span class="kw">crate</span>::encoder::{
+    errors::{<a href="../../../errors/error_manager.rs.html#52">ErrorCtxt</a>, <a href="../../../errors/spanned_encoding_error.rs.html#16">SpannedEncodingError</a>, <a href="../../../errors/spanned_encoding_error.rs.html#23">SpannedEncodingResult</a>},
+    <a href="state/predicate_state.rs.html#10">high::procedures::inference::state::PredicateState</a>,
+};
+<span class="kw">use </span><a href="../../../../../../log/macro.debug.html">log::debug</a>;
+<span class="kw">use </span>prusti_rustc_interface::errors::MultiSpan;
+<span class="kw">use </span>vir_crate::{
+    <a href="../../../../../../vir/common/position/trait.Positioned.html">common::position::Positioned</a>,
+    <a href="../../../../../../vir/middle/index.html">middle</a> <span class="kw">as </span>vir_mid,
+    typed::{<span class="self"><a href="../../../../../../vir/typed/index.html">self</a> </span><span class="kw">as </span>vir_typed, <a href="../../../../../../vir/gen/typed/operations_internal/ty/trait.Typed.html">operations::ty::Typed</a>},
 };
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">enum</span> <span class="ident">ExpandedPermissionKind</span> {
-    <span class="doccomment">/// The permission is the same as was the original one.</span>
-    <span class="ident">Same</span>,
-    <span class="doccomment">/// The permission was changed to a memory block.</span>
-    <span class="ident">MemoryBlock</span>,
+<span class="attribute">#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">enum </span>ExpandedPermissionKind {
+    <span class="doccomment">/// The permission is the same as was the original one.
+    </span>Same,
+    <span class="doccomment">/// The permission was changed to a memory block.
+    </span>MemoryBlock,
 }
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">trait</span> <span class="ident">Context</span> {
-    <span class="doccomment">/// The guiding place is used to determine which variant of the enum should</span>
-    <span class="doccomment">/// be used.</span>
-    <span class="kw">fn</span> <span class="ident">expand_place</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">place</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-        <span class="ident">guiding_place</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#15-20">ExpandedPermissionKind</a>, <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>)<span class="op">&gt;</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_span</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">position</span>: <a class="ident" href="../../../../../../vir/common/position/struct.Position.html">vir_high::Position</a>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">rustc_errors::MultiSpan</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">change_error_context</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">position</span>: <a class="ident" href="../../../../../../vir/common/position/struct.Position.html">vir_high::Position</a>,
-        <span class="ident">error_ctxt</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/error_manager.rs.html#46-155">ErrorCtxt</a>,
-    ) -&gt; <a class="ident" href="../../../../../../vir/common/position/struct.Position.html">vir_high::Position</a>;
+<span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">trait </span>Context {
+    <span class="doccomment">/// The guiding place is used to determine which variant of the enum should
+    /// be used.
+    </span><span class="kw">fn </span>expand_place(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+        guiding_place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;Vec&lt;(<a href="#20">ExpandedPermissionKind</a>, <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>)&gt;&gt;;
+    <span class="kw">fn </span>get_span(<span class="kw-2">&amp;mut </span><span class="self">self</span>, position: <a href="../../../../../../vir/common/position/struct.Position.html">vir_typed::Position</a>) -&gt; <span class="prelude-ty">Option</span>&lt;MultiSpan&gt;;
+    <span class="kw">fn </span>change_error_context(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        position: <a href="../../../../../../vir/common/position/struct.Position.html">vir_typed::Position</a>,
+        error_ctxt: <a href="../../../errors/error_manager.rs.html#52">ErrorCtxt</a>,
+    ) -&gt; <a href="../../../../../../vir/common/position/struct.Position.html">vir_typed::Position</a>;
 }
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">ensure_required_permissions</span>(
-    <span class="ident">context</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#22-36">Context</a>,
-    <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#21-38">FoldUnfoldState</a>,
-    <span class="ident">required_permissions</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#4-8">Permission</a><span class="op">&gt;</span>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#4-10">Action</a><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actions</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-    <span class="kw">for</span> <span class="ident">permission</span> <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#41">required_permissions</a> {
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#50-55">ensure_required_permission</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#39">context</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#40">state</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#44">permission</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#43">actions</a>)<span class="question-mark">?</span>;
+<span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>ensure_required_permissions(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    state: <span class="kw-2">&amp;mut </span><a href="state/fold_unfold_state.rs.html#14">FoldUnfoldState</a>,
+    required_permissions: Vec&lt;<a href="permission.rs.html#4">Permission</a>&gt;,
+) -&gt; SpannedEncodingResult&lt;Vec&lt;<a href="action.rs.html#8">Action</a>&gt;&gt; {
+    <a href="#45">state</a>.<a href="state/fold_unfold_state.rs.html#359">check_consistency</a>();
+    <span class="kw">let </span><span class="kw-2">mut </span>actions = Vec::new();
+    <span class="kw">for </span>permission <span class="kw">in </span>required_permissions {
+        ensure_required_permission(context, state, permission, <span class="kw-2">&amp;mut </span>actions)<span class="question-mark">?</span>;
     }
-    <span class="prelude-val">Ok</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#43">actions</a>)
+    <a href="#45">state</a>.<a href="state/fold_unfold_state.rs.html#359">check_consistency</a>();
+    <span class="prelude-val">Ok</span>(<a href="#49">actions</a>)
 }
 
-<span class="kw">fn</span> <span class="ident">ensure_required_permission</span>(
-    <span class="ident">context</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#22-36">Context</a>,
-    <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#21-38">FoldUnfoldState</a>,
-    <span class="ident">required_permission</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#4-8">Permission</a>,
-    <span class="ident">actions</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#4-10">Action</a><span class="op">&gt;</span>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="macro">debug!</span>(<span class="string">&quot;required_permission: {}&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#53">required_permission</a>);
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#52">state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#250">debug_print</a>();
-
-    <span class="kw">let</span> (<span class="ident">place</span>, <span class="ident">permission_kind</span>) <span class="op">=</span> <span class="kw">match</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#53">required_permission</a> {
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#5">Permission::MemoryBlock</a>(<span class="ident">place</span>) =&gt; (<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#60">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>),
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#6">Permission::Owned</a>(<span class="ident">place</span>) =&gt; (<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#61">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>),
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#7">Permission::MutBorrowed</a>(<span class="ident">borrow</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;requiring a borrow: {}&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#62">borrow</a>),
-    };
-
-    <span class="kw">let</span> <span class="ident">unconditional_predicate_state</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#52">state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#476">get_unconditional_state</a>()<span class="question-mark">?</span>;
-    <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#188-193">can_place_be_ensured_in</a>(
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#51">context</a>,
-        <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>,
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>,
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#65">unconditional_predicate_state</a>,
-    )<span class="question-mark">?</span> {
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#51">context</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#65">unconditional_predicate_state</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#54">actions</a>,
-        )<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="kw">for</span> (<span class="ident">condition</span>, <span class="ident">conditional_predicate_state</span>) <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#52">state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#481-485">get_conditional_states</a>()<span class="question-mark">?</span> {
-            <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#188-193">can_place_be_ensured_in</a>(
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#51">context</a>,
-                <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#80">conditional_predicate_state</a>,
-            )<span class="question-mark">?</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">conditional_actions</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(
-                    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#51">context</a>,
-                    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#80">conditional_predicate_state</a>,
-                    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
-                    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>,
-                    <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#87">conditional_actions</a>,
+<span class="doccomment">/// A special cased version of `ensure_required_permissions` for enum
+/// discriminants. The problem with enum discriminants is that we cannot always
+/// change the folding state to something specific (for example, require that
+/// the enum is always folded). Therefore, we use this method to check in what
+/// state is the discriminant and emit a discriminant lookup operation that
+/// either requires a field or a folded enum.
+///
+/// `place` – place of the enum.
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>try_ensure_enum_discriminant_by_unfolding(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    state: <span class="kw-2">&amp;mut </span><a href="state/fold_unfold_state.rs.html#14">FoldUnfoldState</a>,
+    place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    permission_kind: <a href="permission.rs.html#43">PermissionKind</a>,
+) -&gt; SpannedEncodingResult&lt;(<span class="prelude-ty">Option</span>&lt;Vec&lt;<a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">vir_mid::BlockMarkerCondition</a>&gt;&gt;, Vec&lt;<a href="action.rs.html#8">Action</a>&gt;)&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>actions = Vec::new();
+    <span class="kw">match </span>state.get_predicates_state(place)<span class="question-mark">? </span>{
+        <a href="state/predicate_state.rs.html#11">PredicateState::Unconditional</a>(unconditional_predicate_state) =&gt; {
+            <span class="kw">if </span>check_contains_place(unconditional_predicate_state, place, permission_kind)<span class="question-mark">?
+                </span>|| unconditional_predicate_state
+                    .find_prefix(permission_kind, place)
+                    .is_some()
+            {
+                ensure_permission_in_state(
+                    context,
+                    unconditional_predicate_state,
+                    place.clone(),
+                    permission_kind,
+                    <span class="kw-2">&amp;mut </span>actions,
                 )<span class="question-mark">?</span>;
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#54">actions</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(
-                    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#87">conditional_actions</a>
-                        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
-                        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">action</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#98">action</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">set_condition</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#80">condition</a>)),
+                <span class="prelude-val">Ok</span>((<span class="prelude-val">Some</span>(Vec::new()), <a href="#71">actions</a>))
+            } <span class="kw">else </span>{
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.debug_assert.html">debug_assert!</a>(
+                    unconditional_predicate_state
+                        .contains_discriminant_with_prefix(place)
+                        .is_some(),
+                    <span class="string">&quot;The state must contain the discriminant of the enum: {}. State: {}&quot;</span>,
+                    place,
+                    unconditional_predicate_state,
                 );
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#80">conditional_predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>)<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>((<span class="prelude-val">None</span>, Vec::new()))
             }
         }
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#52">state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#490">remove_empty_conditional_states</a>()<span class="question-mark">?</span>;
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#52">state</a>
-            .<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#476">get_unconditional_state</a>()<span class="question-mark">?</span>
-            .<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#59">place</a>)<span class="question-mark">?</span>;
+        <a href="state/predicate_state.rs.html#12">PredicateState::Conditional</a>(conditional_predicate_states) =&gt; {
+            <span class="kw">let </span><span class="kw-2">mut </span>conditions = Vec::new();
+            <span class="kw">for </span>(condition, conditional_predicate_state) <span class="kw">in </span>conditional_predicate_states {
+                <span class="kw">if </span>check_contains_place(conditional_predicate_state, place, permission_kind)<span class="question-mark">?
+                    </span>|| conditional_predicate_state
+                        .find_prefix(permission_kind, place)
+                        .is_some()
+                {
+                    <span class="kw">let </span><span class="kw-2">mut </span>conditional_actions = Vec::new();
+                    ensure_permission_in_state(
+                        context,
+                        conditional_predicate_state,
+                        place.clone(),
+                        permission_kind,
+                        <span class="kw-2">&amp;mut </span>conditional_actions,
+                    )<span class="question-mark">?</span>;
+                    actions.extend(
+                        conditional_actions
+                            .into_iter()
+                            .map(|action| action.set_condition(condition)),
+                    );
+                } <span class="kw">else </span>{
+                    conditions.push(condition.clone());
+                }
+            }
+            <span class="prelude-val">Ok</span>((<span class="prelude-val">Some</span>(<a href="#100">conditions</a>), <a href="#71">actions</a>))
+        }
     }
+}
+
+<span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>ensure_required_permission(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    state: <span class="kw-2">&amp;mut </span><a href="state/fold_unfold_state.rs.html#14">FoldUnfoldState</a>,
+    required_permission: <a href="permission.rs.html#4">Permission</a>,
+    actions: <span class="kw-2">&amp;mut </span>Vec&lt;<a href="action.rs.html#8">Action</a>&gt;,
+) -&gt; SpannedEncodingResult&lt;()&gt; {
+    <a class="macro" href="../../../../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;required_permission: {}&quot;</span>, required_permission);
+    <a href="#131">state</a>.<a href="state/fold_unfold_state.rs.html#47">debug_print</a>();
+
+    <span class="kw">let </span>(place, permission_kind) = <span class="kw">match </span><a href="#132">required_permission</a> {
+        <a href="permission.rs.html#6">Permission::MemoryBlock</a>(place) =&gt; (<a href="#139">place</a>, <a href="permission.rs.html#44">PermissionKind::MemoryBlock</a>),
+        <a href="permission.rs.html#10">Permission::Owned</a>(place) =&gt; (<a href="#140">place</a>, <a href="permission.rs.html#45">PermissionKind::Owned</a>),
+        <a href="permission.rs.html#12">Permission::MutBorrowed</a>(borrow) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unreachable.html">unreachable!</a>(<span class="string">&quot;requiring a borrow: {}&quot;</span>, borrow),
+    };
+
+    <span class="kw">let </span>base = <a href="#138">place</a>.get_base().erase_lifetime();
+    <span class="kw">match </span>state.get_predicates_state(<span class="kw-2">&amp;</span>place)<span class="question-mark">? </span>{
+        <a href="state/predicate_state.rs.html#11">PredicateState::Unconditional</a>(unconditional_predicate_state) =&gt; {
+            <span class="kw">if </span>ensure_permission_in_state(
+                context,
+                unconditional_predicate_state,
+                place,
+                permission_kind,
+                actions,
+            )<span class="question-mark">? </span>{
+                <a class="macro" href="../../../../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;Dropping unconditional state due to conflicting requirements.&quot;</span>);
+                unconditional_predicate_state.clear()<span class="question-mark">?</span>;
+            }
+        }
+        <a href="state/predicate_state.rs.html#12">PredicateState::Conditional</a>(conditional_predicate_states) =&gt; {
+            <span class="kw">for </span>(condition, conditional_predicate_state) <span class="kw">in </span>conditional_predicate_states {
+                <span class="kw">let </span><span class="kw-2">mut </span>conditional_actions = Vec::new();
+                <span class="kw">let </span>to_drop = ensure_permission_in_state(
+                    context,
+                    conditional_predicate_state,
+                    place.clone(),
+                    permission_kind,
+                    <span class="kw-2">&amp;mut </span>conditional_actions,
+                )<span class="question-mark">?</span>;
+                <span class="comment">// Even if the state is unreachable, we add the actions because
+                // one of them should be the marker that the state is
+                // unreachable.
+                </span>actions.extend(
+                    conditional_actions
+                        .into_iter()
+                        .map(|action| action.set_condition(condition)),
+                );
+                <span class="kw">if </span>to_drop {
+                    <span class="comment">// The state should be unreachable. Drop it.
+                    </span>conditional_predicate_state.clear()<span class="question-mark">?</span>;
+                }
+            }
+        }
+    }
+    state.remove_empty_states(<span class="kw-2">&amp;</span>base)<span class="question-mark">?</span>;
+    <a href="#131">state</a>.<a href="state/fold_unfold_state.rs.html#359">check_consistency</a>();
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">check_can_place_be_ensured_in</span>(
-    <span class="ident">context</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#22-36">Context</a>,
-    <span class="ident">place</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="ident">permission_kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-    <span class="ident">predicate_state</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#14-18">PredicateState</a>,
-    <span class="ident">check_conversions</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><span class="op">&gt;</span> {
-    <span class="comment">// The requirement is already satisfied.</span>
-    <span class="kw">let</span> <span class="ident">already_satisfied</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#122">contains</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>);
-    <span class="comment">// The requirement can be satisifed by unfolding.</span>
-    <span class="kw">let</span> <span class="ident">by_unfolding</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#158-162">contains_prefix_of</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>);
-    <span class="comment">// The requirement can be satisifed by folding.</span>
-    <span class="kw">let</span> <span class="ident">by_folding</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>
-        .<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#132-136">contains_non_discriminant_with_prefix</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>)
-        .<span class="ident">is_some</span>();
-    <span class="comment">// The requirement can be satisfied by restoring a mutable borrow.</span>
-    <span class="kw">let</span> <span class="ident">by_restoring_blocked</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#196-199">contains_blocked</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>)<span class="question-mark">?</span>.<span class="ident">is_some</span>();
-    <span class="comment">// The requirement can be satisfied by converting into Memory Block.</span>
-    <span class="comment">// Short circuiting is used to prevent infinite recursion.</span>
-    <span class="kw">let</span> <span class="ident">by_into_memory_block</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#116">check_conversions</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a> <span class="op">==</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#111-117">check_can_place_be_ensured_in</a>(
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#112">context</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>,
+<span class="kw">fn </span>check_can_place_be_ensured_in(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    permission_kind: <a href="permission.rs.html#43">PermissionKind</a>,
+    predicate_state: <span class="kw-2">&amp;</span><a href="state/predicate_state_on_path.rs.html#15">PredicateStateOnPath</a>,
+    check_conversions: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt; {
+    <span class="comment">// The requirement is already satisfied.
+    </span><span class="kw">let </span>already_satisfied = <a href="#192">predicate_state</a>.<a href="state/predicate_state_on_path.rs.html#152-156">contains</a>(<a href="#191">permission_kind</a>, <a href="#190">place</a>);
+    <span class="comment">// The requirement can be satisifed by unfolding.
+    </span><span class="kw">let </span>by_unfolding = <a href="#192">predicate_state</a>.<a href="state/predicate_state_on_path.rs.html#213-217">contains_prefix_of</a>(<a href="#191">permission_kind</a>, <a href="#190">place</a>);
+    <span class="comment">// The requirement can be satisifed by folding.
+    </span><span class="kw">let </span>by_folding = <a href="#192">predicate_state</a>
+        .<a href="state/predicate_state_on_path.rs.html#166-170">contains_non_discriminant_with_prefix</a>(<a href="#191">permission_kind</a>, <a href="#190">place</a>)
+        .is_some();
+    <span class="kw">let </span>by_folding_discriminant = <a href="#192">predicate_state</a>
+        .<a href="state/predicate_state_on_path.rs.html#183-186">contains_discriminant_with_prefix</a>(<a href="#190">place</a>)
+        .is_some();
+    <span class="comment">// The requirement can be satisfied by restoring a mutable borrow.
+    </span><span class="kw">let </span>by_restoring_blocked = predicate_state.contains_blocked(place)<span class="question-mark">?</span>.is_some();
+    <span class="comment">// The requirement can be satisfied by converting into Memory Block.
+    // Short circuiting is used to prevent infinite recursion.
+    </span><span class="kw">let </span>by_into_memory_block = <a href="#193">check_conversions</a>
+        &amp;&amp; <a href="#191">permission_kind</a> == <a href="permission.rs.html#44">PermissionKind::MemoryBlock</a>
+        &amp;&amp; check_can_place_be_ensured_in(
+            context,
+            place,
+            PermissionKind::Owned,
+            predicate_state,
             <span class="bool-val">false</span>,
         )<span class="question-mark">?</span>;
-    <span class="comment">// The requirement can be satisfied by converting into Owned.</span>
-    <span class="comment">// Short circuiting is used to prevent infinite recursion.</span>
-    <span class="kw">let</span> <span class="ident">by_into_owned</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#116">check_conversions</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a> <span class="op">==</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#111-117">check_can_place_be_ensured_in</a>(
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#112">context</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>,
+    <span class="comment">// The requirement can be satisfied by converting into Owned.
+    // Short circuiting is used to prevent infinite recursion.
+    </span><span class="kw">let </span>by_into_owned = <a href="#193">check_conversions</a>
+        &amp;&amp; <a href="#191">permission_kind</a> == <a href="permission.rs.html#45">PermissionKind::Owned</a>
+        &amp;&amp; check_can_place_be_ensured_in(
+            context,
+            place,
+            PermissionKind::MemoryBlock,
+            predicate_state,
             <span class="bool-val">false</span>,
         )<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">can</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#119">already_satisfied</a>
-        <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#121">by_unfolding</a>
-        <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#123">by_folding</a>
-        <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#127">by_restoring_blocked</a>
-        <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#130">by_into_memory_block</a>
-        <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#141">by_into_owned</a>;
-    <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#150">can</a> {
-        <span class="comment">// Check whether required_permission conflicts with state (has a</span>
-        <span class="comment">// different variant) and report an error to the user suggesting that</span>
-        <span class="comment">// they should fold.</span>
-        <span class="kw">for</span> <span class="ident">prefix</span> <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>.<span class="ident">iter_prefixes</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">vir_high::Expression::Variant</span>(<span class="ident">variant</span>) <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#160">prefix</a> {
-                <span class="kw">for</span> <span class="ident">prefixed</span> <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#115">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#149-153">get_all_with_prefix</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#114">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#161">variant</a>.<span class="ident">base</span>)
+    <span class="kw">let </span>can = <a href="#196">already_satisfied</a>
+        || <a href="#198">by_unfolding</a>
+        || <a href="#200">by_folding</a>
+        || <a href="#203">by_folding_discriminant</a>
+        || <a href="#207">by_restoring_blocked</a>
+        || <a href="#210">by_into_memory_block</a>
+        || <a href="#221">by_into_owned</a>;
+    <span class="kw">if </span>!can {
+        <span class="comment">// Check whether required_permission conflicts with state (has a
+        // different variant) and report an error to the user suggesting that
+        // they should fold.
+        </span><span class="kw">for </span>prefix <span class="kw">in </span>place.iter_prefixes() {
+            <span class="kw">if let </span>vir_typed::Expression::Variant(variant) = prefix {
+                <span class="kw">for </span>prefixed <span class="kw">in </span>predicate_state.get_all_with_prefix(permission_kind, <span class="kw-2">&amp;</span>variant.base)
                 {
-                    <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#162">prefixed</a>.<span class="ident">has_prefix</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#160">prefix</a>) {
-                        <span class="kw">let</span> <span class="ident">place_span</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#112">context</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#30">get_span</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#113">place</a>.<a class="ident" href="../../../../../../vir/common/position/trait.Positioned.html">position</a>()).<span class="ident">unwrap</span>();
-                        <span class="kw">let</span> <span class="ident">prefixed_span</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#112">context</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#30">get_span</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#162">prefixed</a>.<a class="ident" href="../../../../../../vir/common/position/trait.Positioned.html">position</a>()).<span class="ident">unwrap</span>();
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">SpannedEncodingError::unsupported</span>(
+                    <span class="kw">if </span>!prefixed.has_prefix(prefix) &amp;&amp; !prefixed.is_discriminant_field() {
+                        <span class="kw">let </span>place_span = context.get_span(place.position()).unwrap();
+                        <span class="kw">let </span>prefixed_span = context.get_span(prefixed.position()).unwrap();
+                        <span class="kw">let </span><span class="kw-2">mut </span>error = SpannedEncodingError::unsupported(
                             <span class="string">&quot;failed to obtain the required capability because a conflicting \
                                     capability is present&quot;</span>,
-                            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#165">place_span</a>,
+                            place_span,
                         );
-                        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#167">error</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#97">add_note</a>(
+                        error.add_note(
                             <span class="string">&quot;this typically happens when trying to read from different union fields \
                             because Prusti does not yet support reinterpreting memory&quot;</span>,
                             <span class="prelude-val">None</span>,
                         );
-                        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#167">error</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#97">add_note</a>(<span class="string">&quot;the conflicting capability&quot;</span>, <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#166">prefixed_span</a>));
-                        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#167">error</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#101">set_help</a>(<span class="string">&quot;try manually packaging the union capability&quot;</span>);
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#167">error</a>);
+                        error.add_note(<span class="string">&quot;the conflicting capability&quot;</span>, <span class="prelude-val">Some</span>(prefixed_span));
+                        error.set_help(<span class="string">&quot;try manually packaging the union capability&quot;</span>);
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(error);
                     }
                 }
             }
         }
     }
-    <span class="prelude-val">Ok</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#150">can</a>)
+    <span class="prelude-val">Ok</span>(<a href="#230">can</a>)
 }
 
-<span class="kw">fn</span> <span class="ident">can_place_be_ensured_in</span>(
-    <span class="ident">context</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#22-36">Context</a>,
-    <span class="ident">place</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="ident">permission_kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-    <span class="ident">predicate_state</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#14-18">PredicateState</a>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><span class="op">&gt;</span> {
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#111-117">check_can_place_be_ensured_in</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#189">context</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#190">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#191">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#192">predicate_state</a>, <span class="bool-val">true</span>)
+<span class="kw">fn </span>can_place_be_ensured_in(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    permission_kind: <a href="permission.rs.html#43">PermissionKind</a>,
+    predicate_state: <span class="kw-2">&amp;</span><a href="state/predicate_state_on_path.rs.html#15">PredicateStateOnPath</a>,
+) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt; {
+    <a href="#188-194">check_can_place_be_ensured_in</a>(<a href="#270">context</a>, <a href="#271">place</a>, <a href="#272">permission_kind</a>, <a href="#273">predicate_state</a>, <span class="bool-val">true</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">ensure_permission_in_state</span>(
-    <span class="ident">context</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#22-36">Context</a>,
-    <span class="ident">predicate_state</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#14-18">PredicateState</a>,
-    <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="ident">permission_kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-    <span class="ident">actions</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#4-10">Action</a><span class="op">&gt;</span>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#122">contains</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>) {
-        <span class="comment">// The requirement is already satisfied.</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">prefix</span>) <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#167-171">find_prefix</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>) {
-        <span class="comment">// The requirement can be satisifed by unfolding.</span>
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">expanded_place</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#25-29">expand_place</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-        <span class="macro">debug!</span>(<span class="string">&quot;expand_place(place={}, guiding_place={})&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>);
-        <span class="kw">let</span> <span class="ident">enum_variant</span> <span class="op">=</span> <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>.<a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">get_type</a>().<span class="ident">has_variants</span>() {
-            <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>.<span class="ident">get_variant_name</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
-        <span class="kw">let</span> <span class="ident">position</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">error_ctxt</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">vir_high::Type::Union</span>(<a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.Union.html">vir_high::ty::Union</a> {
-                <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="kw">_</span>),
-                ..
-            }) <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>.<a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">get_type</a>()
-            {
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/error_manager.rs.html#128">ErrorCtxt::UnfoldUnionVariant</a>
-            } <span class="kw">else</span> {
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/error_manager.rs.html#126">ErrorCtxt::Unfold</a>
-            };
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#31-35">change_error_context</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="../../../../../../vir/common/position/trait.Positioned.html">position</a>(), <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#217">error_ctxt</a>)
-        };
-        <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#206">prefix</a>.<span class="ident">replace_position</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#216">position</a>);
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::unfold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#228">prefix</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#211">enum_variant</a>));
-        <span class="kw">for</span> (<span class="ident">kind</span>, <span class="ident">new_place</span>) <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#209">expanded_place</a> {
-            <span class="macro">debug!</span>(<span class="string">&quot;  kind={:?} new_place={}&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#230">kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#230">new_place</a>);
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#230">new_place</a>.<span class="ident">check_no_default_position</span>();
-            <span class="macro">assert_eq!</span>(
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#230">kind</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#17">ExpandedPermissionKind::Same</a>,
-                <span class="string">&quot;This should never lead to unfolding up to memory blocks.&quot;</span>
-            );
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#230">new_place</a>)<span class="question-mark">?</span>;
-        }
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">witness</span>) <span class="op">=</span>
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#132-136">contains_non_discriminant_with_prefix</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)
-    {
-        <span class="comment">// The requirement can be satisifed by folding.</span>
-        <span class="kw">let</span> <span class="ident">enum_variant</span> <span class="op">=</span> <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">get_type</a>().<span class="ident">has_variants</span>() {
-            <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<span class="ident">get_variant_name</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#241">witness</a>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
-        <span class="kw">for</span> (<span class="ident">kind</span>, <span class="ident">new_place</span>) <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#25-29">expand_place</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#241">witness</a>)<span class="question-mark">?</span> {
-            <span class="macro">assert_eq!</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#250">kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#17">ExpandedPermissionKind::Same</a>);
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#250">new_place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>,
-            )<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#250">new_place</a>)<span class="question-mark">?</span>;
-        }
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::fold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#245">enum_variant</a>));
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">lifetime</span>) <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#196-199">contains_blocked</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span> {
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#95-98">remove_mut_borrowed</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::restore_mut_borrowed</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#263">lifetime</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()));
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a> <span class="op">==</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#188-193">can_place_be_ensured_in</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>)<span class="question-mark">?</span>
-    {
-        <span class="comment">// We have Owned and we need MemoryBlock.</span>
-        <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#158-162">contains_prefix_of</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>) {
-            <span class="comment">// We have Owned that contains the place we need. Unfold as we need</span>
-            <span class="comment">// and convert into MemoryBlock.</span>
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>,
-            )<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::owned_into_memory_block</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>));
-        } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">get_type</a>().<span class="ident">is_reference</span>() {
-            <span class="comment">// We need to special case references to be no-op here because</span>
-            <span class="comment">// `_2.*` is both `Owned` and `MemoryBlock`.</span>
-            <span class="kw">let</span> <span class="ident">target_type</span> <span class="op">=</span> <span class="kw-2">*</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="../../../../../../vir/gen/high/operations_internal/ty/trait.Typed.html">get_type</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<span class="ident">unwrap_reference</span>().<span class="ident">target_type</span>;
-            <span class="kw">let</span> <span class="ident">deref_place</span> <span class="op">=</span>
-                <span class="ident">vir_high::Expression::deref</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#288">target_type</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="../../../../../../vir/common/position/trait.Positioned.html">position</a>());
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#289">deref_place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>,
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>,
-            )<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#289">deref_place</a>)<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="comment">// We have a mix of Owned and MemoryBlock. Convert all Owned into</span>
-            <span class="comment">// MemoryBlock and then obtain the MemoryBlock we need.</span>
-            <span class="kw">let</span> <span class="ident">places</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#182-185">collect_owned_with_prefix</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-            <span class="macro">assert!</span>(<span class="op">!</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#303">places</a>.<span class="ident">is_empty</span>(), <span class="string">&quot;Something went wrong.&quot;</span>);
-            <span class="kw">for</span> <span class="ident">place</span> <span class="kw">in</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#303">places</a> {
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#305">place</a>)<span class="question-mark">?</span>;
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#305">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-                <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::owned_into_memory_block</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#305">place</a>));
+<span class="kw">fn </span>check_contains_place(
+    predicate_state: <span class="kw-2">&amp;mut </span><a href="state/predicate_state_on_path.rs.html#15">PredicateStateOnPath</a>,
+    place: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    permission_kind: <a href="permission.rs.html#43">PermissionKind</a>,
+) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt; {
+    <span class="kw">let </span>contains = <span class="kw">if </span>predicate_state.contains(permission_kind, place) {
+        <span class="bool-val">true
+    </span>} <span class="kw">else if </span>permission_kind == PermissionKind::MemoryBlock {
+        <span class="kw">let </span>address_place = vir_typed::Expression::field(
+            <a href="#280">place</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
+            vir_typed::FieldDecl::new(
+                <span class="string">&quot;address$&quot;</span>,
+                <span class="number">0usize</span>,
+                vir_typed::Type::Int(vir_typed::ty::Int::Usize),
+            ),
+            <a href="#280">place</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>(),
+        );
+        <span class="kw">if </span>predicate_state.contains(PermissionKind::MemoryBlock, <span class="kw-2">&amp;</span>address_place) {
+            predicate_state.remove(PermissionKind::MemoryBlock, <span class="kw-2">&amp;</span>address_place)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+            <span class="bool-val">true
+        </span>} <span class="kw">else if </span>predicate_state.contains(PermissionKind::Owned, <span class="kw-2">&amp;</span>address_place) {
+            <span class="kw">for </span>deref_place <span class="kw">in </span>predicate_state.collect_owned_with_prefix(place)<span class="question-mark">? </span>{
+                predicate_state.remove(PermissionKind::Owned, <span class="kw-2">&amp;</span>deref_place)<span class="question-mark">?</span>;
             }
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#197-203">ensure_permission_in_state</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+            <span class="bool-val">true
+        </span>} <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>}
+    } <span class="kw">else </span>{
+        <span class="bool-val">false
+    </span>};
+    <span class="prelude-val">Ok</span>(<a href="#283">contains</a>)
+}
+
+<span class="doccomment">/// Returns `true` if the state should be droped because it should be
+/// unreachable.
+</span><span class="kw">fn </span>ensure_permission_in_state(
+    context: <span class="kw-2">&amp;mut </span><span class="kw">impl </span><a href="#27">Context</a>,
+    predicate_state: <span class="kw-2">&amp;mut </span><a href="state/predicate_state_on_path.rs.html#15">PredicateStateOnPath</a>,
+    place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    permission_kind: <a href="permission.rs.html#43">PermissionKind</a>,
+    actions: <span class="kw-2">&amp;mut </span>Vec&lt;<a href="action.rs.html#8">Action</a>&gt;,
+) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt; {
+    <a href="#318">predicate_state</a>.<a href="state/predicate_state_on_path.rs.html#291">check_consistency</a>();
+    <span class="kw">let </span>to_drop = <span class="kw">if </span>check_contains_place(predicate_state, <span class="kw-2">&amp;</span>place, permission_kind)<span class="question-mark">? </span>{
+        <a class="macro" href="../../../../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;  satisfied: {:?} {}&quot;</span>, permission_kind, place);
+        <span class="comment">// The requirement is already satisfied.
+        </span><span class="bool-val">false
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(prefix) = <a href="#318">predicate_state</a>.<a href="state/predicate_state_on_path.rs.html#222-226">find_prefix</a>(<a href="#320">permission_kind</a>, <span class="kw-2">&amp;</span><a href="#319">place</a>) {
+        <span class="comment">// The requirement can be satisifed by unfolding.
+        </span><span class="kw">if </span>prefix.get_type().is_trusted() {
+            <span class="comment">// Trusted types cannot be unfolded.
+            </span><span class="kw">let </span>place_span = <a href="#317">context</a>.<a href="#35">get_span</a>(<a href="#319">place</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>()).unwrap();
+            <span class="kw">let </span>prefix_span = <a href="#317">context</a>.<a href="#35">get_span</a>(<a href="#328">prefix</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>()).unwrap();
+            <span class="kw">let </span><span class="kw-2">mut </span>error = SpannedEncodingError::incorrect(
+                <span class="string">&quot;accessing fields of #[trusted] types is not allowed&quot;</span>,
+                <a href="#332">place_span</a>,
+            );
+            <a href="#334">error</a>.<a href="../../../errors/spanned_encoding_error.rs.html#95">add_note</a>(
+                <span class="string">&quot;the type of this place is marked as #[trusted]&quot;</span>,
+                <span class="prelude-val">Some</span>(<a href="#333">prefix_span</a>),
+            );
+            <a href="#334">error</a>.<a href="../../../errors/spanned_encoding_error.rs.html#99">set_help</a>(<span class="string">&quot;you might want to mark the function as #[trusted]&quot;</span>);
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<a href="#334">error</a>);
         }
-    } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a> <span class="op">==</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>
-        <span class="op">&amp;&amp;</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#188-193">can_place_be_ensured_in</a>(
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#198">context</a>,
-            <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>,
-        )<span class="question-mark">?</span>
+        predicate_state.remove(permission_kind, <span class="kw-2">&amp;</span>prefix)<span class="question-mark">?</span>;
+        <span class="kw">let </span>expanded_place = context.expand_place(<span class="kw-2">&amp;</span>prefix, <span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+        <a class="macro" href="../../../../../../log/macro.debug.html">debug!</a>(<span class="string">&quot;expand_place(place={}, guiding_place={})&quot;</span>, prefix, place);
+        <span class="kw">let </span>enum_variant = <span class="kw">if </span>prefix.get_type().has_variants() {
+            <span class="prelude-val">Some</span>(<a href="#328">prefix</a>.get_variant_name(<span class="kw-2">&amp;</span><a href="#319">place</a>).<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+        <span class="kw">let </span>position = {
+            <span class="kw">let </span>error_ctxt = <span class="kw">if let </span>vir_typed::Type::Enum(<a href="../../../../../../vir/gen/typed/ast/ty/struct.Enum.html">vir_typed::ty::Enum</a> {
+                variant: <span class="prelude-val">Some</span>(<span class="kw">_</span>),
+                safety: vir_typed::ty::EnumSafety::Union,
+                ..
+            }) = <a href="#328">prefix</a>.<a href="../../../../../../vir/gen/typed/operations_internal/ty/trait.Typed.html">get_type</a>()
+            {
+                <a href="../../../errors/error_manager.rs.html#153">ErrorCtxt::UnfoldUnionVariant</a>
+            } <span class="kw">else </span>{
+                <a href="../../../errors/error_manager.rs.html#151">ErrorCtxt::Unfold</a>
+            };
+            <a href="#317">context</a>.<a href="#36-40">change_error_context</a>(<a href="#319">place</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>(), <a href="#354">error_ctxt</a>)
+        };
+        <span class="kw">let </span>prefix = <a href="#328">prefix</a>.replace_position(<a href="#353">position</a>);
+        <a href="#321">actions</a>.push(Action::unfold(<a href="#320">permission_kind</a>, <a href="#366">prefix</a>, <a href="#348">enum_variant</a>));
+        <span class="kw">for </span>(kind, new_place) <span class="kw">in </span>expanded_place {
+            <span class="macro">debug!</span>(<span class="string">&quot;  kind={:?} new_place={}&quot;</span>, kind, new_place);
+            new_place.check_no_default_position();
+            <span class="macro">assert_eq!</span>(
+                kind,
+                ExpandedPermissionKind::Same,
+                <span class="string">&quot;This should never lead to unfolding up to memory blocks.&quot;
+            </span>);
+            predicate_state.insert(permission_kind, new_place)<span class="question-mark">?</span>;
+        }
+        ensure_permission_in_state(context, predicate_state, place, permission_kind, actions)<span class="question-mark">?
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>(witness) = <a href="#318">predicate_state</a>
+        .<a href="state/predicate_state_on_path.rs.html#166-170">contains_non_discriminant_with_prefix</a>(<a href="#320">permission_kind</a>, <span class="kw-2">&amp;</span><a href="#319">place</a>)
+        .cloned()
     {
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#80-84">remove</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#19">PermissionKind::MemoryBlock</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>)<span class="question-mark">?</span>;
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#199">predicate_state</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#108-112">insert</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-        <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#202">actions</a>.<span class="ident">push</span>(<span class="ident">Action::fold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#20">PermissionKind::Owned</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <span class="prelude-val">None</span>));
-    } <span class="kw">else</span> {
-        <span class="comment">// The requirement cannot be satisfied.</span>
-        <span class="macro">unreachable!</span>(<span class="string">&quot;{} {:?}&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#200">place</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#201">permission_kind</a>);
+        <span class="comment">// The requirement can be satisifed by folding.
+        </span><span class="kw">let </span>enum_variant = <span class="kw">if </span>place.get_type().has_variants() {
+            <span class="prelude-val">Some</span>(<a href="#319">place</a>.get_variant_name(<span class="kw-2">&amp;</span><a href="#379">witness</a>).<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
+        <span class="kw">for </span>(kind, new_place) <span class="kw">in </span>context.expand_place(<span class="kw-2">&amp;</span>place, <span class="kw-2">&amp;</span>witness)<span class="question-mark">? </span>{
+            <span class="macro">assert_eq!</span>(kind, ExpandedPermissionKind::Same);
+            <span class="kw">if </span>ensure_permission_in_state(
+                context,
+                predicate_state,
+                new_place.clone(),
+                permission_kind,
+                actions,
+            )<span class="question-mark">? </span>{
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
+            }
+            predicate_state.remove(permission_kind, <span class="kw-2">&amp;</span>new_place)<span class="question-mark">?</span>;
+        }
+        <a href="#321">actions</a>.push(Action::fold(<a href="#320">permission_kind</a>, <a href="#319">place</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a href="#384">enum_variant</a>));
+        predicate_state.insert(permission_kind, place)<span class="question-mark">?</span>;
+        <span class="bool-val">false
+    </span>} <span class="kw">else if let </span><span class="prelude-val">Some</span>((prefix, lifetime)) = predicate_state.contains_blocked(<span class="kw-2">&amp;</span>place)<span class="question-mark">? </span>{
+        <span class="kw">let </span>prefix = <a href="#405">prefix</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+        <span class="kw">let </span>lifetime = <a href="#405">lifetime</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
+        predicate_state.remove_mut_borrowed(<span class="kw-2">&amp;</span>prefix)<span class="question-mark">?</span>;
+        predicate_state.insert(PermissionKind::Owned, prefix.clone())<span class="question-mark">?</span>;
+        <a href="#321">actions</a>.push(Action::restore_mut_borrowed(<a href="#407">lifetime</a>, <a href="#406">prefix</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()));
+        ensure_permission_in_state(context, predicate_state, place, permission_kind, actions)<span class="question-mark">?
+    </span>} <span class="kw">else if </span>permission_kind == PermissionKind::MemoryBlock
+        &amp;&amp; can_place_be_ensured_in(context, <span class="kw-2">&amp;</span>place, PermissionKind::Owned, predicate_state)<span class="question-mark">?
+    </span>{
+        <span class="comment">// We have Owned and we need MemoryBlock.
+        </span><span class="kw">if </span>predicate_state.contains_prefix_of(PermissionKind::Owned, <span class="kw-2">&amp;</span>place) {
+            <span class="comment">// We have Owned that contains the place we need. Unfold as we need
+            // and convert into MemoryBlock.
+            </span><span class="kw">let </span>to_drop = ensure_permission_in_state(
+                context,
+                predicate_state,
+                place.clone(),
+                PermissionKind::Owned,
+                actions,
+            )<span class="question-mark">?</span>;
+            predicate_state.remove(PermissionKind::Owned, <span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+            <a href="#321">actions</a>.push(Action::owned_into_memory_block(<a href="#319">place</a>));
+            <a href="#419">to_drop</a>
+        } <span class="kw">else if </span>place.get_type().is_reference() {
+            <span class="comment">// We need to special case references to be no-op here because
+            // `_2.*` is both `Owned` and `MemoryBlock`.
+            </span><span class="kw">let </span>target_type = <span class="kw-2">*</span><a href="#319">place</a>.<a href="../../../../../../vir/gen/typed/operations_internal/ty/trait.Typed.html">get_type</a>().<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().unwrap_reference().target_type;
+            <span class="kw">let </span>deref_place =
+                vir_typed::Expression::deref(<a href="#319">place</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a href="#433">target_type</a>, <a href="#319">place</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>());
+            <span class="kw">let </span>to_drop = ensure_permission_in_state(
+                context,
+                predicate_state,
+                deref_place.clone(),
+                PermissionKind::Owned,
+                actions,
+            )<span class="question-mark">?</span>;
+            predicate_state.remove(PermissionKind::Owned, <span class="kw-2">&amp;</span>deref_place)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+            <a href="#436">to_drop</a>
+        } <span class="kw">else if </span>place.get_type().is_array() {
+            <span class="comment">// We need to special case arrays, because when the array is
+            // unfolded, we track only a single element of the array and only
+            // that element would be converted. It is fine to require Owned of
+            // the entire array, because either the entire array can be Owned or
+            // MemoryBlock. In Rust, having a mix is not allowed.
+            </span><span class="kw">let </span>to_drop = ensure_permission_in_state(
+                context,
+                predicate_state,
+                place.clone(),
+                PermissionKind::Owned,
+                actions,
+            )<span class="question-mark">?</span>;
+            predicate_state.remove(PermissionKind::Owned, <span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+            <a href="#321">actions</a>.push(Action::owned_into_memory_block(<a href="#319">place</a>));
+            <a href="#452">to_drop</a>
+        } <span class="kw">else </span>{
+            <span class="comment">// We have a mix of Owned and MemoryBlock. Convert all Owned into
+            // MemoryBlock and then obtain the MemoryBlock we need.
+            </span><span class="kw">let </span>places = predicate_state.collect_owned_with_prefix(<span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+            <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(!places.is_empty(), <span class="string">&quot;Something went wrong.&quot;</span>);
+            <span class="kw">for </span>place <span class="kw">in </span>places {
+                predicate_state.remove(PermissionKind::Owned, <span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+                predicate_state.insert(PermissionKind::MemoryBlock, place.clone())<span class="question-mark">?</span>;
+                actions.push(Action::owned_into_memory_block(place));
+            }
+            ensure_permission_in_state(context, predicate_state, place, permission_kind, actions)<span class="question-mark">?
+        </span>}
+    } <span class="kw">else if </span>permission_kind == PermissionKind::Owned
+        &amp;&amp; can_place_be_ensured_in(
+            context,
+            <span class="kw-2">&amp;</span>place,
+            PermissionKind::MemoryBlock,
+            predicate_state,
+        )<span class="question-mark">?
+    </span>{
+        <span class="kw">if </span>predicate_state.contains(PermissionKind::MemoryBlock, <span class="kw-2">&amp;</span>place)
+            &amp;&amp; place.get_type().is_int()
+        {
+            predicate_state.remove(PermissionKind::MemoryBlock, <span class="kw-2">&amp;</span>place)<span class="question-mark">?</span>;
+            predicate_state.insert(PermissionKind::Owned, place.clone())<span class="question-mark">?</span>;
+            <a href="#321">actions</a>.push(Action::fold(<a href="permission.rs.html#45">PermissionKind::Owned</a>, <a href="#319">place</a>, <span class="prelude-val">None</span>));
+            <span class="bool-val">false
+        </span>} <span class="kw">else </span>{
+            <span class="comment">// We have MemoryBlock and we need Owned, which means that this
+            // state should be unreachable. This typically happens when dropck
+            // tries to drop different enum variants one after another:
+            // ```rust
+            // if discriminant(x) == 0 {
+            //     drop(x.0);
+            // }
+            // if discriminant(x) == 1 {
+            //     // We are here.
+            //     drop(x.1);
+            // }
+            // ```
+            </span><span class="kw">let </span>position =
+                <a href="#317">context</a>.<a href="#36-40">change_error_context</a>(<a href="#319">place</a>.<a href="../../../../../../vir/common/position/trait.Positioned.html">position</a>(), <a href="../../../errors/error_manager.rs.html#182">ErrorCtxt::UnreachableFoldingState</a>);
+            <a href="#321">actions</a>.push(Action::unreachable(<a href="#503">position</a>));
+            <span class="bool-val">true
+        </span>}
+    } <span class="kw">else </span>{
+        <span class="comment">// The requirement cannot be satisfied.
+        </span><a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unreachable.html">unreachable!</a>(
+            <span class="string">&quot;place={} permission_kind={:?} predicate_state={}&quot;</span>,
+            place, permission_kind, predicate_state
+        );
     };
-    <span class="prelude-val">Ok</span>(())
+    <a href="#318">predicate_state</a>.<a href="state/predicate_state_on_path.rs.html#291">check_consistency</a>();
+    <span class="prelude-val">Ok</span>(<a href="#324">to_drop</a>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

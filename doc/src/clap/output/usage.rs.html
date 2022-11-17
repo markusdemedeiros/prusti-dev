@@ -1,13 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-3.1.18/src/output/usage.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>usage.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../clap/index.html"><div class="logo-container"><img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../clap/index.html"><div class="logo-container">
-                    <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../clap/index.html">
-                        <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/clap-4.0.18/src/output/usage.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>usage.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../clap/index.html">
+                        <img src="https://raw.githubusercontent.com/clap-rs/clap/master/assets/clap.png" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -448,465 +440,446 @@
 <span id="439">439</span>
 <span id="440">440</span>
 <span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
-<span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <a class="ident" href="../../../indexmap/set/struct.IndexSet.html">indexmap::IndexSet</a>;
+</pre><pre class="rust"><code><span class="attribute">#![cfg_attr(not(feature = <span class="string">&quot;usage&quot;</span>), allow(unused_imports))]
+#![cfg_attr(not(feature = <span class="string">&quot;usage&quot;</span>), allow(unused_variables))]
+#![cfg_attr(not(feature = <span class="string">&quot;usage&quot;</span>), allow(clippy::manual_map))]
+#![cfg_attr(not(feature = <span class="string">&quot;usage&quot;</span>), allow(dead_code))]
 
-<span class="comment">// Internal</span>
-<span class="kw">use</span> <a class="ident" href="../../../src/clap/build/app_settings.rs.html#34-422"><span class="kw">crate</span>::build::AppSettings</a> <span class="kw">as</span> <span class="ident">AS</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::build</span>::{<a class="ident" href="../../../src/clap/build/arg.rs.html#60-98">Arg</a>, <a class="ident" href="../../../src/clap/build/arg_predicate.rs.html#2-5">ArgPredicate</a>, <a class="ident" href="../../../src/clap/build/command.rs.html#70">Command</a>};
-<span class="kw">use</span> <a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#15"><span class="kw">crate</span>::parse::ArgMatcher</a>;
-<span class="kw">use</span> <a class="ident" href="../../../src/clap/util/graph.rs.html#17"><span class="kw">crate</span>::util::ChildGraph</a>;
-<span class="kw">use</span> <a class="ident" href="../../../src/clap/util/id.rs.html#11-15"><span class="kw">crate</span>::util::Id</a>;
-<span class="kw">use</span> <a class="ident" href="../../../src/clap/lib.rs.html#90-91"><span class="kw">crate</span>::INTERNAL_ERROR_MSG</a>;
+</span><span class="comment">// Internal
+</span><span class="kw">use </span><a href="../builder/styled_str.rs.html#3"><span class="kw">crate</span>::builder::StyledStr</a>;
+<span class="kw">use </span><span class="kw">crate</span>::builder::{<a href="../builder/arg_predicate.rs.html#7">ArgPredicate</a>, <a href="../builder/command.rs.html#71">Command</a>};
+<span class="kw">use </span><a href="../parser/arg_matcher.rs.html#17"><span class="kw">crate</span>::parser::ArgMatcher</a>;
+<span class="kw">use </span><a href="../util/graph.rs.html#17"><span class="kw">crate</span>::util::ChildGraph</a>;
+<span class="kw">use </span><a href="../util/flat_set.rs.html#9"><span class="kw">crate</span>::util::FlatSet</a>;
+<span class="kw">use </span><a href="../util/id.rs.html#9"><span class="kw">crate</span>::util::Id</a>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Usage</span><span class="op">&lt;</span><span class="lifetime">&#39;help</span>, <span class="lifetime">&#39;cmd</span><span class="op">&gt;</span> {
-    <span class="ident">cmd</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd</span> <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;help</span><span class="op">&gt;</span>,
-    <span class="ident">required</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd</span> <span class="ident">ChildGraph</span><span class="op">&lt;</span><a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">static </span>DEFAULT_SUB_VALUE_NAME: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> = <span class="string">&quot;COMMAND&quot;</span>;
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Usage&lt;<span class="lifetime">&#39;cmd</span>&gt; {
+    cmd: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd </span><a href="../builder/command.rs.html#71">Command</a>,
+    required: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd </span>ChildGraph&lt;<a href="../util/id.rs.html#9">Id</a>&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;help</span>, <span class="lifetime">&#39;cmd</span><span class="op">&gt;</span> <span class="ident">Usage</span><span class="op">&lt;</span><span class="lifetime">&#39;help</span>, <span class="lifetime">&#39;cmd</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">cmd</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd</span> <span class="ident">Command</span><span class="op">&lt;</span><span class="lifetime">&#39;help</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#11-14">Usage</a> {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#17">cmd</a>,
-            <span class="ident">required</span>: <span class="prelude-val">None</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;cmd</span>&gt; Usage&lt;<span class="lifetime">&#39;cmd</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(cmd: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd </span><a href="../builder/command.rs.html#71">Command</a>) -&gt; <span class="self">Self </span>{
+        <a href="#16">Usage</a> {
+            <a href="#22">cmd</a>,
+            required: <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">required</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">required</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd</span> <span class="ident">ChildGraph</span><span class="op">&lt;</span><a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <a class="self" href="../../../src/clap/output/usage.rs.html#24">self</a>.<span class="ident">required</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#24">required</a>);
-        <a class="self" href="../../../src/clap/output/usage.rs.html#24">self</a>
-    }
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>required(<span class="kw-2">mut </span><span class="self">self</span>, required: <span class="kw-2">&amp;</span><span class="lifetime">&#39;cmd </span>ChildGraph&lt;<a href="../util/id.rs.html#9">Id</a>&gt;) -&gt; <span class="self">Self </span>{
+        <a class="self" href="#29">self</a>.required = <span class="prelude-val">Some</span>(<a href="#29">required</a>);
+        <span class="self"><a href="#29">self</a>
+    </span>}
 
-    <span class="comment">// Creates a usage string for display. This happens just after all arguments were parsed, but before</span>
-    <span class="comment">// any subcommands have been parsed (so as to give subcommands their own usage recursively)</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">create_usage_with_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">used</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a>]) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+    <span class="comment">// Creates a usage string for display. This happens just after all arguments were parsed, but before
+    // any subcommands have been parsed (so as to give subcommands their own usage recursively)
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>create_usage_with_title(<span class="kw-2">&amp;</span><span class="self">self</span>, used: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>]) -&gt; <span class="prelude-ty">Option</span>&lt;<a href="../builder/styled_str.rs.html#3">StyledStr</a>&gt; {
         <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_usage_with_title&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">75</span>);
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#33">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot;USAGE:\n    &quot;</span>);
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#33">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="self" href="../../../src/clap/output/usage.rs.html#31">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#40">create_usage_no_title</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#31">used</a>));
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#33">usage</a>
+        <span class="kw">let </span>usage = <a class="macro" href="../macros.rs.html#676-685">some!</a>(<span class="self">self</span>.create_usage_no_title(used));
+
+        <span class="kw">let </span><span class="kw-2">mut </span>styled = StyledStr::new();
+        <a href="#40">styled</a>.<a href="../builder/styled_str.rs.html#31">header</a>(<span class="string">&quot;Usage:&quot;</span>);
+        <a href="#40">styled</a>.<a href="../builder/styled_str.rs.html#62">none</a>(<span class="string">&quot; &quot;</span>);
+        <a href="#40">styled</a>.<a href="../builder/styled_str.rs.html#186-189">extend</a>(<a href="#38">usage</a>.<a href="../builder/styled_str.rs.html#177">into_iter</a>());
+        <span class="prelude-val">Some</span>(<a href="#40">styled</a>)
     }
 
-    <span class="comment">// Creates a usage string (*without title*) if one was not provided by the user manually.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">create_usage_no_title</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">used</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a>]) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+    <span class="comment">// Creates a usage string (*without title*) if one was not provided by the user manually.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>create_usage_no_title(<span class="kw-2">&amp;</span><span class="self">self</span>, used: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>]) -&gt; <span class="prelude-ty">Option</span>&lt;<a href="../builder/styled_str.rs.html#3">StyledStr</a>&gt; {
         <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_usage_no_title&quot;</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>) <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#40">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3978">get_override_usage</a>() {
-            <span class="ident">String::from</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#42">u</a>)
-        } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#40">used</a>.<span class="ident">is_empty</span>() {
-            <a class="self" href="../../../src/clap/output/usage.rs.html#40">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#52">create_help_usage</a>(<span class="bool-val">true</span>)
-        } <span class="kw">else</span> {
-            <a class="self" href="../../../src/clap/output/usage.rs.html#40">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#164">create_smart_usage</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#40">used</a>)
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(u) = <a class="self" href="#48">self</a>.cmd.<a href="../builder/command.rs.html#3734">get_override_usage</a>() {
+            <span class="prelude-val">Some</span>(<a href="#50">u</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
+        } <span class="kw">else </span>{
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;usage&quot;</span>)]
+            </span>{
+                <span class="kw">if </span>used.is_empty() {
+                    <span class="prelude-val">Some</span>(<a class="self" href="#48">self</a>.<a href="#73">create_help_usage</a>(<span class="bool-val">true</span>))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>(<a class="self" href="#48">self</a>.<a href="#128">create_smart_usage</a>(<a href="#48">used</a>))
+                }
+            }
+
+            <span class="attribute">#[cfg(not(feature = <span class="string">&quot;usage&quot;</span>))]
+            </span>{
+                <span class="prelude-val">None
+            </span>}
         }
     }
+}
 
-    <span class="comment">// Creates a usage string for display in help messages (i.e. not for errors)</span>
-    <span class="kw">fn</span> <span class="ident">create_help_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incl_reqs</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_help_usage; incl_reqs={:?}&quot;</span>, <span class="ident">incl_reqs</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">75</span>);
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>
-            .<span class="ident">cmd</span>
-            .<a class="ident" href="../../../src/clap/build/command.rs.html#3216">get_usage_name</a>()
-            .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3228">get_bin_name</a>())
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3239">get_name</a>());
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#55">name</a>);
-        <span class="kw">let</span> <span class="ident">req_string</span> <span class="op">=</span> <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#52">incl_reqs</a> {
-            <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#331-336">get_required_usage_from</a>(<span class="kw-2">&amp;</span>[], <span class="prelude-val">None</span>, <span class="bool-val">false</span>)
-                .<span class="ident">iter</span>()
-                .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">fold</a>(<span class="ident">String::new</span>(), <span class="op">|</span><span class="ident">a</span>, <span class="ident">s</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#64">a</a> <span class="op">+</span> <span class="string">&quot; &quot;</span> <span class="op">+</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#64">s</a>)
-        } <span class="kw">else</span> {
-            <span class="ident">String::new</span>()
-        };
+<span class="attribute">#[cfg(feature = <span class="string">&quot;usage&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;cmd</span>&gt; Usage&lt;<span class="lifetime">&#39;cmd</span>&gt; {
+    <span class="comment">// Creates a usage string for display in help messages (i.e. not for errors)
+    </span><span class="kw">fn </span>create_help_usage(<span class="kw-2">&amp;</span><span class="self">self</span>, incl_reqs: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; <a href="../builder/styled_str.rs.html#3">StyledStr</a> {
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_help_usage; incl_reqs={:?}&quot;</span>, incl_reqs);
+        <span class="kw">let </span><span class="kw-2">mut </span>styled = StyledStr::new();
+        <span class="kw">let </span>name = <span class="self"><a href="#73">self</a>
+            </span>.cmd
+            .<a href="../builder/command.rs.html#3211">get_usage_name</a>()
+            .or_else(|| <a class="self" href="#73">self</a>.cmd.<a href="../builder/command.rs.html#3223">get_bin_name</a>())
+            .unwrap_or_else(|| <a class="self" href="#73">self</a>.cmd.<a href="../builder/command.rs.html#3234">get_name</a>());
+        <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#35">literal</a>(<a href="#76">name</a>);
 
-        <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#292">needs_options_tag</a>() {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [OPTIONS]&quot;</span>);
+        <span class="kw">if </span><span class="self">self</span>.needs_options_tag() {
+            <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot; [OPTIONS]&quot;</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">allow_missing_positional</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3657">is_allow_missing_positional_set</a>();
-        <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#73">allow_missing_positional</a> {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#61">req_string</a>);
-        }
+        <a class="self" href="#73">self</a>.<a href="#190">write_args</a>(<span class="kw-2">&amp;</span>[], !<a href="#73">incl_reqs</a>, <span class="kw-2">&amp;mut </span><a href="#75">styled</a>);
 
-        <span class="kw">let</span> <span class="ident">has_last</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#78">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>());
-        <span class="comment">// places a &#39;--&#39; in the usage string if there are args and options</span>
-        <span class="comment">// supporting multiple values</span>
-        <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>
-            .<span class="ident">cmd</span>
-            .<a class="ident" href="../../../src/clap/build/command.rs.html#4658">get_non_positionals</a>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">o</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#84">o</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4705">is_multiple_values_set</a>())
-            <span class="op">&amp;&amp;</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#85">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>())
-            <span class="op">&amp;&amp;</span> <span class="op">!</span>(<a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4702">has_visible_subcommands</a>() <span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3672">is_allow_external_subcommands_set</a>())
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#78">has_last</a>
+        <span class="comment">// incl_reqs is only false when this function is called recursively
+        </span><span class="kw">if </span><span class="self">self</span>.cmd.has_visible_subcommands() &amp;&amp; incl_reqs
+            || <span class="self">self</span>.cmd.is_allow_external_subcommands_set()
         {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [--]&quot;</span>);
-        }
-        <span class="kw">let</span> <span class="ident">not_req_or_hidden</span> <span class="op">=</span>
-            <span class="op">|</span><span class="ident">p</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/build/arg.rs.html#60-98">Arg</a><span class="op">|</span> (<span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#92">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>() <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#92">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>()) <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#92">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>();
-        <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#91">not_req_or_hidden</a>) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">args_tag</span>) <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#190">get_args_tag</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#52">incl_reqs</a>) {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#94">args_tag</a>);
-            } <span class="kw">else</span> {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [ARGS]&quot;</span>);
-            }
-            <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#78">has_last</a> <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#52">incl_reqs</a> {
-                <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>
-                    .<span class="ident">cmd</span>
-                    .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">find</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#103">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>())
-                    .<span class="ident">expect</span>(<a class="ident" href="../../../src/clap/lib.rs.html#90-91">INTERNAL_ERROR_MSG</a>);
-                <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_help_usage: &#39;{}&#39; has .last(true)&quot;</span>, <span class="ident">pos</span>.<span class="ident">name</span>);
-                <span class="kw">let</span> <span class="ident">req</span> <span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#100">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>();
-                <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#106">req</a> <span class="op">&amp;&amp;</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#107">p</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>()) {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; -- &lt;&quot;</span>);
-                } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#106">req</a> {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [--] &lt;&quot;</span>);
-                } <span class="kw">else</span> {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [-- &lt;&quot;</span>);
-                }
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#100">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5083">name_no_brackets</a>());
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#100">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5073">multiple_str</a>());
-                <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#106">req</a> {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push</span>(<span class="string">&#39;]&#39;</span>);
-                }
-            }
-        }
-
-        <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#73">allow_missing_positional</a> {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#61">req_string</a>);
-        }
-
-        <span class="comment">// incl_reqs is only false when this function is called recursively</span>
-        <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4702">has_visible_subcommands</a>() <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#52">incl_reqs</a>
-            <span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3672">is_allow_external_subcommands_set</a>()
-        {
-            <span class="kw">let</span> <span class="ident">placeholder</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3415">get_subcommand_value_name</a>().<span class="ident">unwrap_or</span>(<span class="string">&quot;SUBCOMMAND&quot;</span>);
-            <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">deprecated</span>)]</span>
-            <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3692">is_subcommand_negates_reqs_set</a>()
-                <span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3682">is_args_conflicts_with_subcommands_set</a>()
+            <span class="kw">let </span>placeholder = <span class="self"><a href="#73">self</a>
+                </span>.cmd
+                .<a href="../builder/command.rs.html#3394">get_subcommand_value_name</a>()
+                .unwrap_or(<a href="#14">DEFAULT_SUB_VALUE_NAME</a>);
+            <span class="kw">if </span><span class="self">self</span>.cmd.is_subcommand_negates_reqs_set()
+                || <span class="self">self</span>.cmd.is_args_conflicts_with_subcommands_set()
             {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot;\n    &quot;</span>);
-                <span class="kw">if</span> <span class="op">!</span><a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3682">is_args_conflicts_with_subcommands_set</a>() {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<a class="ident" href="../../../src/clap/output/usage.rs.html#52">create_help_usage</a>(<span class="bool-val">false</span>));
-                } <span class="kw">else</span> {
-                    <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#55">name</a>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#62">none</a>(<span class="string">&quot;\n&quot;</span>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#62">none</a>(<span class="string">&quot;       &quot;</span>);
+                <span class="kw">if </span><span class="self">self</span>.cmd.is_args_conflicts_with_subcommands_set() {
+                    <span class="comment">// Short-circuit full usage creation since no args will be relevant
+                    </span><a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#35">literal</a>(<a href="#76">name</a>);
+                } <span class="kw">else </span>{
+                    <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#186-189">extend</a>(<a class="self" href="#73">self</a>.<a href="#73">create_help_usage</a>(<span class="bool-val">false</span>).<a href="../builder/styled_str.rs.html#177">into_iter</a>());
                 }
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; &lt;&quot;</span>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#131">placeholder</a>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3667">is_subcommand_required_set</a>()
-                <span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#52">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3353">is_set</a>(<a class="ident" href="../../../src/clap/build/app_settings.rs.html#141">AS::SubcommandRequiredElseHelp</a>)
-            {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; &lt;&quot;</span>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#131">placeholder</a>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
-            } <span class="kw">else</span> {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; [&quot;</span>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push_str</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#131">placeholder</a>);
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">push</span>(<span class="string">&#39;]&#39;</span>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot; &lt;&quot;</span>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<a href="#93">placeholder</a>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot;&gt;&quot;</span>);
+            } <span class="kw">else if </span><span class="self">self</span>.cmd.is_subcommand_required_set() {
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot; &lt;&quot;</span>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<a href="#93">placeholder</a>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot;&gt;&quot;</span>);
+            } <span class="kw">else </span>{
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot; [&quot;</span>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<a href="#93">placeholder</a>);
+                <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot;]&quot;</span>);
             }
         }
-        <span class="kw">let</span> <span class="ident">usage</span> <span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#54">usage</a>.<span class="ident">trim</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>();
-        <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_help_usage: usage={}&quot;</span>, <span class="ident">usage</span>);
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#157">usage</a>
+        <a href="#75">styled</a>.<a href="../builder/styled_str.rs.html#70">trim</a>();
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_help_usage: usage={}&quot;</span>, styled);
+        <a href="#75">styled</a>
     }
 
-    <span class="comment">// Creates a context aware usage string, or &quot;smart usage&quot; from currently used</span>
-    <span class="comment">// args, and requirements</span>
-    <span class="kw">fn</span> <span class="ident">create_smart_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">used</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a>]) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+    <span class="comment">// Creates a context aware usage string, or &quot;smart usage&quot; from currently used
+    // args, and requirements
+    </span><span class="kw">fn </span>create_smart_usage(<span class="kw-2">&amp;</span><span class="self">self</span>, used: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>]) -&gt; <a href="../builder/styled_str.rs.html#3">StyledStr</a> {
         <span class="macro">debug!</span>(<span class="string">&quot;Usage::create_smart_usage&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">usage</span> <span class="op">=</span> <span class="ident">String::with_capacity</span>(<span class="number">75</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>styled = StyledStr::new();
 
-        <span class="kw">let</span> <span class="ident">r_string</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>
-            .<a class="ident" href="../../../src/clap/output/usage.rs.html#331-336">get_required_usage_from</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#164">used</a>, <span class="prelude-val">None</span>, <span class="bool-val">true</span>)
-            .<span class="ident">iter</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">fold</a>(<span class="ident">String::new</span>(), <span class="op">|</span><span class="ident">acc</span>, <span class="ident">s</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#171">acc</a> <span class="op">+</span> <span class="string">&quot; &quot;</span> <span class="op">+</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#171">s</a>);
-
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">push_str</span>(
-            <a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>.<span class="ident">cmd</span>
-                .<a class="ident" href="../../../src/clap/build/command.rs.html#3216">get_usage_name</a>()
-                .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3228">get_bin_name</a>())
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3239">get_name</a>()),
+        <a href="#130">styled</a>.<a href="../builder/styled_str.rs.html#35">literal</a>(
+            <a class="self" href="#128">self</a>.cmd
+                .<a href="../builder/command.rs.html#3211">get_usage_name</a>()
+                .or_else(|| <a class="self" href="#128">self</a>.cmd.<a href="../builder/command.rs.html#3223">get_bin_name</a>())
+                .unwrap_or_else(|| <a class="self" href="#128">self</a>.cmd.<a href="../builder/command.rs.html#3234">get_name</a>()),
         );
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#168">r_string</a>);
-        <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3667">is_subcommand_required_set</a>() {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">push_str</span>(<span class="string">&quot; &lt;&quot;</span>);
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">push_str</span>(<a class="self" href="../../../src/clap/output/usage.rs.html#164">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3415">get_subcommand_value_name</a>().<span class="ident">unwrap_or</span>(<span class="string">&quot;SUBCOMMAND&quot;</span>));
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
-        }
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>.<span class="ident">shrink_to_fit</span>();
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#166">usage</a>
-    }
 
-    <span class="comment">// Gets the `[ARGS]` tag for the usage string</span>
-    <span class="kw">fn</span> <span class="ident">get_args_tag</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">incl_reqs</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag; incl_reqs = {:?}&quot;</span>, <span class="ident">incl_reqs</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">for</span> <span class="ident">pos</span> <span class="kw">in</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>
-            .<span class="ident">cmd</span>
-            .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#196">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#197">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#198">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>())
-        {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter:{}&quot;</span>, <span class="ident">pos</span>.<span class="ident">name</span>);
-            <span class="kw">let</span> <span class="ident">required</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4747">groups_for_arg</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#193">pos</a>.<span class="ident">id</span>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">grp_s</span><span class="op">|</span> {
-                <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter:{:?}:iter:{:?}&quot;</span>, <span class="ident">pos</span>.<span class="ident">name</span>, <span class="ident">grp_s</span>);
-                <span class="comment">// if it&#39;s part of a required group we don&#39;t want to count it</span>
-                <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#204">g</a>.<span class="ident">required</span> <span class="op">&amp;&amp;</span> (<a class="ident" href="../../../src/clap/output/usage.rs.html#204">g</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#201">grp_s</a>))
-            });
-            <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#201">required</a> {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#192">count</a> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="macro">debug!</span>(
-                    <span class="string">&quot;Usage::get_args_tag:iter: {} Args not required or hidden&quot;</span>,
-                    <span class="ident">count</span>
-                );
-            }
-        }
+        <a class="self" href="#128">self</a>.<a href="#190">write_args</a>(<a href="#128">used</a>, <span class="bool-val">false</span>, <span class="kw-2">&amp;mut </span><a href="#130">styled</a>);
 
-        <span class="kw">if</span> <span class="op">!</span><a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3622">is_dont_collapse_args_in_usage_set</a>() <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#192">count</a> <span class="op">&gt;</span> <span class="number">1</span> {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter: More than one, returning [ARGS]&quot;</span>);
-
-            <span class="comment">// [ARGS]</span>
-            <span class="prelude-val">None</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#192">count</a> <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#190">incl_reqs</a> {
-            <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>
-                .<span class="ident">cmd</span>
-                .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-                .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">find</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> {
-                    <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#224">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>()
-                        <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#224">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>()
-                        <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#224">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>()
-                        <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4747">groups_for_arg</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#224">pos</a>.<span class="ident">id</span>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">grp_s</span><span class="op">|</span> {
-                            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter:{:?}:iter:{:?}&quot;</span>, <span class="ident">pos</span>.<span class="ident">name</span>, <span class="ident">grp_s</span>);
-                            <span class="comment">// if it&#39;s part of a required group we don&#39;t want to count it</span>
-                            <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#231">g</a>.<span class="ident">required</span> <span class="op">&amp;&amp;</span> (<a class="ident" href="../../../src/clap/output/usage.rs.html#231">g</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#228">grp_s</a>))
-                        })
-                })
-                .<span class="ident">expect</span>(<a class="ident" href="../../../src/clap/lib.rs.html#90-91">INTERNAL_ERROR_MSG</a>);
-
-            <span class="macro">debug!</span>(
-                <span class="string">&quot;Usage::get_args_tag:iter: Exactly one, returning &#39;{}&#39;&quot;</span>,
-                <span class="ident">pos</span>.<span class="ident">name</span>
+        <span class="kw">if </span><span class="self">self</span>.cmd.is_subcommand_required_set() {
+            <a href="#130">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot; &lt;&quot;</span>);
+            <a href="#130">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(
+                <a class="self" href="#128">self</a>.cmd
+                    .<a href="../builder/command.rs.html#3394">get_subcommand_value_name</a>()
+                    .unwrap_or(<a href="#14">DEFAULT_SUB_VALUE_NAME</a>),
             );
-
-            <span class="prelude-val">Some</span>(<span class="macro">format!</span>(
-                <span class="string">&quot; [{}]{}&quot;</span>,
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#221">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5083">name_no_brackets</a>(),
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#221">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5073">multiple_str</a>()
-            ))
-        } <span class="kw">else</span> <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3622">is_dont_collapse_args_in_usage_set</a>()
-            <span class="op">&amp;&amp;</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4698">has_positionals</a>()
-            <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#190">incl_reqs</a>
-        {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter: Don&#39;t collapse returning all&quot;</span>);
-            <span class="prelude-val">Some</span>(
-                <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>
-                    .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#254">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#255">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#256">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot; [{}]{}&quot;</span>, <a class="ident" href="../../../src/clap/output/usage.rs.html#257">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5083">name_no_brackets</a>(), <a class="ident" href="../../../src/clap/output/usage.rs.html#257">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5073">multiple_str</a>()))
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                    .<span class="ident">join</span>(<span class="string">&quot;&quot;</span>),
-            )
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#190">incl_reqs</a> {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args_tag:iter: incl_reqs=false, building secondary usage string&quot;</span>);
-            <span class="kw">let</span> <span class="ident">highest_req_pos</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>
-                .<span class="ident">cmd</span>
-                .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-                .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter_map</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> {
-                    <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#266">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>() <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#266">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>() {
-                        <span class="prelude-val">Some</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#266">pos</a>.<span class="ident">index</span>)
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
-                    }
-                })
-                .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">max</a>()
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Some</span>(<a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">count</a>()));
-            <span class="prelude-val">Some</span>(
-                <a class="self" href="../../../src/clap/output/usage.rs.html#190">self</a>.<span class="ident">cmd</span>
-                    .<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>()
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#278">pos</a>.<span class="ident">index</span> <span class="op">&lt;</span><span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#263">highest_req_pos</a>)
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#279">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#280">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#281">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>())
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot; [{}]{}&quot;</span>, <a class="ident" href="../../../src/clap/output/usage.rs.html#282">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5083">name_no_brackets</a>(), <a class="ident" href="../../../src/clap/output/usage.rs.html#282">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#5073">multiple_str</a>()))
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                    .<span class="ident">join</span>(<span class="string">&quot;&quot;</span>),
-            )
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>())
+            <a href="#130">styled</a>.<a href="../builder/styled_str.rs.html#39">placeholder</a>(<span class="string">&quot;&gt;&quot;</span>);
         }
+        <a href="#130">styled</a>
     }
 
-    <span class="comment">// Determines if we need the `[OPTIONS]` tag in the usage string</span>
-    <span class="kw">fn</span> <span class="ident">needs_options_tag</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+    <span class="comment">// Determines if we need the `[OPTIONS]` tag in the usage string
+    </span><span class="kw">fn </span>needs_options_tag(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
         <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag&quot;</span>);
-        <span class="lifetime">&#39;outer</span>: <span class="kw">for</span> <span class="ident">f</span> <span class="kw">in</span> <a class="self" href="../../../src/clap/output/usage.rs.html#292">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4658">get_non_positionals</a>() {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter: f={}&quot;</span>, <span class="ident">f</span>.<span class="ident">name</span>);
+        <span class="lifetime">&#39;outer</span>: <span class="kw">for </span>f <span class="kw">in </span><span class="self">self</span>.cmd.get_non_positionals() {
+            <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter: f={}&quot;</span>, f.get_id());
 
-            <span class="comment">// Don&#39;t print `[OPTIONS]` just for help or version</span>
-            <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#294">f</a>.<span class="ident">long</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;help&quot;</span>) <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#294">f</a>.<span class="ident">long</span> <span class="op">==</span> <span class="prelude-val">Some</span>(<span class="string">&quot;version&quot;</span>) {
+            <span class="comment">// Don&#39;t print `[OPTIONS]` just for help or version
+            </span><span class="kw">if </span>f.get_long() == <span class="prelude-val">Some</span>(<span class="string">&quot;help&quot;</span>) || f.get_long() == <span class="prelude-val">Some</span>(<span class="string">&quot;version&quot;</span>) {
                 <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter Option is built-in&quot;</span>);
                 <span class="kw">continue</span>;
             }
 
-            <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#294">f</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4745">is_hide_set</a>() {
+            <span class="kw">if </span>f.is_hide_set() {
                 <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter Option is hidden&quot;</span>);
                 <span class="kw">continue</span>;
             }
-            <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#294">f</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4700">is_required_set</a>() {
+            <span class="kw">if </span>f.is_required_set() {
                 <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter Option is required&quot;</span>);
                 <span class="kw">continue</span>;
             }
-            <span class="kw">for</span> <span class="ident">grp_s</span> <span class="kw">in</span> <a class="self" href="../../../src/clap/output/usage.rs.html#292">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4747">groups_for_arg</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#294">f</a>.<span class="ident">id</span>) {
-                <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter:iter: grp_s={:?}&quot;</span>, <span class="ident">grp_s</span>);
-                <span class="kw">if</span> <a class="self" href="../../../src/clap/output/usage.rs.html#292">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#313">g</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#311">grp_s</a> <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#313">g</a>.<span class="ident">required</span>) {
+            <span class="kw">for </span>grp_s <span class="kw">in </span><span class="self">self</span>.cmd.groups_for_arg(f.get_id()) {
+                <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter:iter: grp_s={:?}&quot;</span>, grp_s);
+                <span class="kw">if </span><span class="self">self</span>.cmd.get_groups().any(|g| g.id == grp_s &amp;&amp; g.required) {
                     <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter:iter: Group is required&quot;</span>);
-                    <span class="kw">continue</span> <span class="lifetime">&#39;outer</span>;
+                    <span class="kw">continue </span><span class="lifetime">&#39;outer</span>;
                 }
             }
 
             <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag:iter: [OPTIONS] required&quot;</span>);
-            <span class="kw">return</span> <span class="bool-val">true</span>;
+            <span class="kw">return </span><span class="bool-val">true</span>;
         }
 
         <span class="macro">debug!</span>(<span class="string">&quot;Usage::needs_options_tag: [OPTIONS] not required&quot;</span>);
-        <span class="bool-val">false</span>
+        <span class="bool-val">false
+    </span>}
+
+    <span class="comment">// Returns the required args in usage string form by fully unrolling all groups
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write_args(<span class="kw-2">&amp;</span><span class="self">self</span>, incls: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>], force_optional: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>, styled: <span class="kw-2">&amp;mut </span><a href="../builder/styled_str.rs.html#3">StyledStr</a>) {
+        <span class="kw">for </span>required <span class="kw">in </span><span class="self">self</span>.get_args(incls, force_optional) {
+            styled.none(<span class="string">&quot; &quot;</span>);
+            styled.extend(required.into_iter());
+        }
     }
 
-    <span class="comment">// Returns the required args in usage string form by fully unrolling all groups</span>
-    <span class="comment">// `incl_last`: should we include args that are Arg::Last? (i.e. `prog [foo] -- [last]). We</span>
-    <span class="comment">// can&#39;t do that for required usages being built for subcommands because it would look like:</span>
-    <span class="comment">// `prog [foo] -- [last] &lt;subcommand&gt;` which is totally wrong.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_required_usage_from</span>(
-        <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">incls</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a>],
-        <span class="ident">matcher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#15">ArgMatcher</a><span class="op">&gt;</span>,
-        <span class="ident">incl_last</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
-    ) -&gt; <span class="ident">IndexSet</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <span class="macro">debug!</span>(
-            <span class="string">&quot;Usage::get_required_usage_from: incls={:?}, matcher={:?}, incl_last={:?}&quot;</span>,
-            <span class="ident">incls</span>,
-            <span class="ident">matcher</span>.<span class="ident">is_some</span>(),
-            <span class="ident">incl_last</span>
-        );
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret_val</span> <span class="op">=</span> <span class="ident">IndexSet::new</span>();
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_args(<span class="kw-2">&amp;</span><span class="self">self</span>, incls: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>], force_optional: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>) -&gt; Vec&lt;<a href="../builder/styled_str.rs.html#3">StyledStr</a>&gt; {
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args: incls={:?}&quot;</span>, incls,);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unrolled_reqs</span> <span class="op">=</span> <span class="ident">IndexSet::new</span>();
-
-        <span class="kw">let</span> <span class="ident">required_owned</span>;
-        <span class="kw">let</span> <span class="ident">required</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">required</span>) <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">required</span> {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#348">required</a>
-        } <span class="kw">else</span> {
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#347">required_owned</a> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4770">required_graph</a>();
-            <span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#347">required_owned</a>
+        <span class="kw">let </span>required_owned;
+        <span class="kw">let </span>required = <span class="kw">if let </span><span class="prelude-val">Some</span>(required) = <a class="self" href="#197">self</a>.required {
+            <a href="#201">required</a>
+        } <span class="kw">else </span>{
+            <a href="#200">required_owned</a> = <a class="self" href="#197">self</a>.cmd.<a href="../builder/command.rs.html#4463">required_graph</a>();
+            <span class="kw-2">&amp;</span><a href="#200">required_owned</a>
         };
 
-        <span class="kw">for</span> <span class="ident">a</span> <span class="kw">in</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#348">required</a>.<a class="ident" href="../../../src/clap/util/graph.rs.html#42">iter</a>() {
-            <span class="kw">let</span> <span class="ident">is_relevant</span> <span class="op">=</span> <span class="op">|</span>(<span class="ident">val</span>, <span class="ident">req_arg</span>): <span class="kw-2">&amp;</span>(<span class="ident">ArgPredicate</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a>)<span class="op">|</span> -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../src/clap/util/id.rs.html#11-15">Id</a><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">required</span> <span class="op">=</span> <span class="kw">match</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#356">val</a> {
-                    <a class="ident" href="../../../src/clap/build/arg_predicate.rs.html#4">ArgPredicate::Equals</a>(<span class="kw">_</span>) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">matcher</span>) <span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#334">matcher</a> {
-                            <a class="ident" href="../../../src/clap/output/usage.rs.html#359">matcher</a>.<a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#129">check_explicit</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#355">a</a>, <span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#356">val</a>)
-                        } <span class="kw">else</span> {
-                            <span class="bool-val">false</span>
-                        }
-                    }
-                    <a class="ident" href="../../../src/clap/build/arg_predicate.rs.html#3">ArgPredicate::IsPresent</a> =&gt; <span class="bool-val">true</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>unrolled_reqs = Vec::new();
+        <span class="kw">for </span>a <span class="kw">in </span>required.iter() {
+            <span class="kw">let </span>is_relevant = |(val, req_arg): <span class="kw-2">&amp;</span>(ArgPredicate, Id)| -&gt; <span class="prelude-ty">Option</span>&lt;Id&gt; {
+                <span class="kw">let </span>required = <span class="kw">match </span>val {
+                    ArgPredicate::Equals(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+                    ArgPredicate::IsPresent =&gt; <span class="bool-val">true</span>,
                 };
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#357">required</a>.<span class="ident">then</span>(<span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#356">req_arg</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())
+                required.then(|| req_arg.clone())
             };
 
-            <span class="kw">for</span> <span class="ident">aa</span> <span class="kw">in</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4817-4819">unroll_arg_requires</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#356">is_relevant</a>, <a class="ident" href="../../../src/clap/output/usage.rs.html#355">a</a>) {
-                <span class="comment">// if we don&#39;t check for duplicates here this causes duplicate error messages</span>
-                <span class="comment">// see https://github.com/clap-rs/clap/issues/2770</span>
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#345">unrolled_reqs</a>.<span class="ident">insert</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#370">aa</a>);
+            <span class="kw">for </span>aa <span class="kw">in </span><span class="self">self</span>.cmd.unroll_arg_requires(is_relevant, a) {
+                <span class="comment">// if we don&#39;t check for duplicates here this causes duplicate error messages
+                // see https://github.com/clap-rs/clap/issues/2770
+                </span>unrolled_reqs.push(aa);
             }
-            <span class="comment">// always include the required arg itself. it will not be enumerated</span>
-            <span class="comment">// by unroll_requirements_for_arg.</span>
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#345">unrolled_reqs</a>.<span class="ident">insert</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#355">a</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+            <span class="comment">// always include the required arg itself. it will not be enumerated
+            // by unroll_requirements_for_arg.
+            </span>unrolled_reqs.push(a.clone());
+        }
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args: unrolled_reqs={:?}&quot;</span>, unrolled_reqs);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>required_groups_members = FlatSet::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>required_groups = FlatSet::new();
+        <span class="kw">for </span>req <span class="kw">in </span>unrolled_reqs.iter().chain(incls.iter()) {
+            <span class="kw">if </span><span class="self">self</span>.cmd.find_group(req).is_some() {
+                <span class="kw">let </span>group_members = <span class="self">self</span>.cmd.unroll_args_in_group(req);
+                <span class="kw">let </span>elem = <span class="self">self</span>.cmd.format_group(req);
+                required_groups.insert(elem);
+                required_groups_members.extend(group_members);
+            } <span class="kw">else </span>{
+                <span class="macro">debug_assert!</span>(<span class="self">self</span>.cmd.find(req).is_some());
+            }
         }
 
-        <span class="macro">debug!</span>(
-            <span class="string">&quot;Usage::get_required_usage_from: unrolled_reqs={:?}&quot;</span>,
-            <span class="ident">unrolled_reqs</span>
-        );
-
-        <span class="kw">let</span> <span class="ident">args_in_groups</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>
-            .<span class="ident">cmd</span>
-            .<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">gn</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#348">required</a>.<a class="ident" href="../../../src/clap/util/graph.rs.html#46">contains</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#388">gn</a>.<span class="ident">id</span>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4787">unroll_args_in_group</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#389">g</a>.<span class="ident">id</span>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
-
-        <span class="kw">for</span> <span class="ident">a</span> <span class="kw">in</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#345">unrolled_reqs</a>
-            .<span class="ident">iter</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">chain</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#333">incls</a>.<span class="ident">iter</span>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="op">!</span><a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">&amp;&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#395">p</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#395">name</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="op">!</span><a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="op">&amp;&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#396">g</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#396">name</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#385">args_in_groups</a>.<span class="ident">contains</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#397">name</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">name</span><span class="op">|</span> <span class="op">!</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#334">matcher</a>.<span class="ident">is_some</span>() <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#334">matcher</a>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>().<a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#105">contains</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#398">name</a>)))
-        {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_required_usage_from:iter:{:?}&quot;</span>, <span class="ident">a</span>);
-            <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4674">find</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#392">a</a>).<span class="ident">expect</span>(<a class="ident" href="../../../src/clap/lib.rs.html#90-91">INTERNAL_ERROR_MSG</a>).<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>();
-            <a class="ident" href="../../../src/clap/output/usage.rs.html#343">ret_val</a>.<span class="ident">insert</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#401">arg</a>);
-        }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">g_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">for</span> <span class="ident">g</span> <span class="kw">in</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#345">unrolled_reqs</a>
-            .<span class="ident">iter</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3468">get_groups</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#407">g</a>.<span class="ident">id</span> <span class="op">==</span> <span class="kw-2">*</span><span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#407">n</a>))
-        {
-            <span class="comment">// don&#39;t print requirement for required groups that have an arg.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>) <span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#334">matcher</a> {
-                <span class="kw">let</span> <span class="ident">have_group_entry</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>
-                    .<span class="ident">cmd</span>
-                    .<a class="ident" href="../../../src/clap/build/command.rs.html#4787">unroll_args_in_group</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#405">g</a>)
-                    .<span class="ident">iter</span>()
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">arg</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#410">m</a>.<a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#105">contains</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#415">arg</a>));
-                <span class="kw">if</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#411">have_group_entry</a> {
+        <span class="kw">let </span><span class="kw-2">mut </span>required_opts = FlatSet::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>required_positionals = Vec::new();
+        <span class="kw">for </span>req <span class="kw">in </span>unrolled_reqs.iter().chain(incls.iter()) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(arg) = <span class="self">self</span>.cmd.find(req) {
+                <span class="kw">if </span>required_groups_members.contains(arg.get_id()) {
                     <span class="kw">continue</span>;
                 }
-            }
 
-            <span class="kw">let</span> <span class="ident">elem</span> <span class="op">=</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4630">format_group</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#405">g</a>);
-            <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#404">g_vec</a>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#421">elem</a>) {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#404">g_vec</a>.<span class="ident">push</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#421">elem</a>);
-            }
-        }
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#343">ret_val</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#404">g_vec</a>);
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pvec</span> <span class="op">=</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#345">unrolled_reqs</a>
-            .<span class="ident">iter</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">chain</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#333">incls</a>.<span class="ident">iter</span>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#3480">get_positionals</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">any</a>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="op">&amp;&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#431">p</a>.<span class="ident">id</span> <span class="op">==</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#431">a</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">pos</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#334">matcher</a>.<span class="ident">map_or</span>(<span class="bool-val">true</span>, <span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#432">m</a>.<a class="ident" href="../../../src/clap/parse/arg_matcher.rs.html#105">contains</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#432">pos</a>)))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter_map</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <a class="self" href="../../../src/clap/output/usage.rs.html#332">self</a>.<span class="ident">cmd</span>.<a class="ident" href="../../../src/clap/build/command.rs.html#4674">find</a>(<a class="ident" href="../../../src/clap/output/usage.rs.html#433">pos</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">pos</span><span class="op">|</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#335">incl_last</a> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#434">pos</a>.<a class="ident" href="../../../src/clap/build/arg.rs.html#4802">is_last_set</a>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#385">args_in_groups</a>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#435">pos</a>.<span class="ident">id</span>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">pos</span><span class="op">|</span> (<a class="ident" href="../../../src/clap/output/usage.rs.html#436">pos</a>.<span class="ident">index</span>.<span class="ident">unwrap</span>(), <a class="ident" href="../../../src/clap/output/usage.rs.html#436">pos</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/build/arg.rs.html#60-98">Arg</a>)<span class="op">&gt;</span><span class="op">&gt;</span>();
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#428">pvec</a>.<span class="ident">sort_by_key</span>(<span class="op">|</span>(<span class="ident">ind</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><a class="ident" href="../../../src/clap/output/usage.rs.html#438">ind</a>); <span class="comment">// sort by index</span>
-
-        <span class="kw">for</span> (<span class="kw">_</span>, <span class="ident">p</span>) <span class="kw">in</span> <a class="ident" href="../../../src/clap/output/usage.rs.html#428">pvec</a> {
-            <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_required_usage_from:push:{:?}&quot;</span>, <span class="ident">p</span>.<span class="ident">id</span>);
-            <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../src/clap/output/usage.rs.html#385">args_in_groups</a>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/clap/output/usage.rs.html#440">p</a>.<span class="ident">id</span>) {
-                <a class="ident" href="../../../src/clap/output/usage.rs.html#343">ret_val</a>.<span class="ident">insert</span>(<a class="ident" href="../../../src/clap/output/usage.rs.html#440">p</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>());
+                <span class="kw">let </span>stylized = arg.stylized(<span class="prelude-val">Some</span>(!force_optional));
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = arg.get_index() {
+                    <span class="kw">let </span>new_len = index + <span class="number">1</span>;
+                    <span class="kw">if </span>required_positionals.len() &lt; new_len {
+                        required_positionals.resize(new_len, <span class="prelude-val">None</span>);
+                    }
+                    required_positionals[index] = <span class="prelude-val">Some</span>(stylized);
+                } <span class="kw">else </span>{
+                    required_opts.insert(stylized);
+                }
+            } <span class="kw">else </span>{
+                <span class="macro">debug_assert!</span>(<span class="self">self</span>.cmd.find_group(req).is_some());
             }
         }
 
-        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_required_usage_from: ret_val={:?}&quot;</span>, <span class="ident">ret_val</span>);
-        <a class="ident" href="../../../src/clap/output/usage.rs.html#343">ret_val</a>
+        <span class="kw">for </span>pos <span class="kw">in </span><span class="self">self</span>.cmd.get_positionals() {
+            <span class="kw">if </span>pos.is_hide_set() {
+                <span class="kw">continue</span>;
+            }
+            <span class="kw">if </span>required_groups_members.contains(pos.get_id()) {
+                <span class="kw">continue</span>;
+            }
+
+            <span class="kw">let </span>index = pos.get_index().unwrap();
+            <span class="kw">let </span>new_len = index + <span class="number">1</span>;
+            <span class="kw">if </span>required_positionals.len() &lt; new_len {
+                required_positionals.resize(new_len, <span class="prelude-val">None</span>);
+            }
+            <span class="kw">if </span>required_positionals[index].is_some() {
+                <span class="kw">if </span>pos.is_last_set() {
+                    <span class="kw">let </span>styled = required_positionals[index].take().unwrap();
+                    <span class="kw">let </span><span class="kw-2">mut </span>new = StyledStr::new();
+                    new.literal(<span class="string">&quot;-- &quot;</span>);
+                    new.extend(styled.into_iter());
+                    required_positionals[index] = <span class="prelude-val">Some</span>(new);
+                }
+            } <span class="kw">else </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>styled;
+                <span class="kw">if </span>pos.is_last_set() {
+                    styled = StyledStr::new();
+                    styled.literal(<span class="string">&quot;[-- &quot;</span>);
+                    styled.extend(pos.stylized(<span class="prelude-val">Some</span>(<span class="bool-val">true</span>)).into_iter());
+                    styled.literal(<span class="string">&quot;]&quot;</span>);
+                } <span class="kw">else </span>{
+                    styled = pos.stylized(<span class="prelude-val">Some</span>(<span class="bool-val">false</span>));
+                }
+                required_positionals[index] = <span class="prelude-val">Some</span>(styled);
+            }
+            <span class="kw">if </span>pos.is_last_set() &amp;&amp; force_optional {
+                required_positionals[index] = <span class="prelude-val">None</span>;
+            }
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>ret_val = Vec::new();
+        <span class="kw">if </span>!force_optional {
+            <a href="#303">ret_val</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#242">required_opts</a>);
+            <a href="#303">ret_val</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#230">required_groups</a>);
+        }
+        <span class="kw">for </span>pos <span class="kw">in </span>required_positionals.into_iter().flatten() {
+            ret_val.push(pos);
+        }
+
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_args: ret_val={:?}&quot;</span>, ret_val);
+        <a href="#303">ret_val</a>
+    }
+
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_required_usage_from(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        incls: <span class="kw-2">&amp;</span>[<a href="../util/id.rs.html#9">Id</a>],
+        matcher: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><a href="../parser/arg_matcher.rs.html#17">ArgMatcher</a>&gt;,
+        incl_last: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+    ) -&gt; Vec&lt;<a href="../builder/styled_str.rs.html#3">StyledStr</a>&gt; {
+        <span class="macro">debug!</span>(
+            <span class="string">&quot;Usage::get_required_usage_from: incls={:?}, matcher={:?}, incl_last={:?}&quot;</span>,
+            incls,
+            matcher.is_some(),
+            incl_last
+        );
+
+        <span class="kw">let </span>required_owned;
+        <span class="kw">let </span>required = <span class="kw">if let </span><span class="prelude-val">Some</span>(required) = <a class="self" href="#317">self</a>.required {
+            <a href="#330">required</a>
+        } <span class="kw">else </span>{
+            <a href="#329">required_owned</a> = <a class="self" href="#317">self</a>.cmd.<a href="../builder/command.rs.html#4463">required_graph</a>();
+            <span class="kw-2">&amp;</span><a href="#329">required_owned</a>
+        };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>unrolled_reqs = Vec::new();
+        <span class="kw">for </span>a <span class="kw">in </span>required.iter() {
+            <span class="kw">let </span>is_relevant = |(val, req_arg): <span class="kw-2">&amp;</span>(ArgPredicate, Id)| -&gt; <span class="prelude-ty">Option</span>&lt;Id&gt; {
+                <span class="kw">let </span>required = <span class="kw">match </span>val {
+                    ArgPredicate::Equals(<span class="kw">_</span>) =&gt; {
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(matcher) = matcher {
+                            matcher.check_explicit(a, val)
+                        } <span class="kw">else </span>{
+                            <span class="bool-val">false
+                        </span>}
+                    }
+                    ArgPredicate::IsPresent =&gt; <span class="bool-val">true</span>,
+                };
+                required.then(|| req_arg.clone())
+            };
+
+            <span class="kw">for </span>aa <span class="kw">in </span><span class="self">self</span>.cmd.unroll_arg_requires(is_relevant, a) {
+                <span class="comment">// if we don&#39;t check for duplicates here this causes duplicate error messages
+                // see https://github.com/clap-rs/clap/issues/2770
+                </span>unrolled_reqs.push(aa);
+            }
+            <span class="comment">// always include the required arg itself. it will not be enumerated
+            // by unroll_requirements_for_arg.
+            </span>unrolled_reqs.push(a.clone());
+        }
+        <span class="macro">debug!</span>(
+            <span class="string">&quot;Usage::get_required_usage_from: unrolled_reqs={:?}&quot;</span>,
+            unrolled_reqs
+        );
+
+        <span class="kw">let </span><span class="kw-2">mut </span>required_groups_members = FlatSet::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>required_groups = FlatSet::new();
+        <span class="kw">for </span>req <span class="kw">in </span>unrolled_reqs.iter().chain(incls.iter()) {
+            <span class="kw">if </span><span class="self">self</span>.cmd.find_group(req).is_some() {
+                <span class="kw">let </span>group_members = <span class="self">self</span>.cmd.unroll_args_in_group(req);
+                <span class="kw">let </span>is_present = matcher
+                    .map(|m| {
+                        group_members
+                            .iter()
+                            .any(|arg| m.check_explicit(arg, <span class="kw-2">&amp;</span>ArgPredicate::IsPresent))
+                    })
+                    .unwrap_or(<span class="bool-val">false</span>);
+                <span class="macro">debug!</span>(
+                    <span class="string">&quot;Usage::get_required_usage_from:iter:{:?} group is_present={}&quot;</span>,
+                    req, is_present
+                );
+                <span class="kw">if </span>is_present {
+                    <span class="kw">continue</span>;
+                }
+
+                <span class="kw">let </span>elem = <span class="self">self</span>.cmd.format_group(req);
+                required_groups.insert(elem);
+                required_groups_members.extend(group_members);
+            } <span class="kw">else </span>{
+                <span class="macro">debug_assert!</span>(<span class="self">self</span>.cmd.find(req).is_some());
+            }
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>required_opts = FlatSet::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>required_positionals = Vec::new();
+        <span class="kw">for </span>req <span class="kw">in </span>unrolled_reqs.iter().chain(incls.iter()) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(arg) = <span class="self">self</span>.cmd.find(req) {
+                <span class="kw">if </span>required_groups_members.contains(arg.get_id()) {
+                    <span class="kw">continue</span>;
+                }
+
+                <span class="kw">let </span>is_present = matcher
+                    .map(|m| m.check_explicit(req, <span class="kw-2">&amp;</span>ArgPredicate::IsPresent))
+                    .unwrap_or(<span class="bool-val">false</span>);
+                <span class="macro">debug!</span>(
+                    <span class="string">&quot;Usage::get_required_usage_from:iter:{:?} arg is_present={}&quot;</span>,
+                    req, is_present
+                );
+                <span class="kw">if </span>is_present {
+                    <span class="kw">continue</span>;
+                }
+
+                <span class="kw">let </span>stylized = arg.stylized(<span class="prelude-val">Some</span>(<span class="bool-val">true</span>));
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = arg.get_index() {
+                    <span class="kw">if </span>!arg.is_last_set() || incl_last {
+                        <span class="kw">let </span>new_len = index + <span class="number">1</span>;
+                        <span class="kw">if </span>required_positionals.len() &lt; new_len {
+                            required_positionals.resize(new_len, <span class="prelude-val">None</span>);
+                        }
+                        required_positionals[index] = <span class="prelude-val">Some</span>(stylized);
+                    }
+                } <span class="kw">else </span>{
+                    required_opts.insert(stylized);
+                }
+            } <span class="kw">else </span>{
+                <span class="macro">debug_assert!</span>(<span class="self">self</span>.cmd.find_group(req).is_some());
+            }
+        }
+
+        <span class="kw">let </span><span class="kw-2">mut </span>ret_val = Vec::new();
+        <a href="#431">ret_val</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#395">required_opts</a>);
+        <a href="#431">ret_val</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#368">required_groups</a>);
+        <span class="kw">for </span>pos <span class="kw">in </span>required_positionals.into_iter().flatten() {
+            ret_val.push(pos);
+        }
+
+        <span class="macro">debug!</span>(<span class="string">&quot;Usage::get_required_usage_from: ret_val={:?}&quot;</span>, ret_val);
+        <a href="#431">ret_val</a>
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="clap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="clap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

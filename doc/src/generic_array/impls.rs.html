@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.5/src/impls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>impls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../generic_array/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../generic_array/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/generic-array-0.14.6/src/impls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>impls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -274,275 +267,274 @@
 <span id="267">267</span>
 <span id="268">268</span>
 <span id="269">269</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">core::borrow</span>::{<a class="ident" href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html">Borrow</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/core/borrow/trait.BorrowMut.html">BorrowMut</a>};
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">core::cmp::Ordering</a>;
-<span class="kw">use</span> <span class="ident">core::fmt</span>::{<a class="self" href="https://doc.rust-lang.org/nightly/core/fmt/index.html">self</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">Debug</a>};
-<span class="kw">use</span> <span class="ident">core::hash</span>::{<a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html">Hasher</a>};
+</pre><pre class="rust"><code><span class="kw">use </span>core::borrow::{<a href="https://doc.rust-lang.org/nightly/core/borrow/trait.Borrow.html">Borrow</a>, <a href="https://doc.rust-lang.org/nightly/core/borrow/trait.BorrowMut.html">BorrowMut</a>};
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">core::cmp::Ordering</a>;
+<span class="kw">use </span>core::fmt::{<a class="self" href="https://doc.rust-lang.org/nightly/core/fmt/index.html">self</a>, <a href="https://doc.rust-lang.org/nightly/core/fmt/macros/derive.Debug.html">Debug</a>};
+<span class="kw">use </span>core::hash::{<a href="https://doc.rust-lang.org/nightly/core/hash/macros/derive.Hash.html">Hash</a>, <a href="https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html">Hasher</a>};
 
-<span class="kw">use</span> <span class="kw">super</span>::{<a class="ident" href="../../src/generic_array/lib.rs.html#105-108">ArrayLength</a>, <a class="ident" href="../../src/generic_array/lib.rs.html#172-174">GenericArray</a>};
+<span class="kw">use super</span>::{<a href="lib.rs.html#111">ArrayLength</a>, <a href="lib.rs.html#178">GenericArray</a>};
 
-<span class="kw">use</span> <a class="ident" href="../../src/generic_array/lib.rs.html#96"><span class="kw">crate</span>::functional</a>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <a class="ident" href="../../src/generic_array/lib.rs.html#98"><span class="kw">crate</span>::sequence</a>::<span class="kw-2">*</span>;
+<span class="kw">use </span><a href="lib.rs.html#102"><span class="kw">crate</span>::functional</a>::<span class="kw-2">*</span>;
+<span class="kw">use </span><a href="lib.rs.html#104"><span class="kw">crate</span>::sequence</a>::<span class="kw-2">*</span>;
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::generate</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">T::default</span>())
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::generate(|<span class="kw">_</span>| T::default())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> {
-        <a class="self" href="../../src/generic_array/impls.rs.html#25">self</a>.<a class="ident" href="../../src/generic_array/functional.rs.html#48-52">map</a>(<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone::clone</a>)
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; GenericArray&lt;T, N&gt; {
+        <a class="self" href="#25">self</a>.<a href="functional.rs.html#48-52">map</a>(<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">Clone::clone</a>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">N::ArrayType</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
+    N::ArrayType: <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a>,
 {
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html">PartialEq</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html">PartialEq</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html">PartialEq</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html">PartialEq</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/primitive.bool.html">bool</a> {
-        <span class="kw-2">*</span><span class="kw-2">*</span><a class="self" href="../../src/generic_array/impls.rs.html#41">self</a> <span class="op">==</span> <span class="kw-2">*</span><span class="kw-2">*</span><a class="ident" href="../../src/generic_array/impls.rs.html#41">other</a>
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/primitive.bool.html">bool</a> {
+        <span class="kw-2">**</span><span class="self"><a href="#41">self</a> </span>== <span class="kw-2">**</span><a href="#41">other</a>
     }
 }
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html">Eq</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html">Eq</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html">Eq</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html">Eq</a> <span class="kw">for </span>GenericArray&lt;T, N&gt; <span class="kw">where </span>N: ArrayLength&lt;T&gt; {}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">Ordering</a><span class="op">&gt;</span> {
-        <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd::partial_cmp</a>(<a class="self" href="../../src/generic_array/impls.rs.html#51">self</a>.<a class="ident" href="../../src/generic_array/lib.rs.html#526">as_slice</a>(), <a class="ident" href="../../src/generic_array/impls.rs.html#51">other</a>.<a class="ident" href="../../src/generic_array/lib.rs.html#526">as_slice</a>())
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-{
-    <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">Ordering</a> {
-        <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord::cmp</a>(<a class="self" href="../../src/generic_array/impls.rs.html#60">self</a>.<a class="ident" href="../../src/generic_array/lib.rs.html#526">as_slice</a>(), <a class="ident" href="../../src/generic_array/impls.rs.html#60">other</a>.<a class="ident" href="../../src/generic_array/lib.rs.html#526">as_slice</a>())
+    <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>GenericArray&lt;T, N&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<a href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">Ordering</a>&gt; {
+        <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html">PartialOrd::partial_cmp</a>(<a class="self" href="#51">self</a>.<a href="lib.rs.html#532">as_slice</a>(), <a href="#51">other</a>.<a href="lib.rs.html#532">as_slice</a>())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">Debug</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">Debug</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <a class="self" href="../../src/generic_array/impls.rs.html#69">self</a>[..].<a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt</a>(<a class="ident" href="../../src/generic_array/impls.rs.html#69">fmt</a>)
+    <span class="kw">fn </span>cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>GenericArray&lt;T, N&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html">Ordering</a> {
+        <a href="https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html">Ord::cmp</a>(<a class="self" href="#60">self</a>.<a href="lib.rs.html#532">as_slice</a>(), <a href="#60">other</a>.<a href="lib.rs.html#532">as_slice</a>())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">Borrow</span><span class="op">&lt;</span>[<span class="ident">T</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">Debug</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">Debug</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">borrow</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">T</span>] {
-        <span class="kw-2">&amp;</span><a class="self" href="../../src/generic_array/impls.rs.html#79">self</a>[..]
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a class="self" href="#69">self</a>[..].<a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt</a>(<a href="#69">fmt</a>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">BorrowMut</span><span class="op">&lt;</span>[<span class="ident">T</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T, N&gt; Borrow&lt;[T]&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">borrow_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>] {
-        <span class="kw-2">&amp;mut</span> <a class="self" href="../../src/generic_array/impls.rs.html#89">self</a>[..]
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>borrow(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[T] {
+        <span class="kw-2">&amp;</span><a class="self" href="#79">self</a>[..]
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">T</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T, N&gt; BorrowMut&lt;[T]&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">T</span>] {
-        <span class="kw-2">&amp;</span><a class="self" href="../../src/generic_array/impls.rs.html#99">self</a>[..]
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>borrow_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>[T] {
+        <span class="kw-2">&amp;mut </span><a class="self" href="#89">self</a>[..]
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">T</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T, N&gt; AsRef&lt;[T]&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">as_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>] {
-        <span class="kw-2">&amp;mut</span> <a class="self" href="../../src/generic_array/impls.rs.html#109">self</a>[..]
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[T] {
+        <span class="kw-2">&amp;</span><a class="self" href="#99">self</a>[..]
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash</a>, <span class="ident">N</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash</a> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T, N&gt; AsMut&lt;[T]&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>)
-    <span class="kw">where</span>
-        <span class="ident">H</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html">Hasher</a>,
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>as_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>[T] {
+        <span class="kw-2">&amp;mut </span><a class="self" href="#109">self</a>[..]
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash</a>, N&gt; <a href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash</a> <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">where
+    </span>N: ArrayLength&lt;T&gt;,
+{
+    <span class="kw">fn </span>hash&lt;H&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H)
+    <span class="kw">where
+        </span>H: <a href="https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html">Hasher</a>,
     {
-        <a class="ident" href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash::hash</a>(<span class="kw-2">&amp;</span><a class="self" href="../../src/generic_array/impls.rs.html#118">self</a>[..], <a class="ident" href="../../src/generic_array/impls.rs.html#118">state</a>)
+        <a href="https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html">Hash::hash</a>(<span class="kw-2">&amp;</span><a class="self" href="#118">self</a>[..], <a href="#118">state</a>)
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_from</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>: <span class="ident">expr</span> =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">ty</span>),<span class="kw-2">*</span>) =&gt; {
+<span class="macro">macro_rules! </span>impl_from {
+    ($(<span class="macro-nonterminal">$n</span>: expr =&gt; <span class="macro-nonterminal">$ty</span>: ty),<span class="kw-2">*</span>) =&gt; {
         $(
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">arr</span>: [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]) -&gt; <span class="self">Self</span> {
-                    <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::transmute</span>(<span class="ident">arr</span>) }
+            <span class="kw">impl</span>&lt;T&gt; From&lt;[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline(always)]
+                </span><span class="kw">fn </span>from(arr: [T; <span class="macro-nonterminal">$n</span>]) -&gt; <span class="self">Self </span>{
+                    <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(arr) }
                 }
             }
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">relaxed_coherence</span>)]</span>
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>] {
-                <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">sel</span>: <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span>) -&gt; [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>] {
-                    <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::transmute</span>(<span class="ident">sel</span>) }
+            <span class="attribute">#[cfg(relaxed_coherence)]
+            </span><span class="kw">impl</span>&lt;T&gt; From&lt;GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt;&gt; <span class="kw">for </span>[T; <span class="macro-nonterminal">$n</span>] {
+                <span class="attribute">#[inline(always)]
+                </span><span class="kw">fn </span>from(sel: GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt;) -&gt; [T; <span class="macro-nonterminal">$n</span>] {
+                    <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(sel) }
                 }
             }
 
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>]</span>
-                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]) -&gt; <span class="kw-2">&amp;</span><span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                    <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span>(<span class="ident">slice</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span>) }
+            <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline]
+                </span><span class="kw">fn </span>from(slice: <span class="kw-2">&amp;</span>[T; <span class="macro-nonterminal">$n</span>]) -&gt; <span class="kw-2">&amp;</span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                    <span class="kw">unsafe </span>{ <span class="kw-2">&amp;*</span>(slice.as_ptr() <span class="kw">as </span><span class="kw-2">*const </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt;) }
                 }
             }
 
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>]</span>
-                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                    <span class="kw">unsafe</span> { <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span>(<span class="ident">slice</span>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span>) }
+            <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline]
+                </span><span class="kw">fn </span>from(slice: <span class="kw-2">&amp;mut </span>[T; <span class="macro-nonterminal">$n</span>]) -&gt; <span class="kw-2">&amp;mut </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                    <span class="kw">unsafe </span>{ <span class="kw-2">&amp;mut *</span>(slice.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt;) }
                 }
             }
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">relaxed_coherence</span>))]</span>
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Into</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-                <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) -&gt; [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>] {
-                    <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::transmute</span>(<span class="self">self</span>) }
+            <span class="attribute">#[cfg(not(relaxed_coherence))]
+            </span><span class="kw">impl</span>&lt;T&gt; Into&lt;[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline(always)]
+                </span><span class="kw">fn </span>into(<span class="self">self</span>) -&gt; [T; <span class="macro-nonterminal">$n</span>] {
+                    <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(<span class="self">self</span>) }
                 }
             }
 
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>]</span>
-                <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>] {
-                    <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::transmute</span>(<span class="self">self</span>) }
+            <span class="kw">impl</span>&lt;T&gt; AsRef&lt;[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline]
+                </span><span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[T; <span class="macro-nonterminal">$n</span>] {
+                    <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(<span class="self">self</span>) }
                 }
             }
 
-            <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span> {
-                <span class="attribute">#[<span class="ident">inline</span>]</span>
-                <span class="kw">fn</span> <span class="ident">as_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>] {
-                    <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::transmute</span>(<span class="self">self</span>) }
+            <span class="kw">impl</span>&lt;T&gt; AsMut&lt;[T; <span class="macro-nonterminal">$n</span>]&gt; <span class="kw">for </span>GenericArray&lt;T, <span class="macro-nonterminal">$ty</span>&gt; {
+                <span class="attribute">#[inline]
+                </span><span class="kw">fn </span>as_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>[T; <span class="macro-nonterminal">$n</span>] {
+                    <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(<span class="self">self</span>) }
                 }
             }
-        )<span class="op">*</span>
+        )*
     }
 }
 
-<span class="macro">impl_from!</span> {
-    <span class="number">1</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U1.html">::typenum::U1</a>,
-    <span class="number">2</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U2.html">::typenum::U2</a>,
-    <span class="number">3</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U3.html">::typenum::U3</a>,
-    <span class="number">4</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U4.html">::typenum::U4</a>,
-    <span class="number">5</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U5.html">::typenum::U5</a>,
-    <span class="number">6</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U6.html">::typenum::U6</a>,
-    <span class="number">7</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U7.html">::typenum::U7</a>,
-    <span class="number">8</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U8.html">::typenum::U8</a>,
-    <span class="number">9</span>  =&gt; <a class="ident" href="../../typenum/generated/consts/type.U9.html">::typenum::U9</a>,
-    <span class="number">10</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U10.html">::typenum::U10</a>,
-    <span class="number">11</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U11.html">::typenum::U11</a>,
-    <span class="number">12</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U12.html">::typenum::U12</a>,
-    <span class="number">13</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U13.html">::typenum::U13</a>,
-    <span class="number">14</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U14.html">::typenum::U14</a>,
-    <span class="number">15</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U15.html">::typenum::U15</a>,
-    <span class="number">16</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U16.html">::typenum::U16</a>,
-    <span class="number">17</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U17.html">::typenum::U17</a>,
-    <span class="number">18</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U18.html">::typenum::U18</a>,
-    <span class="number">19</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U19.html">::typenum::U19</a>,
-    <span class="number">20</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U20.html">::typenum::U20</a>,
-    <span class="number">21</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U21.html">::typenum::U21</a>,
-    <span class="number">22</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U22.html">::typenum::U22</a>,
-    <span class="number">23</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U23.html">::typenum::U23</a>,
-    <span class="number">24</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U24.html">::typenum::U24</a>,
-    <span class="number">25</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U25.html">::typenum::U25</a>,
-    <span class="number">26</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U26.html">::typenum::U26</a>,
-    <span class="number">27</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U27.html">::typenum::U27</a>,
-    <span class="number">28</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U28.html">::typenum::U28</a>,
-    <span class="number">29</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U29.html">::typenum::U29</a>,
-    <span class="number">30</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U30.html">::typenum::U30</a>,
-    <span class="number">31</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U31.html">::typenum::U31</a>,
-    <span class="number">32</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U32.html">::typenum::U32</a>
+<a class="macro" href="#126-181">impl_from! </a>{
+    <span class="number">1  </span>=&gt; ::typenum::U1,
+    <span class="number">2  </span>=&gt; ::typenum::U2,
+    <span class="number">3  </span>=&gt; ::typenum::U3,
+    <span class="number">4  </span>=&gt; ::typenum::U4,
+    <span class="number">5  </span>=&gt; ::typenum::U5,
+    <span class="number">6  </span>=&gt; ::typenum::U6,
+    <span class="number">7  </span>=&gt; ::typenum::U7,
+    <span class="number">8  </span>=&gt; ::typenum::U8,
+    <span class="number">9  </span>=&gt; ::typenum::U9,
+    <span class="number">10 </span>=&gt; ::typenum::U10,
+    <span class="number">11 </span>=&gt; ::typenum::U11,
+    <span class="number">12 </span>=&gt; ::typenum::U12,
+    <span class="number">13 </span>=&gt; ::typenum::U13,
+    <span class="number">14 </span>=&gt; ::typenum::U14,
+    <span class="number">15 </span>=&gt; ::typenum::U15,
+    <span class="number">16 </span>=&gt; ::typenum::U16,
+    <span class="number">17 </span>=&gt; ::typenum::U17,
+    <span class="number">18 </span>=&gt; ::typenum::U18,
+    <span class="number">19 </span>=&gt; ::typenum::U19,
+    <span class="number">20 </span>=&gt; ::typenum::U20,
+    <span class="number">21 </span>=&gt; ::typenum::U21,
+    <span class="number">22 </span>=&gt; ::typenum::U22,
+    <span class="number">23 </span>=&gt; ::typenum::U23,
+    <span class="number">24 </span>=&gt; ::typenum::U24,
+    <span class="number">25 </span>=&gt; ::typenum::U25,
+    <span class="number">26 </span>=&gt; ::typenum::U26,
+    <span class="number">27 </span>=&gt; ::typenum::U27,
+    <span class="number">28 </span>=&gt; ::typenum::U28,
+    <span class="number">29 </span>=&gt; ::typenum::U29,
+    <span class="number">30 </span>=&gt; ::typenum::U30,
+    <span class="number">31 </span>=&gt; ::typenum::U31,
+    <span class="number">32 </span>=&gt; ::typenum::U32
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;more_lengths&quot;</span>)]</span>
-<span class="macro">impl_from!</span> {
-    <span class="number">33</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U33.html">::typenum::U33</a>,
-    <span class="number">34</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U34.html">::typenum::U34</a>,
-    <span class="number">35</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U35.html">::typenum::U35</a>,
-    <span class="number">36</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U36.html">::typenum::U36</a>,
-    <span class="number">37</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U37.html">::typenum::U37</a>,
-    <span class="number">38</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U38.html">::typenum::U38</a>,
-    <span class="number">39</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U39.html">::typenum::U39</a>,
-    <span class="number">40</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U40.html">::typenum::U40</a>,
-    <span class="number">41</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U41.html">::typenum::U41</a>,
-    <span class="number">42</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U42.html">::typenum::U42</a>,
-    <span class="number">43</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U43.html">::typenum::U43</a>,
-    <span class="number">44</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U44.html">::typenum::U44</a>,
-    <span class="number">45</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U45.html">::typenum::U45</a>,
-    <span class="number">46</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U46.html">::typenum::U46</a>,
-    <span class="number">47</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U47.html">::typenum::U47</a>,
-    <span class="number">48</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U48.html">::typenum::U48</a>,
-    <span class="number">49</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U49.html">::typenum::U49</a>,
-    <span class="number">50</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U50.html">::typenum::U50</a>,
-    <span class="number">51</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U51.html">::typenum::U51</a>,
-    <span class="number">52</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U52.html">::typenum::U52</a>,
-    <span class="number">53</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U53.html">::typenum::U53</a>,
-    <span class="number">54</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U54.html">::typenum::U54</a>,
-    <span class="number">55</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U55.html">::typenum::U55</a>,
-    <span class="number">56</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U56.html">::typenum::U56</a>,
-    <span class="number">57</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U57.html">::typenum::U57</a>,
-    <span class="number">58</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U58.html">::typenum::U58</a>,
-    <span class="number">59</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U59.html">::typenum::U59</a>,
-    <span class="number">60</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U60.html">::typenum::U60</a>,
-    <span class="number">61</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U61.html">::typenum::U61</a>,
-    <span class="number">62</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U62.html">::typenum::U62</a>,
-    <span class="number">63</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U63.html">::typenum::U63</a>,
-    <span class="number">64</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U64.html">::typenum::U64</a>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;more_lengths&quot;</span>)]
+</span><a class="macro" href="#126-181">impl_from! </a>{
+    <span class="number">33 </span>=&gt; ::typenum::U33,
+    <span class="number">34 </span>=&gt; ::typenum::U34,
+    <span class="number">35 </span>=&gt; ::typenum::U35,
+    <span class="number">36 </span>=&gt; ::typenum::U36,
+    <span class="number">37 </span>=&gt; ::typenum::U37,
+    <span class="number">38 </span>=&gt; ::typenum::U38,
+    <span class="number">39 </span>=&gt; ::typenum::U39,
+    <span class="number">40 </span>=&gt; ::typenum::U40,
+    <span class="number">41 </span>=&gt; ::typenum::U41,
+    <span class="number">42 </span>=&gt; ::typenum::U42,
+    <span class="number">43 </span>=&gt; ::typenum::U43,
+    <span class="number">44 </span>=&gt; ::typenum::U44,
+    <span class="number">45 </span>=&gt; ::typenum::U45,
+    <span class="number">46 </span>=&gt; ::typenum::U46,
+    <span class="number">47 </span>=&gt; ::typenum::U47,
+    <span class="number">48 </span>=&gt; ::typenum::U48,
+    <span class="number">49 </span>=&gt; ::typenum::U49,
+    <span class="number">50 </span>=&gt; ::typenum::U50,
+    <span class="number">51 </span>=&gt; ::typenum::U51,
+    <span class="number">52 </span>=&gt; ::typenum::U52,
+    <span class="number">53 </span>=&gt; ::typenum::U53,
+    <span class="number">54 </span>=&gt; ::typenum::U54,
+    <span class="number">55 </span>=&gt; ::typenum::U55,
+    <span class="number">56 </span>=&gt; ::typenum::U56,
+    <span class="number">57 </span>=&gt; ::typenum::U57,
+    <span class="number">58 </span>=&gt; ::typenum::U58,
+    <span class="number">59 </span>=&gt; ::typenum::U59,
+    <span class="number">60 </span>=&gt; ::typenum::U60,
+    <span class="number">61 </span>=&gt; ::typenum::U61,
+    <span class="number">62 </span>=&gt; ::typenum::U62,
+    <span class="number">63 </span>=&gt; ::typenum::U63,
+    <span class="number">64 </span>=&gt; ::typenum::U64,
 
-    <span class="number">70</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U70.html">::typenum::U70</a>,
-    <span class="number">80</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U80.html">::typenum::U80</a>,
-    <span class="number">90</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U90.html">::typenum::U90</a>,
+    <span class="number">70 </span>=&gt; ::typenum::U70,
+    <span class="number">80 </span>=&gt; ::typenum::U80,
+    <span class="number">90 </span>=&gt; ::typenum::U90,
 
-    <span class="number">100</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U100.html">::typenum::U100</a>,
-    <span class="number">200</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U200.html">::typenum::U200</a>,
-    <span class="number">300</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U300.html">::typenum::U300</a>,
-    <span class="number">400</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U400.html">::typenum::U400</a>,
-    <span class="number">500</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U500.html">::typenum::U500</a>,
+    <span class="number">100 </span>=&gt; ::typenum::U100,
+    <span class="number">200 </span>=&gt; ::typenum::U200,
+    <span class="number">300 </span>=&gt; ::typenum::U300,
+    <span class="number">400 </span>=&gt; ::typenum::U400,
+    <span class="number">500 </span>=&gt; ::typenum::U500,
 
-    <span class="number">128</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U128.html">::typenum::U128</a>,
-    <span class="number">256</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U256.html">::typenum::U256</a>,
-    <span class="number">512</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U512.html">::typenum::U512</a>,
+    <span class="number">128 </span>=&gt; ::typenum::U128,
+    <span class="number">256 </span>=&gt; ::typenum::U256,
+    <span class="number">512 </span>=&gt; ::typenum::U512,
 
-    <span class="number">1000</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U1000.html">::typenum::U1000</a>,
-    <span class="number">1024</span> =&gt; <a class="ident" href="../../typenum/generated/consts/type.U1024.html">::typenum::U1024</a>
+    <span class="number">1000 </span>=&gt; ::typenum::U1000,
+    <span class="number">1024 </span>=&gt; ::typenum::U1024
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="generic_array" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="generic_array" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

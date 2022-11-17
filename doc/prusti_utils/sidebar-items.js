@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["force_matches",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["config",""],["launch",""],["report",""],["utils",""]],"struct":[["Stopwatch",""]]};

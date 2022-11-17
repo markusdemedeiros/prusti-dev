@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/middle/core_proof/predicates/owned/encoder.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>encoder.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../../storage.js"></script><script src="../../../../../../../crates.js"></script><script defer src="../../../../../../../main.js"></script><script defer src="../../../../../../../source-script.js"></script><script defer src="../../../../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/middle/core_proof/predicates/owned/encoder.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>encoder.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../../storage.js"></script><script defer src="../../../../../../../source-script.js"></script><script defer src="../../../../../../../source-files.js"></script><script defer src="../../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -402,807 +395,402 @@
 <span id="395">395</span>
 <span id="396">396</span>
 <span id="397">397</span>
-<span id="398">398</span>
-<span id="399">399</span>
-<span id="400">400</span>
-<span id="401">401</span>
-<span id="402">402</span>
-<span id="403">403</span>
-<span id="404">404</span>
-<span id="405">405</span>
-<span id="406">406</span>
-<span id="407">407</span>
-<span id="408">408</span>
-<span id="409">409</span>
-<span id="410">410</span>
-<span id="411">411</span>
-<span id="412">412</span>
-<span id="413">413</span>
-<span id="414">414</span>
-<span id="415">415</span>
-<span id="416">416</span>
-<span id="417">417</span>
-<span id="418">418</span>
-<span id="419">419</span>
-<span id="420">420</span>
-<span id="421">421</span>
-<span id="422">422</span>
-<span id="423">423</span>
-<span id="424">424</span>
-<span id="425">425</span>
-<span id="426">426</span>
-<span id="427">427</span>
-<span id="428">428</span>
-<span id="429">429</span>
-<span id="430">430</span>
-<span id="431">431</span>
-<span id="432">432</span>
-<span id="433">433</span>
-<span id="434">434</span>
-<span id="435">435</span>
-<span id="436">436</span>
-<span id="437">437</span>
-<span id="438">438</span>
-<span id="439">439</span>
-<span id="440">440</span>
-<span id="441">441</span>
-<span id="442">442</span>
-<span id="443">443</span>
-<span id="444">444</span>
-<span id="445">445</span>
-<span id="446">446</span>
-<span id="447">447</span>
-<span id="448">448</span>
-<span id="449">449</span>
-<span id="450">450</span>
-<span id="451">451</span>
-<span id="452">452</span>
-<span id="453">453</span>
-<span id="454">454</span>
-<span id="455">455</span>
-<span id="456">456</span>
-<span id="457">457</span>
-<span id="458">458</span>
-<span id="459">459</span>
-<span id="460">460</span>
-<span id="461">461</span>
-<span id="462">462</span>
-<span id="463">463</span>
-<span id="464">464</span>
-<span id="465">465</span>
-<span id="466">466</span>
-<span id="467">467</span>
-<span id="468">468</span>
-<span id="469">469</span>
-<span id="470">470</span>
-<span id="471">471</span>
-<span id="472">472</span>
-<span id="473">473</span>
-<span id="474">474</span>
-<span id="475">475</span>
-<span id="476">476</span>
-<span id="477">477</span>
-<span id="478">478</span>
-<span id="479">479</span>
-<span id="480">480</span>
-<span id="481">481</span>
-<span id="482">482</span>
-<span id="483">483</span>
-<span id="484">484</span>
-<span id="485">485</span>
-<span id="486">486</span>
-<span id="487">487</span>
-<span id="488">488</span>
-<span id="489">489</span>
-<span id="490">490</span>
-<span id="491">491</span>
-<span id="492">492</span>
-<span id="493">493</span>
-<span id="494">494</span>
-<span id="495">495</span>
-<span id="496">496</span>
-<span id="497">497</span>
-<span id="498">498</span>
-<span id="499">499</span>
-<span id="500">500</span>
-<span id="501">501</span>
-<span id="502">502</span>
-<span id="503">503</span>
-<span id="504">504</span>
-<span id="505">505</span>
-<span id="506">506</span>
-<span id="507">507</span>
-<span id="508">508</span>
-<span id="509">509</span>
-<span id="510">510</span>
-<span id="511">511</span>
-<span id="512">512</span>
-<span id="513">513</span>
-<span id="514">514</span>
-<span id="515">515</span>
-<span id="516">516</span>
-<span id="517">517</span>
-<span id="518">518</span>
-<span id="519">519</span>
-<span id="520">520</span>
-<span id="521">521</span>
-<span id="522">522</span>
-<span id="523">523</span>
-<span id="524">524</span>
-<span id="525">525</span>
-<span id="526">526</span>
-<span id="527">527</span>
-<span id="528">528</span>
-<span id="529">529</span>
-<span id="530">530</span>
-<span id="531">531</span>
-<span id="532">532</span>
-<span id="533">533</span>
-<span id="534">534</span>
-<span id="535">535</span>
-<span id="536">536</span>
-<span id="537">537</span>
-<span id="538">538</span>
-<span id="539">539</span>
-<span id="540">540</span>
-<span id="541">541</span>
-<span id="542">542</span>
-<span id="543">543</span>
-<span id="544">544</span>
-<span id="545">545</span>
-<span id="546">546</span>
-<span id="547">547</span>
-<span id="548">548</span>
-<span id="549">549</span>
-<span id="550">550</span>
-<span id="551">551</span>
-<span id="552">552</span>
-<span id="553">553</span>
-<span id="554">554</span>
-<span id="555">555</span>
-<span id="556">556</span>
-<span id="557">557</span>
-<span id="558">558</span>
-<span id="559">559</span>
-<span id="560">560</span>
-<span id="561">561</span>
-<span id="562">562</span>
-<span id="563">563</span>
-<span id="564">564</span>
-<span id="565">565</span>
-<span id="566">566</span>
-<span id="567">567</span>
-<span id="568">568</span>
-<span id="569">569</span>
-<span id="570">570</span>
-<span id="571">571</span>
-<span id="572">572</span>
-<span id="573">573</span>
-<span id="574">574</span>
-<span id="575">575</span>
-<span id="576">576</span>
-<span id="577">577</span>
-<span id="578">578</span>
-<span id="579">579</span>
-<span id="580">580</span>
-<span id="581">581</span>
-<span id="582">582</span>
-<span id="583">583</span>
-<span id="584">584</span>
-<span id="585">585</span>
-<span id="586">586</span>
-<span id="587">587</span>
-<span id="588">588</span>
-<span id="589">589</span>
-<span id="590">590</span>
-<span id="591">591</span>
-<span id="592">592</span>
-<span id="593">593</span>
-<span id="594">594</span>
-<span id="595">595</span>
-<span id="596">596</span>
-<span id="597">597</span>
-<span id="598">598</span>
-<span id="599">599</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::encoder</span>::{
-    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>,
-    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/high/types/interface.rs.html#123-145">high::types::HighTypeEncoderInterface</a>,
-    <span class="ident">middle::core_proof</span>::{
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/compute_address/interface.rs.html#88-94">compute_address::ComputeAddressInterface</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/lowerer/mod.rs.html#62-77">lowerer::Lowerer</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#13-38">places::PlacesInterface</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/memory_block/interface.rs.html#79-93">predicates::PredicatesMemoryBlockInterface</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#45-85">references::ReferencesInterface</a>,
-        <span class="ident">snapshots</span>::{
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/into_snapshot/context_independent/traits.rs.html#13-19">IntoSnapshot</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#15-27">SnapshotBytesInterface</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#44-92">SnapshotValidityInterface</a>,
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#16-85">SnapshotValuesInterface</a>,
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::encoder::{
+    <a href="../../../../errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>,
+    <a href="../../../../high/types/interface.rs.html#127">high::types::HighTypeEncoderInterface</a>,
+    middle::core_proof::{
+        <a href="../../compute_address/interface.rs.html#90">compute_address::ComputeAddressInterface</a>,
+        <a href="../../lowerer/mod.rs.html#88">lowerer::Lowerer</a>,
+        <a href="../../places/interface.rs.html#24">places::PlacesInterface</a>,
+        predicates::{
+            owned::builders::{
+                <a href="builders/frac_ref/predicate_decl.rs.html#26">FracRefBuilder</a>, <a href="builders/owned_non_aliased/predicate_decl.rs.html#29">OwnedNonAliasedBuilder</a>, <a href="builders/common/predicate_decl.rs.html#199">PredicateDeclBuilderMethods</a>,
+                <a href="builders/unique_ref/predicate_decl.rs.html#25">UniqueRefBuilder</a>,
+            },
+            <a href="../memory_block/interface.rs.html#79">PredicatesMemoryBlockInterface</a>,
         },
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/type_layouts/interface.rs.html#11-17">type_layouts::TypeLayoutsInterface</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/types/interface.rs.html#243-258">types::TypesInterface</a>,
+        <a href="../../snapshots/bytes/interface.rs.html#15">snapshots::SnapshotBytesInterface</a>,
+        <a href="../../types/interface.rs.html#286">types::TypesInterface</a>,
     },
 };
-<span class="kw">use</span> <a class="ident" href="../../../../../../../rustc_hash/type.FxHashSet.html">rustc_hash::FxHashSet</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/enum.Cow.html">std::borrow::Cow</a>;
-<span class="kw">use</span> <span class="ident">vir_crate</span>::{
-    <a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">common::expression::ExpressionIterator</a>,
-    <span class="ident">low</span>::{<a class="self" href="../../../../../../../vir/low/index.html">self</a> <span class="kw">as</span> <span class="ident">vir_low</span>},
-    <a class="ident" href="../../../../../../../vir/middle/index.html">middle</a> <span class="kw">as</span> <span class="ident">vir_mid</span>,
+<span class="kw">use </span><a href="../../../../../../../rustc_hash/type.FxHashSet.html">rustc_hash::FxHashSet</a>;
+<span class="kw">use </span>vir_crate::{
+    <a href="../../../../../../../vir/common/identifier/trait.WithIdentifier.html">common::identifier::WithIdentifier</a>,
+    low::{<span class="self"><a href="../../../../../../../vir/low/index.html">self</a> </span><span class="kw">as </span>vir_low},
+    <a href="../../../../../../../vir/middle/index.html">middle</a> <span class="kw">as </span>vir_mid,
 };
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">PredicateEncoder</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span> {
-    <span class="ident">lowerer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="kw-2">mut</span> <span class="ident">Lowerer</span><span class="op">&lt;</span><span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span>,
-    <span class="ident">unfolded_owned_non_aliased_predicates</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="ident">FxHashSet</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a><span class="op">&gt;</span>,
-    <span class="ident">encoded_owned_predicates</span>: <span class="ident">FxHashSet</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a><span class="op">&gt;</span>,
-    <span class="ident">encoded_mut_borrow_predicates</span>: <span class="ident">FxHashSet</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a><span class="op">&gt;</span>,
-    <span class="ident">encoded_frac_borrow_predicates</span>: <span class="ident">FxHashSet</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a><span class="op">&gt;</span>,
-    <span class="ident">predicates</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/predicate/struct.PredicateDecl.html">vir_low::PredicateDecl</a><span class="op">&gt;</span>,
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>PredicateEncoder&lt;<span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt; {
+    lowerer: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span><span class="kw-2">mut </span>Lowerer&lt;<span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt;,
+    unfolded_owned_non_aliased_predicates: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>FxHashSet&lt;<a href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>&gt;,
+    encoded_owned_predicates: FxHashSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
+    encoded_mut_borrow_predicates: FxHashSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
+    encoded_frac_borrow_predicates: FxHashSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
+    predicates: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/predicate/struct.PredicateDecl.html">vir_low::PredicateDecl</a>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span> <span class="ident">PredicateEncoder</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">lowerer</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="kw-2">mut</span> <span class="ident">Lowerer</span><span class="op">&lt;</span><span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span>,
-        <span class="ident">unfolded_owned_non_aliased_predicates</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="ident">FxHashSet</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#37">lowerer</a>,
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#38">unfolded_owned_non_aliased_predicates</a>,
-            <span class="ident">encoded_owned_predicates</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-            <span class="ident">encoded_mut_borrow_predicates</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-            <span class="ident">encoded_frac_borrow_predicates</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-            <span class="ident">predicates</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt; PredicateEncoder&lt;<span class="lifetime">&#39;l</span>, <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>new(
+        lowerer: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span><span class="kw-2">mut </span>Lowerer&lt;<span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt;,
+        unfolded_owned_non_aliased_predicates: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>FxHashSet&lt;<a href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            <a href="#37">lowerer</a>,
+            <a href="#38">unfolded_owned_non_aliased_predicates</a>,
+            encoded_owned_predicates: <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
+            encoded_mut_borrow_predicates: <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
+            encoded_frac_borrow_predicates: <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
+            predicates: <a href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">into_predicates</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/predicate/struct.PredicateDecl.html">vir_low::PredicateDecl</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#50">self</a>.<span class="ident">predicates</span>
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>into_predicates(<span class="self">self</span>) -&gt; Vec&lt;<a href="../../../../../../../vir/gen/low/ast/predicate/struct.PredicateDecl.html">vir_low::PredicateDecl</a>&gt; {
+        <a class="self" href="#50">self</a>.predicates
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">encode_owned_non_aliased</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">ty_with_lifetime</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">ty</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#56">ty_with_lifetime</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>.<span class="ident">erase_lifetime</span>();
-        <span class="kw">if</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">encoded_owned_predicates</span>.<span class="ident">contains</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>encode_owned_non_aliased(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        ty: <span class="kw-2">&amp;</span><a href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <span class="kw">let </span>ty_identifier = <a href="#56">ty</a>.<a href="../../../../../../../vir/common/identifier/trait.WithIdentifier.html">get_identifier</a>();
+        <span class="kw">if </span><span class="self">self</span>.encoded_owned_predicates.contains(<span class="kw-2">&amp;</span>ty_identifier) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">encoded_owned_predicates</span>.<span class="ident">insert</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/compute_address/interface.rs.html#89">encode_compute_address</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <span class="kw">let</span> <span class="ident">position</span> <span class="op">=</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>();
-        <span class="kw">let</span> <span class="ident">type_decl</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<span class="ident">encoder</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/high/types/interface.rs.html#144">get_type_decl_mid</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#23-26">encode_snapshot_to_bytes_function</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">snapshot_type</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/into_snapshot/context_independent/traits.rs.html#15-18">to_snapshot</a>(<a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>)<span class="question-mark">?</span>;
-        <span class="macro">var_decls!</span> {
-            <span class="ident">place</span>: <span class="ident">Place</span>,
-            <span class="ident">root_address</span>: <span class="ident">Address</span>,
-            <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()}
+
+        <a class="self" href="#55">self</a>.encoded_owned_predicates.insert(<a href="#58">ty_identifier</a>);
+        <span class="self">self</span>.lowerer.encode_compute_address(ty)<span class="question-mark">?</span>;
+        <span class="kw">let </span>type_decl = <span class="self">self</span>.lowerer.encoder.get_type_decl_mid(ty)<span class="question-mark">?</span>;
+
+        <span class="kw">let </span>normalized_type = <a href="#56">ty</a>.normalize_type();
+        <span class="self">self</span>.lowerer
+            .encode_snapshot_to_bytes_function(<span class="kw-2">&amp;</span>normalized_type)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>owned_predicates_to_encode = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>unique_ref_predicates_to_encode = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>frac_ref_predicates_to_encode = Vec::new();
+        <span class="self">self</span>.lowerer.encode_memory_block_predicate()<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = OwnedNonAliasedBuilder::new(<span class="self">self</span>.lowerer, <span class="kw-2">&amp;</span>normalized_type, <span class="kw-2">&amp;</span>type_decl)<span class="question-mark">?</span>;
+        builder.create_parameters()<span class="question-mark">?</span>;
+        <span class="kw">if </span>!(type_decl.is_type_var() || type_decl.is_trusted()) {
+            <a href="#74">builder</a>.<a href="builders/common/predicate_decl.rs.html#214">create_body</a>();
+            builder.add_validity()<span class="question-mark">?</span>;
         }
-        <span class="kw">let</span> <span class="ident">compute_address</span> <span class="op">=</span> <span class="macro">ty!</span>(<span class="ident">Address</span>);
-        <span class="kw">let</span> <span class="ident">to_bytes</span> <span class="op">=</span> <span class="macro">ty!</span> { <span class="ident">Bytes</span> };
-        <span class="kw">let</span> <span class="ident">validity</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>
-            .<span class="ident">lowerer</span>
-            .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#45-49">encode_snapshot_valid_call_for_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">size_of</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/type_layouts/interface.rs.html#13-16">encode_type_size_expression</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">compute_address</span> <span class="op">=</span> <span class="macro">expr!</span> { <span class="ident">ComputeAddress::compute_address</span>(<span class="ident">place</span>, <span class="ident">root_address</span>) };
-        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>
-            .<span class="ident">lowerer</span>
-            .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/memory_block/interface.rs.html#88-92">encode_memory_block_bytes_expression</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#81">compute_address</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#80">size_of</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#67">type_decl</a> {
-            <span class="ident">vir_mid::TypeDecl::Bool</span>
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Int</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Float</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Pointer</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Sequence</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Map</span>(<span class="kw">_</span>) =&gt; {
-                <span class="macro">predicate!</span> {
-                    <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span>(<span class="ident">place</span>: <span class="ident">Place</span>, <span class="ident">root_address</span>: <span class="ident">Address</span>, <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>})
-                    {(
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>]) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">MemoryBlock</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#81">compute_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#80">size_of</a>]))) <span class="op">&amp;&amp;</span>
-                        (([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#82">bytes</a>]) <span class="op">==</span> (<span class="ident">Snap</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span><span class="ident">::to_bytes</span>(<span class="ident">snapshot</span>)))
-                    )}
-                }
+        <span class="comment">// Build the body.
+        </span><span class="kw">match </span><span class="kw-2">&amp;</span><a href="#65">type_decl</a> {
+            vir_mid::TypeDecl::Bool
+            | vir_mid::TypeDecl::Int(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Float(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Pointer(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Sequence(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Map(<span class="kw">_</span>) =&gt; {
+                builder.add_base_memory_block()<span class="question-mark">?</span>;
+                builder.add_bytes_snapshot_equality()<span class="question-mark">?</span>;
             }
-            <span class="ident">vir_mid::TypeDecl::TypeVar</span>(<span class="kw">_</span>) =&gt; <span class="ident">vir_low::PredicateDecl::new</span>(
-                <span class="macro">predicate_name!</span> { <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span> },
-                <span class="macro">vars!</span> { <span class="ident">place</span>: <span class="ident">Place</span>, <span class="ident">root_address</span>: <span class="ident">Address</span>, <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>} },
-                <span class="prelude-val">None</span>,
-            ),
-            <span class="ident">vir_mid::TypeDecl::Tuple</span>(<span class="ident">tuple_decl</span>) =&gt; <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#326-333">encode_owned_non_aliased_with_fields</a>(
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#106">tuple_decl</a>.<span class="ident">iter_fields</span>(),
-            )<span class="question-mark">?</span>,
-            <span class="ident">vir_mid::TypeDecl::Struct</span>(<span class="ident">struct_decl</span>) =&gt; <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#326-333">encode_owned_non_aliased_with_fields</a>(
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#113">struct_decl</a>.<span class="ident">iter_fields</span>(),
-            )<span class="question-mark">?</span>,
-            <span class="ident">vir_mid::TypeDecl::Enum</span>(<span class="ident">decl</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">variant_predicates</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <span class="kw">let</span> <span class="ident">discriminant_call</span> <span class="op">=</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                        .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#41-46">obtain_enum_discriminant</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <span class="kw">for</span> (<span class="kw-2">&amp;</span><span class="ident">discriminant</span>, <span class="ident">variant</span>) <span class="kw">in</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#120">decl</a>.<span class="ident">discriminant_values</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">zip</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#120">decl</a>.<span class="ident">variants</span>)
-                {
-                    <span class="kw">let</span> <span class="ident">variant_index</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#125">variant</a>.<span class="ident">name</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>();
-                    <span class="kw">let</span> <span class="ident">variant_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#26-32">encode_enum_variant_place</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                        <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#127">variant_index</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">variant_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#33-39">obtain_enum_variant_snapshot</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                        <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#127">variant_index</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">variant_type</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<span class="ident">variant</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#127">variant_index</a>);
-                    <span class="kw">if</span> <span class="op">!</span><a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>
-                        .<span class="ident">unfolded_owned_non_aliased_predicates</span>
-                        .<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#140">variant_type</a>)
+            vir_mid::TypeDecl::Trusted(<span class="kw">_</span>) | vir_mid::TypeDecl::TypeVar(<span class="kw">_</span>) =&gt; {}
+            vir_mid::TypeDecl::Struct(decl) =&gt; {
+                builder.add_padding_memory_block()<span class="question-mark">?</span>;
+                <span class="kw">for </span>field <span class="kw">in </span><span class="kw-2">&amp;</span>decl.fields {
+                    builder.add_field_predicate(field)<span class="question-mark">?</span>;
+                    <span class="kw">if </span>!<span class="self">self
+                        </span>.unfolded_owned_non_aliased_predicates
+                        .contains(<span class="kw-2">&amp;</span>field.ty)
                     {
-                        <span class="comment">// TODO: Optimization: This variant is never unfolded,</span>
-                        <span class="comment">// encode it as abstract predicate.</span>
-                        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#54-57">encode_owned_non_aliased</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#140">variant_type</a>)<span class="question-mark">?</span>;
+                        owned_predicates_to_encode.push(field.ty.clone());
                     }
-                    <span class="kw">let</span> <span class="ident">variant_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#140">variant_type</a>;
-                    <span class="kw">let</span> <span class="ident">acc</span> <span class="op">=</span> <span class="macro">expr!</span> {
-                        ([ <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#122">discriminant_call</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>() ] <span class="op">==</span> [ <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#125">discriminant</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>() ]) <span class="op">==</span><span class="op">&gt;</span>
-                        (<span class="ident">acc</span>(<span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#149">variant_type</a><span class="op">&gt;</span>(
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#128">variant_place</a>], <span class="ident">root_address</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#134">variant_snapshot</a>]
-                        )))
-                    };
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#121">variant_predicates</a>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#150">acc</a>);
-                }
-                <span class="kw">let</span> <span class="ident">discriminant_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#120">decl</a>.<span class="ident">discriminant_type</span>;
-                <span class="kw">if</span> <span class="op">!</span><a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>
-                    .<span class="ident">unfolded_owned_non_aliased_predicates</span>
-                    .<span class="ident">contains</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#158">discriminant_type</a>)
-                {
-                    <span class="comment">// TODO: Optimization: The discriminant is never unfolded,</span>
-                    <span class="comment">// encode it as abstract predicate.</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#54-57">encode_owned_non_aliased</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#158">discriminant_type</a>)<span class="question-mark">?</span>;
-                }
-                <span class="kw">let</span> <span class="ident">discriminant_field</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#120">decl</a>.<span class="ident">discriminant_field</span>();
-                <span class="kw">let</span> <span class="ident">discriminant_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#19-25">encode_field_place</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                    <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#167">discriminant_field</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">discriminant_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#51-56">construct_constant_snapshot</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#158">discriminant_type</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#122">discriminant_call</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="macro">predicate!</span> {
-                    <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span>(<span class="ident">place</span>: <span class="ident">Place</span>, <span class="ident">root_address</span>: <span class="ident">Address</span>, <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>})
-                    {(
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>]) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#158">discriminant_type</a><span class="op">&gt;</span>(
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#168">discriminant_place</a>], <span class="ident">root_address</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#174">discriminant_snapshot</a>]
-                        ))) <span class="op">&amp;&amp;</span>
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#121">variant_predicates</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">conjoin</a>()])
-                    )}
                 }
             }
-            <span class="ident">vir_mid::TypeDecl::Union</span>(<span class="ident">decl</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">variant_predicates</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <span class="kw">let</span> <span class="ident">discriminant_call</span> <span class="op">=</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                        .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#41-46">obtain_enum_discriminant</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <span class="kw">for</span> (<span class="kw-2">&amp;</span><span class="ident">discriminant</span>, <span class="ident">variant</span>) <span class="kw">in</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#190">decl</a>.<span class="ident">discriminant_values</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">zip</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#190">decl</a>.<span class="ident">variants</span>)
-                {
-                    <span class="kw">let</span> <span class="ident">variant_index</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#195">variant</a>.<span class="ident">name</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>();
-                    <span class="kw">let</span> <span class="ident">variant_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#26-32">encode_enum_variant_place</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                        <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#197">variant_index</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">variant_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#33-39">obtain_enum_variant_snapshot</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                        <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#197">variant_index</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">variant_type</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<span class="ident">variant</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#197">variant_index</a>);
-                    <span class="kw">if</span> <span class="op">!</span><a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>
-                        .<span class="ident">unfolded_owned_non_aliased_predicates</span>
-                        .<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#210">variant_type</a>)
+            vir_mid::TypeDecl::Enum(decl) =&gt; {
+                builder.add_padding_memory_block()<span class="question-mark">?</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>variant_predicates = Vec::new();
+                <span class="kw">for </span>(discriminant, variant) <span class="kw">in </span>decl.iter_discriminant_variants() {
+                    <span class="kw">let </span>variant_index: vir_mid::ty::VariantIndex = variant.name.clone().into();
+                    <span class="kw">let </span>variant_type = vir_mid::Type::enum_(
+                        decl.name.clone(),
+                        decl.safety,
+                        decl.arguments.clone(),
+                        <span class="prelude-val">Some</span>(variant_index.clone()),
+                        decl.lifetimes.clone(),
+                    );
+                    variant_predicates.push(builder.create_variant_predicate(
+                        discriminant,
+                        variant,
+                        <span class="kw-2">&amp;</span>variant_type,
+                    )<span class="question-mark">?</span>);
+                    <span class="kw">let </span>variant_type = ty.clone().variant(variant_index);
+                    <span class="kw">if </span>!<span class="self">self
+                        </span>.unfolded_owned_non_aliased_predicates
+                        .contains(<span class="kw-2">&amp;</span>variant_type)
                     {
-                        <span class="comment">// TODO: Optimization: This variant is never unfolded,</span>
-                        <span class="comment">// encode it as abstract predicate.</span>
-                        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#54-57">encode_owned_non_aliased</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#210">variant_type</a>)<span class="question-mark">?</span>;
+                        owned_predicates_to_encode.push(variant_type);
                     }
-                    <span class="kw">let</span> <span class="ident">variant_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#210">variant_type</a>;
-                    <span class="kw">let</span> <span class="ident">acc</span> <span class="op">=</span> <span class="macro">expr!</span> {
-                        ([ <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#192">discriminant_call</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>() ] <span class="op">==</span> [ <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#195">discriminant</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>() ]) <span class="op">==</span><span class="op">&gt;</span>
-                        (<span class="ident">acc</span>(<span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#219">variant_type</a><span class="op">&gt;</span>(
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#198">variant_place</a>], <span class="ident">root_address</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#204">variant_snapshot</a>]
-                        )))
-                    };
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#191">variant_predicates</a>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#220">acc</a>);
                 }
-                <span class="macro">predicate!</span> {
-                    <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span>(<span class="ident">place</span>: <span class="ident">Place</span>, <span class="ident">root_address</span>: <span class="ident">Address</span>, <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>})
-                    {(
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>]) <span class="op">&amp;&amp;</span>
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#191">variant_predicates</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">conjoin</a>()])
-                    )}
+                <span class="kw">if </span>!<span class="self">self
+                    </span>.unfolded_owned_non_aliased_predicates
+                    .contains(<span class="kw-2">&amp;</span>decl.discriminant_type)
+                {
+                    <a href="#70">owned_predicates_to_encode</a>.push(<a href="#104">decl</a>.discriminant_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                }
+                <span class="kw">if </span>decl.safety.is_enum() {
+                    builder.add_discriminant_predicate(decl)<span class="question-mark">?</span>;
+                }
+                builder.add_variant_predicates(variant_predicates)<span class="question-mark">?</span>;
+            }
+            vir_mid::TypeDecl::Reference(decl) =&gt; {
+                builder.add_base_memory_block()<span class="question-mark">?</span>;
+                builder.add_bytes_address_snapshot_equality()<span class="question-mark">?</span>;
+                <span class="comment">// FIXME: Have a getter for the first lifetime.
+                </span><span class="kw">let </span>lifetime = <span class="kw-2">&amp;</span><a href="#140">decl</a>.lifetimes[<span class="number">0</span>];
+                <span class="kw">if </span>decl.uniqueness.is_unique() {
+                    builder.add_unique_ref_target_predicate(<span class="kw-2">&amp;</span>decl.target_type, lifetime)<span class="question-mark">?</span>;
+                    <a href="#71">unique_ref_predicates_to_encode</a>.push(<a href="#140">decl</a>.target_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                } <span class="kw">else </span>{
+                    builder.add_frac_ref_target_predicate(<span class="kw-2">&amp;</span>decl.target_type, lifetime)<span class="question-mark">?</span>;
+                    <a href="#72">frac_ref_predicates_to_encode</a>.push(<a href="#140">decl</a>.target_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
                 }
             }
-            <span class="comment">// vir_mid::TypeDecl::Array(Array) =&gt; {},</span>
-            <span class="ident">vir_mid::TypeDecl::Reference</span>(<span class="ident">reference</span>) <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#237">reference</a>.<span class="ident">uniqueness</span>.<span class="ident">is_unique</span>() =&gt; {
-                <span class="kw">let</span> <span class="ident">address_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#81-84">reference_address_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                    .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#23-26">encode_snapshot_to_bytes_function</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#238">address_type</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/types/interface.rs.html#246">ensure_type_definition</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#238">address_type</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_address_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#75-80">reference_address_snapshot</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_address</span> <span class="op">=</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                        .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#69-74">reference_address</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">current_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#57-62">reference_target_current_snapshot</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">final_snapshot</span> <span class="op">=</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                        .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#63-68">reference_target_final_snapshot</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#237">reference</a>.<span class="ident">target_type</span>;
-                <span class="kw">let</span> <span class="ident">deref_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#52-56">reference_deref_place</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">encode_unique_ref</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#258">target_type</a>)<span class="question-mark">?</span>;
-                <span class="macro">predicate!</span> {
-                    <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span>(
-                        <span class="ident">place</span>: <span class="ident">Place</span>,
-                        <span class="ident">root_address</span>: <span class="ident">Address</span>,
-                        <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>},
-                        <span class="ident">lifetime</span>: <span class="ident">Lifetime</span>
-                    )
-                    {(
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>]) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">MemoryBlock</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#81">compute_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#80">size_of</a>]))) <span class="op">&amp;&amp;</span>
-                        (([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#82">bytes</a>]) <span class="op">==</span> (<span class="ident">Snap</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#238">address_type</a><span class="op">&gt;</span><span class="ident">::to_bytes</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#242">target_address_snapshot</a>]))) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">UniqueRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#258">target_type</a><span class="op">&gt;</span>(
-                            <span class="ident">lifetime</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#259">deref_place</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#247">target_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#250">current_snapshot</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#255">final_snapshot</a>]
-                        )))
-                    )}
-                }
+            vir_mid::TypeDecl::Array(decl) =&gt; {
+                builder.lowerer().encode_place_array_index_axioms(ty)<span class="question-mark">?</span>;
+                builder
+                    .lowerer()
+                    .ensure_type_definition(<span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
+                <a href="#70">owned_predicates_to_encode</a>.push(<a href="#153">decl</a>.element_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                builder.add_const_parameters_validity()<span class="question-mark">?</span>;
+                <span class="comment">// FIXME: Have a getter for the first const parameter.
+                </span><span class="kw">let </span>length = <span class="kw">if </span>normalized_type.is_slice() {
+                    builder.get_slice_len()<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
+                    <a href="#153">decl</a>.const_parameters[<span class="number">0</span>].<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+                };
+                builder.add_snapshot_len_equal_to(<span class="kw-2">&amp;</span>length)<span class="question-mark">?</span>;
+                builder.add_quantified_permission(<span class="kw-2">&amp;</span>length, <span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
             }
-            <span class="ident">vir_mid::TypeDecl::Reference</span>(<span class="ident">reference</span>) <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#278">reference</a>.<span class="ident">uniqueness</span>.<span class="ident">is_shared</span>() =&gt; {
-                <span class="kw">let</span> <span class="ident">address_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#81-84">reference_address_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                    .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#23-26">encode_snapshot_to_bytes_function</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#279">address_type</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/types/interface.rs.html#246">ensure_type_definition</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#279">address_type</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_address_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#75-80">reference_address_snapshot</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_address</span> <span class="op">=</span>
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>
-                        .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#69-74">reference_address</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">current_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#57-62">reference_target_current_snapshot</a>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>,
-                )<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">target_type</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#278">reference</a>.<span class="ident">target_type</span>;
-                <span class="kw">let</span> <span class="ident">deref_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/references/interface.rs.html#52-56">reference_deref_place</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#70-74">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#66">position</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">encode_unique_ref</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#296">target_type</a>)<span class="question-mark">?</span>;
-                <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">encode_frac_ref</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#296">target_type</a>)<span class="question-mark">?</span>;
-                <span class="macro">predicate!</span> {
-                    <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#58">ty</a><span class="op">&gt;</span>(
-                        <span class="ident">place</span>: <span class="ident">Place</span>,
-                        <span class="ident">root_address</span>: <span class="ident">Address</span>,
-                        <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#69">snapshot_type</a>},
-                        <span class="ident">lifetime</span>: <span class="ident">Lifetime</span>
-                    )
-                    {(
-                        ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#77">validity</a>]) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">MemoryBlock</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#81">compute_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#80">size_of</a>]))) <span class="op">&amp;&amp;</span>
-                        (([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#82">bytes</a>]) <span class="op">==</span> (<span class="ident">Snap</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#279">address_type</a><span class="op">&gt;</span><span class="ident">::to_bytes</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#283">target_address_snapshot</a>]))) <span class="op">&amp;&amp;</span>
-                        (<span class="ident">acc</span>(<span class="ident">FracRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#296">target_type</a><span class="op">&gt;</span>(
-                            <span class="ident">lifetime</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#297">deref_place</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#288">target_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#291">current_snapshot</a>]
-                        )))
-                    )}
-                }
+            <span class="kw">_ </span>=&gt; {
+                builder.add_base_memory_block()<span class="question-mark">?</span>;
+                builder.add_bytes_snapshot_equality()<span class="question-mark">?</span>;
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unimplemented.html">unimplemented!</a>(<span class="string">&quot;{}&quot;</span>, type_decl);
             }
-            <span class="comment">// vir_mid::TypeDecl::Never =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Closure(Closure) =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Unsupported(Unsupported) =&gt; {},</span>
-            <span class="ident">x</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;{}&quot;</span>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#320">x</a>),
-        };
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#55">self</a>.<span class="ident">predicates</span>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#85">predicate</a>);
+        }
+        <a class="self" href="#55">self</a>.predicates.push(<a href="#74">builder</a>.<a href="builders/owned_non_aliased/predicate_decl.rs.html#74">build</a>());
+        <span class="kw">for </span>ty <span class="kw">in </span>owned_predicates_to_encode {
+            <span class="comment">// TODO: Optimization: This variant is never unfolded,
+            // encode it as abstract predicate.
+            </span><span class="self">self</span>.encode_owned_non_aliased(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
+        <span class="kw">for </span>ty <span class="kw">in </span>unique_ref_predicates_to_encode {
+            <span class="comment">// TODO: Optimization: This variant is never unfolded,
+            // encode it as abstract predicate.
+            </span><span class="self">self</span>.encode_unique_ref(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
+        <span class="kw">for </span>ty <span class="kw">in </span>frac_ref_predicates_to_encode {
+            <span class="comment">// TODO: Optimization: This variant is never unfolded,
+            // encode it as abstract predicate.
+            </span><span class="self">self</span>.encode_frac_ref(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">encode_owned_non_aliased_with_fields</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">ty</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>,
-        <span class="ident">snapshot</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>,
-        <span class="ident">snapshot_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-        <span class="ident">validity</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-        <span class="ident">fields</span>: <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <a class="ident" href="../../../../../../../vir/gen/middle/ast/field/struct.FieldDecl.html">vir_mid::FieldDecl</a><span class="op">&gt;</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/predicate/struct.PredicateDecl.html">vir_low::PredicateDecl</a><span class="op">&gt;</span> {
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <span class="macro">var_decls!</span> {
-            <span class="ident">place</span>: <span class="ident">Place</span>,
-            <span class="ident">root_address</span>: <span class="ident">Address</span>
+    <span class="kw">fn </span>encode_frac_ref(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ty: <span class="kw-2">&amp;</span><a href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <span class="kw">let </span>ty_identifier = <a href="#194">ty</a>.<a href="../../../../../../../vir/common/identifier/trait.WithIdentifier.html">get_identifier</a>();
+        <span class="kw">if </span><span class="self">self</span>.encoded_frac_borrow_predicates.contains(<span class="kw-2">&amp;</span>ty_identifier) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">field_predicates</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-        <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#332">fields</a> {
-            <span class="kw">let</span> <span class="ident">field_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#327">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#19-25">encode_field_place</a>(
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#328">ty</a>,
-                <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#340">field</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#335-338">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-            )<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">field_value</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#327">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#26-32">obtain_struct_field_snapshot</a>(
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#328">ty</a>,
-                <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#340">field</a>,
-                <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#329">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-            )<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">field_ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#340">field</a>.<span class="ident">ty</span>;
-            <span class="kw">let</span> <span class="ident">acc</span> <span class="op">=</span> <span class="macro">expr!</span> {
-                <span class="ident">acc</span>(<span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#353">field_ty</a><span class="op">&gt;</span>(
-                    [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#341">field_place</a>], <span class="ident">root_address</span>, [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#347">field_value</a>]
-                ))
-            };
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#339">field_predicates</a>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#354">acc</a>);
-        }
-        <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#339">field_predicates</a>.<span class="ident">is_empty</span>() {
-            <span class="comment">// TODO: Extract this into a separate method and deduplicate with</span>
-            <span class="comment">// primitive type encoding.</span>
+        <a class="self" href="#194">self</a>.encoded_frac_borrow_predicates.insert(<a href="#195">ty_identifier</a>);
+        <span class="self">self</span>.lowerer.encode_compute_address(ty)<span class="question-mark">?</span>;
 
-            <span class="comment">// FIXME: We should add an extra memory block not only for ZSTs, but</span>
-            <span class="comment">// also for types to represent padding bytes and similar stuff.</span>
-            <span class="kw">let</span> <span class="ident">compute_address</span> <span class="op">=</span> <span class="macro">ty!</span>(<span class="ident">Address</span>);
-            <span class="kw">let</span> <span class="ident">to_bytes</span> <span class="op">=</span> <span class="macro">ty!</span> { <span class="ident">Bytes</span> };
-            <span class="kw">let</span> <span class="ident">compute_address</span> <span class="op">=</span> <span class="macro">expr!</span> { <span class="ident">ComputeAddress::compute_address</span>(<span class="ident">place</span>, <span class="ident">root_address</span>) };
-            <span class="kw">let</span> <span class="ident">size_of</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#327">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/type_layouts/interface.rs.html#13-16">encode_type_size_expression</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#328">ty</a>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#327">self</a>
-                .<span class="ident">lowerer</span>
-                .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/memory_block/interface.rs.html#88-92">encode_memory_block_bytes_expression</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#369">compute_address</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#370">size_of</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>())<span class="question-mark">?</span>;
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#339">field_predicates</a>.<span class="ident">push</span>(<span class="macro">expr!</span> {
-                (<span class="ident">acc</span>(<span class="ident">MemoryBlock</span>([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#369">compute_address</a>], [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#370">size_of</a>])))
-            });
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#339">field_predicates</a>.<span class="ident">push</span>(<span class="macro">expr!</span> {
-                (([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#371">bytes</a>]) <span class="op">==</span> (<span class="ident">Snap</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#328">ty</a><span class="op">&gt;</span><span class="ident">::to_bytes</span>(<span class="ident">snapshot</span>)))
-            });
-        }
-        <span class="kw">let</span> <span class="ident">predicate_decl</span> <span class="op">=</span> <span class="macro">predicate!</span> {
-            <span class="ident">OwnedNonAliased</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#328">ty</a><span class="op">&gt;</span>(<span class="ident">place</span>: <span class="ident">Place</span>, <span class="ident">root_address</span>: <span class="ident">Address</span>, <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#330">snapshot_type</a>})
-            {(
-                ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#331">validity</a>]) <span class="op">&amp;&amp;</span>
-                ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#339">field_predicates</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">conjoin</a>()])
-            )}
-        };
-        <span class="prelude-val">Ok</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#381">predicate_decl</a>)
-    }
+        <span class="kw">let </span>type_decl = <span class="self">self</span>.lowerer.encoder.get_type_decl_mid(ty)<span class="question-mark">?</span>;
 
-    <span class="kw">fn</span> <span class="ident">encode_frac_ref</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ty</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">encoded_frac_borrow_predicates</span>.<span class="ident">contains</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="kw">let </span>normalized_type = <a href="#194">ty</a>.normalize_type();
+        <span class="kw">let </span><span class="kw-2">mut </span>predicates_to_encode = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = FracRefBuilder::new(<span class="self">self</span>.lowerer, <span class="kw-2">&amp;</span>normalized_type, <span class="kw-2">&amp;</span>type_decl)<span class="question-mark">?</span>;
+        builder.create_parameters()<span class="question-mark">?</span>;
+        <span class="kw">if </span>!<span class="macro">matches!</span>(
+            type_decl,
+            vir_mid::TypeDecl::Bool
+                | vir_mid::TypeDecl::Int(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Float(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Pointer(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Sequence(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Trusted(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Map(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::TypeVar(<span class="kw">_</span>)
+        ) {
+            <a href="#206">builder</a>.<a href="builders/common/predicate_decl.rs.html#214">create_body</a>();
+            builder.add_validity()<span class="question-mark">?</span>;
         }
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">encoded_frac_borrow_predicates</span>.<span class="ident">insert</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/compute_address/interface.rs.html#89">encode_compute_address</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <span class="kw">let</span> <span class="ident">type_decl</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>.<span class="ident">encoder</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/high/types/interface.rs.html#144">get_type_decl_mid</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>)<span class="question-mark">?</span>;
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#23-26">encode_snapshot_to_bytes_function</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">snapshot_type</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/into_snapshot/context_independent/traits.rs.html#15-18">to_snapshot</a>(<a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>)<span class="question-mark">?</span>;
-        <span class="macro">var_decls!</span> {
-            <span class="ident">lifetime</span>: <span class="ident">Lifetime</span>,
-            <span class="ident">place</span>: <span class="ident">Place</span>,
-            <span class="ident">root_address</span>: <span class="ident">Address</span>,
-            <span class="ident">snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#400">snapshot_type</a>}
+        <span class="comment">// Build the body.
+        </span><span class="kw">match </span><span class="kw-2">&amp;</span><a href="#202">type_decl</a> {
+            vir_mid::TypeDecl::Bool
+            | vir_mid::TypeDecl::Int(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Float(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Pointer(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Sequence(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Trusted(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Map(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::TypeVar(<span class="kw">_</span>) =&gt; {}
+            vir_mid::TypeDecl::Struct(decl) =&gt; {
+                <span class="kw">for </span>field <span class="kw">in </span><span class="kw-2">&amp;</span>decl.fields {
+                    builder.add_field_predicate(field)<span class="question-mark">?</span>;
+                    predicates_to_encode.push(field.ty.clone());
+                }
+            }
+            vir_mid::TypeDecl::Enum(decl) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>variant_predicates = Vec::new();
+                <span class="kw">for </span>(discriminant, variant) <span class="kw">in </span>decl.iter_discriminant_variants() {
+                    <span class="kw">let </span>variant_index = variant.name.clone().into();
+                    <span class="kw">let </span>variant_type = ty.clone().variant(variant_index);
+                    variant_predicates.push(builder.create_variant_predicate(
+                        discriminant,
+                        variant,
+                        <span class="kw-2">&amp;</span>variant_type,
+                    )<span class="question-mark">?</span>);
+                    predicates_to_encode.push(variant_type);
+                }
+                <a href="#205">predicates_to_encode</a>.push(<a href="#238">decl</a>.discriminant_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                <span class="kw">if </span>decl.safety.is_enum() {
+                    builder.add_discriminant_predicate(decl)<span class="question-mark">?</span>;
+                }
+                builder.add_variant_predicates(variant_predicates)<span class="question-mark">?</span>;
+            }
+            vir_mid::TypeDecl::Reference(decl) =&gt; {
+                <span class="comment">// FIXME: Have a getter for the first lifetime.
+                </span><span class="kw">let </span>lifetime = <span class="kw-2">&amp;</span><a href="#256">decl</a>.lifetimes[<span class="number">0</span>];
+                builder.add_frac_ref_target_predicate(<span class="kw-2">&amp;</span>decl.target_type, lifetime)<span class="question-mark">?</span>;
+                <a href="#205">predicates_to_encode</a>.push(<a href="#256">decl</a>.target_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+            }
+            vir_mid::TypeDecl::Array(decl) =&gt; {
+                builder.lowerer().encode_place_array_index_axioms(ty)<span class="question-mark">?</span>;
+                builder
+                    .lowerer()
+                    .ensure_type_definition(<span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
+                <a href="#205">predicates_to_encode</a>.push(<a href="#262">decl</a>.element_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                builder.add_const_parameters_validity()<span class="question-mark">?</span>;
+                <span class="comment">// FIXME: Have a getter for the first const parameter.
+                </span><span class="kw">let </span>length = <span class="kw">if </span>normalized_type.is_slice() {
+                    builder.get_slice_len()<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
+                    <a href="#262">decl</a>.const_parameters[<span class="number">0</span>].<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+                };
+                builder.add_snapshot_len_equal_to(<span class="kw-2">&amp;</span>length)<span class="question-mark">?</span>;
+                builder.add_quantified_permission(<span class="kw-2">&amp;</span>length, <span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
+            }
+            <span class="kw">_ </span>=&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unimplemented.html">unimplemented!</a>(<span class="string">&quot;{:?}&quot;</span>, type_decl);
+            }
         }
-        <span class="kw">let</span> <span class="ident">current_validity</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>
-            .<span class="ident">lowerer</span>
-            .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#45-49">encode_snapshot_valid_call_for_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#398">type_decl</a> {
-            <span class="ident">vir_mid::TypeDecl::Bool</span>
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Int</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Float</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Pointer</span>(<span class="kw">_</span>) =&gt; <span class="ident">vir_low::PredicateDecl::new</span>(
-                <span class="macro">predicate_name!</span> {<span class="ident">FracRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a><span class="op">&gt;</span>},
-                <span class="macro">vec!</span>[<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">lifetime</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">place</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">root_address</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">snapshot</a>],
-                <span class="prelude-val">None</span>,
-            ),
-            <span class="comment">// vir_mid::TypeDecl::TypeVar(TypeVar) =&gt; {},</span>
-            <span class="ident">vir_mid::TypeDecl::Tuple</span>(<span class="ident">_decl</span>) =&gt; <span class="macro">unimplemented!</span>(),
-            <span class="ident">vir_mid::TypeDecl::Struct</span>(<span class="ident">decl</span>) =&gt; {
-                <span class="comment">// TODO: test or add unimplemented!</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">field_predicates</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#421">decl</a>.<span class="ident">fields</span> {
-                    <span class="kw">let</span> <span class="ident">field_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#19-25">encode_field_place</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#424">field</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">field_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#26-32">obtain_struct_field_snapshot</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#424">field</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">field_ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#424">field</a>.<span class="ident">ty</span>;
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">encode_unique_ref</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#437">field_ty</a>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">acc</span> <span class="op">=</span> <span class="macro">expr!</span> {
-                        <span class="ident">acc</span>(<span class="ident">FracRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#437">field_ty</a><span class="op">&gt;</span>(
-                            <span class="ident">lifetime</span>,
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#425">field_place</a>],
-                            <span class="ident">root_address</span>,
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#431">field_snapshot</a>]
-                        ))
-                    };
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#423">field_predicates</a>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#439">acc</a>);
-                }
-                <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#423">field_predicates</a>.<span class="ident">is_empty</span>() {
-                    <span class="macro">unimplemented!</span>();
-                }
-                <span class="ident">vir_low::PredicateDecl::new</span>(
-                    <span class="macro">predicate_name!</span> {<span class="ident">FracRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">ty</a><span class="op">&gt;</span>},
-                    <span class="macro">vec!</span>[<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">lifetime</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">place</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">root_address</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#401-406">snapshot</a>],
-                    <span class="prelude-val">Some</span>(<span class="macro">expr!</span> {
-                        [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#407">current_validity</a>] <span class="op">&amp;&amp;</span>
-                        [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#423">field_predicates</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">conjoin</a>()]
-                    }),
-                )
-            }
-            <span class="ident">vir_mid::TypeDecl::Enum</span>(<span class="ident">_decl</span>) =&gt; {
-                <span class="macro">unimplemented!</span>();
-            }
-            <span class="ident">vir_mid::TypeDecl::Union</span>(<span class="ident">_decl</span>) =&gt; {
-                <span class="macro">unimplemented!</span>();
-            }
-            <span class="comment">// vir_mid::TypeDecl::Array(Array) =&gt; {},</span>
-            <span class="ident">vir_mid::TypeDecl::Reference</span>(<span class="ident">reference</span>) <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#468">reference</a>.<span class="ident">uniqueness</span>.<span class="ident">is_unique</span>() =&gt; {
-                <span class="macro">unimplemented!</span>();
-            }
-            <span class="comment">// vir_mid::TypeDecl::Never =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Closure(Closure) =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Unsupported(Unsupported) =&gt; {},</span>
-            <span class="ident">x</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;{}&quot;</span>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#474">x</a>),
-        };
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#391">self</a>.<span class="ident">predicates</span>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#410">predicate</a>);
+        <a class="self" href="#194">self</a>.predicates.push(<a href="#206">builder</a>.<a href="builders/frac_ref/predicate_decl.rs.html#79">build</a>());
+        <span class="kw">for </span>ty <span class="kw">in </span>predicates_to_encode {
+            <span class="comment">// TODO: Optimization: This variant is never unfolded,
+            // encode it as abstract predicate.
+            </span><span class="self">self</span>.encode_frac_ref(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">encode_unique_ref</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ty</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">if</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">encoded_mut_borrow_predicates</span>.<span class="ident">contains</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>) {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>encode_unique_ref(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ty: <span class="kw-2">&amp;</span><a href="../../../../../../../vir/gen/middle/ast/ty/enum.Type.html">vir_mid::Type</a>) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <span class="kw">let </span>ty_identifier = <a href="#291">ty</a>.<a href="../../../../../../../vir/common/identifier/trait.WithIdentifier.html">get_identifier</a>();
+        <span class="kw">if </span><span class="self">self</span>.encoded_mut_borrow_predicates.contains(<span class="kw-2">&amp;</span>ty_identifier) {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">encoded_mut_borrow_predicates</span>.<span class="ident">insert</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/compute_address/interface.rs.html#89">encode_compute_address</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <span class="comment">// let position = Default::default();</span>
-        <span class="kw">let</span> <span class="ident">type_decl</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<span class="ident">encoder</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/high/types/interface.rs.html#144">get_type_decl_mid</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>)<span class="question-mark">?</span>;
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/bytes/interface.rs.html#23-26">encode_snapshot_to_bytes_function</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">snapshot_type</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/into_snapshot/context_independent/traits.rs.html#15-18">to_snapshot</a>(<a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>)<span class="question-mark">?</span>;
-        <span class="macro">var_decls!</span> {
-            <span class="ident">lifetime</span>: <span class="ident">Lifetime</span>,
-            <span class="ident">place</span>: <span class="ident">Place</span>,
-            <span class="ident">root_address</span>: <span class="ident">Address</span>,
-            <span class="ident">current_snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#490">snapshot_type</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()},
-            <span class="ident">final_snapshot</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#490">snapshot_type</a>}
+        <a class="self" href="#291">self</a>.encoded_mut_borrow_predicates.insert(<a href="#292">ty_identifier</a>);
+        <span class="self">self</span>.lowerer.encode_compute_address(ty)<span class="question-mark">?</span>;
+        <span class="kw">let </span>type_decl = <span class="self">self</span>.lowerer.encoder.get_type_decl_mid(ty)<span class="question-mark">?</span>;
+
+        <span class="comment">// FIXME: Make get_type_decl_mid to return the erased ty for which it
+        // returned type_decl.
+        </span><span class="kw">let </span>normalized_type = <a href="#291">ty</a>.normalize_type();
+        <span class="kw">let </span><span class="kw-2">mut </span>unique_ref_predicates_to_encode = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>frac_ref_predicates_to_encode = Vec::new();
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = UniqueRefBuilder::new(<span class="self">self</span>.lowerer, <span class="kw-2">&amp;</span>normalized_type, <span class="kw-2">&amp;</span>type_decl)<span class="question-mark">?</span>;
+        builder.create_parameters()<span class="question-mark">?</span>;
+        <span class="kw">if </span>!<span class="macro">matches!</span>(
+            type_decl,
+            vir_mid::TypeDecl::Bool
+                | vir_mid::TypeDecl::Int(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Float(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Pointer(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Sequence(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Trusted(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::Map(<span class="kw">_</span>)
+                | vir_mid::TypeDecl::TypeVar(<span class="kw">_</span>)
+        ) {
+            <a href="#305">builder</a>.<a href="builders/common/predicate_decl.rs.html#214">create_body</a>();
+            builder.add_validity()<span class="question-mark">?</span>;
         }
-        <span class="comment">// let compute_address = ty!(Address);</span>
-        <span class="comment">// let to_bytes = ty! { Bytes };</span>
-        <span class="kw">let</span> <span class="ident">current_validity</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>
-            .<span class="ident">lowerer</span>
-            .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#45-49">encode_snapshot_valid_call_for_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">current_snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">final_validity</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>
-            .<span class="ident">lowerer</span>
-            .<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#45-49">encode_snapshot_valid_call_for_type</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">final_snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(), <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>)<span class="question-mark">?</span>;
-        <span class="comment">// let size_of = self.lowerer.encode_type_size_expression(ty)?;</span>
-        <span class="comment">// let compute_address = expr! { ComputeAddress::compute_address(place, root_address) };</span>
-        <span class="comment">// let bytes = self</span>
-        <span class="comment">//     .lowerer</span>
-        <span class="comment">//     .encode_memory_block_bytes_expression(compute_address.clone(), size_of.clone())?;</span>
-        <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#488">type_decl</a> {
-            <span class="ident">vir_mid::TypeDecl::Bool</span>
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Int</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Float</span>(<span class="kw">_</span>)
-            <span class="op">|</span> <span class="ident">vir_mid::TypeDecl::Pointer</span>(<span class="kw">_</span>) =&gt; <span class="ident">vir_low::PredicateDecl::new</span>(
-                <span class="macro">predicate_name!</span> {<span class="ident">UniqueRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a><span class="op">&gt;</span>},
-                <span class="macro">vec!</span>[
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">lifetime</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">place</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">root_address</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">current_snapshot</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">final_snapshot</a>,
-                ],
-                <span class="prelude-val">None</span>,
-            ),
-            <span class="comment">// vir_mid::TypeDecl::TypeVar(TypeVar) =&gt; {},</span>
-            <span class="ident">vir_mid::TypeDecl::Tuple</span>(<span class="ident">_decl</span>) =&gt; <span class="macro">unimplemented!</span>(),
-            <span class="ident">vir_mid::TypeDecl::Struct</span>(<span class="ident">decl</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">field_predicates</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#528">decl</a>.<span class="ident">fields</span> {
-                    <span class="kw">let</span> <span class="ident">field_place</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/places/interface.rs.html#19-25">encode_field_place</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#530">field</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">place</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">current_field_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#26-32">obtain_struct_field_snapshot</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#530">field</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">current_snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">final_field_snapshot</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">lowerer</span>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#26-32">obtain_struct_field_snapshot</a>(
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#530">field</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">final_snapshot</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>(),
-                        <a class="ident" href="https://doc.rust-lang.org/nightly/core/default/trait.Default.html">Default::default</a>(),
-                    )<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">field_ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#530">field</a>.<span class="ident">ty</span>;
-                    <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">encode_unique_ref</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#549">field_ty</a>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">acc</span> <span class="op">=</span> <span class="macro">expr!</span> {
-                        <span class="ident">acc</span>(<span class="ident">UniqueRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#549">field_ty</a><span class="op">&gt;</span>(
-                            <span class="ident">lifetime</span>,
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#531">field_place</a>],
-                            <span class="ident">root_address</span>,
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#537">current_field_snapshot</a>],
-                            [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#543">final_field_snapshot</a>]
-                        ))
-                    };
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#529">field_predicates</a>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#551">acc</a>);
+        <span class="comment">// Build the body.
+        </span><span class="kw">match </span><span class="kw-2">&amp;</span><a href="#298">type_decl</a> {
+            vir_mid::TypeDecl::Bool
+            | vir_mid::TypeDecl::Int(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Float(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Pointer(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Sequence(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Trusted(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::Map(<span class="kw">_</span>)
+            | vir_mid::TypeDecl::TypeVar(<span class="kw">_</span>) =&gt; {}
+            vir_mid::TypeDecl::Struct(decl) =&gt; {
+                <span class="kw">for </span>field <span class="kw">in </span><span class="kw-2">&amp;</span>decl.fields {
+                    builder.add_field_predicate(field)<span class="question-mark">?</span>;
+                    unique_ref_predicates_to_encode.push(field.ty.clone());
                 }
-                <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#529">field_predicates</a>.<span class="ident">is_empty</span>() {
-                    <span class="macro">unimplemented!</span>();
+            }
+            vir_mid::TypeDecl::Enum(decl) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>variant_predicates = Vec::new();
+                <span class="kw">for </span>(discriminant, variant) <span class="kw">in </span>decl.iter_discriminant_variants() {
+                    <span class="kw">let </span>variant_index = variant.name.clone().into();
+                    <span class="kw">let </span>variant_type = ty.clone().variant(variant_index);
+                    variant_predicates.push(builder.create_variant_predicate(
+                        discriminant,
+                        variant,
+                        <span class="kw-2">&amp;</span>variant_type,
+                    )<span class="question-mark">?</span>);
+                    unique_ref_predicates_to_encode.push(variant_type);
                 }
-                <span class="ident">vir_low::PredicateDecl::new</span>(
-                    <span class="macro">predicate_name!</span> {<span class="ident">UniqueRef</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">ty</a><span class="op">&gt;</span>},
-                    <span class="macro">vec!</span>[
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">lifetime</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">place</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">root_address</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">current_snapshot</a>,
-                        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#491-497">final_snapshot</a>,
-                    ],
-                    <span class="prelude-val">Some</span>(<span class="macro">expr!</span> {
-                        [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#500">current_validity</a>] <span class="op">&amp;&amp;</span>
-                        [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#503">final_validity</a>] <span class="op">&amp;&amp;</span>
-                        [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#529">field_predicates</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="../../../../../../../vir/common/expression/trait.ExpressionIterator.html">conjoin</a>()]
-                    }),
-                )
+                <a href="#303">unique_ref_predicates_to_encode</a>.push(<a href="#337">decl</a>.discriminant_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                <span class="kw">if </span>decl.safety.is_enum() {
+                    builder.add_discriminant_predicate(decl)<span class="question-mark">?</span>;
+                }
+                builder.add_variant_predicates(variant_predicates)<span class="question-mark">?</span>;
             }
-            <span class="ident">vir_mid::TypeDecl::Enum</span>(<span class="ident">_decl</span>) =&gt; {
-                <span class="macro">unimplemented!</span>();
+            vir_mid::TypeDecl::Reference(decl) =&gt; {
+                <span class="comment">// FIXME: Have a getter for the first lifetime.
+                </span><span class="kw">let </span>lifetime = <span class="kw-2">&amp;</span><a href="#355">decl</a>.lifetimes[<span class="number">0</span>];
+                <span class="kw">if </span>decl.uniqueness.is_unique() {
+                    builder.add_unique_ref_target_predicate(<span class="kw-2">&amp;</span>decl.target_type, lifetime)<span class="question-mark">?</span>;
+                    <a href="#303">unique_ref_predicates_to_encode</a>.push(<a href="#355">decl</a>.target_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                } <span class="kw">else </span>{
+                    builder.add_frac_ref_target_predicate(<span class="kw-2">&amp;</span>decl.target_type, lifetime)<span class="question-mark">?</span>;
+                    <a href="#304">frac_ref_predicates_to_encode</a>.push(<a href="#355">decl</a>.target_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                }
             }
-            <span class="ident">vir_mid::TypeDecl::Union</span>(<span class="ident">_decl</span>) =&gt; {
-                <span class="macro">unimplemented!</span>();
+            vir_mid::TypeDecl::Array(decl) =&gt; {
+                builder.lowerer().encode_place_array_index_axioms(ty)<span class="question-mark">?</span>;
+                builder
+                    .lowerer()
+                    .ensure_type_definition(<span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
+                <a href="#303">unique_ref_predicates_to_encode</a>.push(<a href="#366">decl</a>.element_type.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+                builder.add_const_parameters_validity()<span class="question-mark">?</span>;
+                <span class="comment">// FIXME: Have a getter for the first const parameter.
+                </span><span class="kw">let </span>length = <span class="kw">if </span>normalized_type.is_slice() {
+                    builder.get_slice_len()<span class="question-mark">?
+                </span>} <span class="kw">else </span>{
+                    <a href="#366">decl</a>.const_parameters[<span class="number">0</span>].<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+                };
+                builder.add_snapshot_len_equal_to(<span class="kw-2">&amp;</span>length)<span class="question-mark">?</span>;
+                builder.add_quantified_permission(<span class="kw-2">&amp;</span>length, <span class="kw-2">&amp;</span>decl.element_type)<span class="question-mark">?</span>;
             }
-            <span class="comment">// vir_mid::TypeDecl::Array(Array) =&gt; {},</span>
-            <span class="ident">vir_mid::TypeDecl::Reference</span>(<span class="ident">reference</span>) <span class="kw">if</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#588">reference</a>.<span class="ident">uniqueness</span>.<span class="ident">is_unique</span>() =&gt; {
-                <span class="macro">unimplemented!</span>();
+            <span class="kw">_ </span>=&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unimplemented.html">unimplemented!</a>(<span class="string">&quot;{:?}&quot;</span>, type_decl);
             }
-            <span class="comment">// vir_mid::TypeDecl::Never =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Closure(Closure) =&gt; {},</span>
-            <span class="comment">// vir_mid::TypeDecl::Unsupported(Unsupported) =&gt; {},</span>
-            <span class="ident">x</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;{}&quot;</span>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#594">x</a>),
-        };
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#480">self</a>.<span class="ident">predicates</span>.<span class="ident">push</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/predicates/owned/encoder.rs.html#511">predicate</a>);
+        }
+        <a class="self" href="#291">self</a>.predicates.push(<a href="#305">builder</a>.<a href="builders/unique_ref/predicate_decl.rs.html#80">build</a>());
+        <span class="kw">for </span>ty <span class="kw">in </span>unique_ref_predicates_to_encode {
+            <span class="comment">// TODO: Optimization: This variant is never unfolded,
+            // encode it as abstract predicate.
+            </span><span class="self">self</span>.encode_unique_ref(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
+        <span class="kw">for </span>ty <span class="kw">in </span>frac_ref_predicates_to_encode {
+            <span class="self">self</span>.encode_frac_ref(<span class="kw-2">&amp;</span>ty)<span class="question-mark">?</span>;
+        }
         <span class="prelude-val">Ok</span>(())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

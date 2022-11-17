@@ -1,0 +1,502 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-interface/src/environment/mir_body/borrowck/lifetimes/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script><script defer src="../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../prusti_interface/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<span id="2">2</span>
+<span id="3">3</span>
+<span id="4">4</span>
+<span id="5">5</span>
+<span id="6">6</span>
+<span id="7">7</span>
+<span id="8">8</span>
+<span id="9">9</span>
+<span id="10">10</span>
+<span id="11">11</span>
+<span id="12">12</span>
+<span id="13">13</span>
+<span id="14">14</span>
+<span id="15">15</span>
+<span id="16">16</span>
+<span id="17">17</span>
+<span id="18">18</span>
+<span id="19">19</span>
+<span id="20">20</span>
+<span id="21">21</span>
+<span id="22">22</span>
+<span id="23">23</span>
+<span id="24">24</span>
+<span id="25">25</span>
+<span id="26">26</span>
+<span id="27">27</span>
+<span id="28">28</span>
+<span id="29">29</span>
+<span id="30">30</span>
+<span id="31">31</span>
+<span id="32">32</span>
+<span id="33">33</span>
+<span id="34">34</span>
+<span id="35">35</span>
+<span id="36">36</span>
+<span id="37">37</span>
+<span id="38">38</span>
+<span id="39">39</span>
+<span id="40">40</span>
+<span id="41">41</span>
+<span id="42">42</span>
+<span id="43">43</span>
+<span id="44">44</span>
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+<span id="56">56</span>
+<span id="57">57</span>
+<span id="58">58</span>
+<span id="59">59</span>
+<span id="60">60</span>
+<span id="61">61</span>
+<span id="62">62</span>
+<span id="63">63</span>
+<span id="64">64</span>
+<span id="65">65</span>
+<span id="66">66</span>
+<span id="67">67</span>
+<span id="68">68</span>
+<span id="69">69</span>
+<span id="70">70</span>
+<span id="71">71</span>
+<span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
+<span id="75">75</span>
+<span id="76">76</span>
+<span id="77">77</span>
+<span id="78">78</span>
+<span id="79">79</span>
+<span id="80">80</span>
+<span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
+<span id="87">87</span>
+<span id="88">88</span>
+<span id="89">89</span>
+<span id="90">90</span>
+<span id="91">91</span>
+<span id="92">92</span>
+<span id="93">93</span>
+<span id="94">94</span>
+<span id="95">95</span>
+<span id="96">96</span>
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+<span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
+<span id="171">171</span>
+<span id="172">172</span>
+<span id="173">173</span>
+<span id="174">174</span>
+<span id="175">175</span>
+<span id="176">176</span>
+<span id="177">177</span>
+<span id="178">178</span>
+<span id="179">179</span>
+<span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
+<span id="204">204</span>
+<span id="205">205</span>
+<span id="206">206</span>
+<span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+<span id="245">245</span>
+<span id="246">246</span>
+<span id="247">247</span>
+<span id="248">248</span>
+<span id="249">249</span>
+<span id="250">250</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::facts::{
+    <a href="../facts/mod.rs.html#15">AllInputFacts</a>, <a href="../facts/mod.rs.html#18">BorrowckFacts</a>, <a href="../facts/mod.rs.html#10">Loan</a>, <a href="../facts/mod.rs.html#83">LocationTable</a>, <a href="../facts/mod.rs.html#11">Point</a>, <a href="../facts/mod.rs.html#9">Region</a>, <a href="../facts/mod.rs.html#42">RichLocation</a>,
+};
+<span class="kw">use </span><span class="kw">crate</span>::environment::debug_utils::to_text::{<a href="../../../debug_utils/to_text.rs.html#15">opaque_lifetime_string</a>, <a href="../../../debug_utils/to_text.rs.html#5">ToText</a>};
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/index.html">prusti_rustc_interface::middle::mir</a>;
+<span class="kw">use </span>std::collections::{<a href="https://doc.rust-lang.org/nightly/alloc/collections/btree/map/struct.BTreeMap.html">BTreeMap</a>, <a href="https://doc.rust-lang.org/nightly/alloc/collections/btree/set/struct.BTreeSet.html">BTreeSet</a>};
+<span class="kw">use </span><a href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">vir::high::ty::LifetimeConst</a>;
+
+<span class="kw">mod </span><a href="graphviz.rs.html#1-116">graphviz</a>;
+
+<span class="kw">pub use </span><a href="graphviz.rs.html#21"><span class="self">self</span>::graphviz::LifetimesGraphviz</a>;
+
+<span class="kw">pub struct </span>Lifetimes {
+    facts: <a href="../facts/mod.rs.html#18">BorrowckFacts</a>,
+}
+
+<span class="kw">pub struct </span>LifetimeWithInclusions {
+    lifetime: <a href="../facts/mod.rs.html#9">Region</a>,
+    loan: <a href="../facts/mod.rs.html#10">Loan</a>,
+    included_in: Vec&lt;<a href="../facts/mod.rs.html#9">Region</a>&gt;,
+}
+
+<span class="kw">impl </span><a href="#13">Lifetimes</a> {
+    <span class="kw">pub fn </span>new(<span class="kw-2">mut </span>input_facts: <a href="../facts/mod.rs.html#15">AllInputFacts</a>, location_table: <a href="../facts/mod.rs.html#83">LocationTable</a>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>entry_block = mir::START_BLOCK;
+        <span class="kw">let </span>entry_point = <a href="#24">location_table</a>.<a href="../facts/mod.rs.html#104">location_to_point</a>(<a href="../facts/mod.rs.html#43">RichLocation::Start</a>(<a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a> {
+            block: <a href="#25">entry_block</a>,
+            statement_index: <span class="number">0</span>,
+        }));
+        <span class="kw">for </span>(origin, loan) <span class="kw">in </span><span class="kw-2">&amp;</span>input_facts.placeholder {
+            input_facts
+                .loan_issued_at
+                .push((<span class="kw-2">*</span>origin, <span class="kw-2">*</span>loan, entry_point));
+        }
+        <span class="kw">for </span>(origin1, origin2) <span class="kw">in </span><span class="kw-2">&amp;</span>input_facts.known_placeholder_subset {
+            input_facts
+                .subset_base
+                .push((<span class="kw-2">*</span>origin1, <span class="kw-2">*</span>origin2, entry_point));
+        }
+        <span class="kw">let </span>output_facts = prusti_rustc_interface::polonius_engine::Output::compute(
+            <span class="kw-2">&amp;</span><a href="#24">input_facts</a>,
+            prusti_rustc_interface::polonius_engine::Algorithm::Naive,
+            <span class="bool-val">true</span>,
+        );
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(output_facts.errors.is_empty());
+        <span class="self">Self </span>{
+            facts: BorrowckFacts::new(<a href="#24">input_facts</a>, <a href="#40">output_facts</a>, <a href="#24">location_table</a>),
+        }
+    }
+
+    <span class="kw">pub fn </span>get_loan_live_at_start(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <span class="kw">let </span>info = <a class="self" href="#51">self</a>.<a href="#151">get_loan_live_at</a>(<a href="../facts/mod.rs.html#43">RichLocation::Start</a>(<a href="#51">location</a>));
+        <a href="#52">info</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|x| <a href="../../../debug_utils/to_text.rs.html#15">opaque_lifetime_string</a>(<a href="#54">x</a>.index()))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">pub fn </span>get_loan_live_at_mid(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <span class="kw">let </span>info = <a class="self" href="#58">self</a>.<a href="#151">get_loan_live_at</a>(<a href="../facts/mod.rs.html#44">RichLocation::Mid</a>(<a href="#58">location</a>));
+        <a href="#59">info</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|x| <a href="../../../debug_utils/to_text.rs.html#15">opaque_lifetime_string</a>(<a href="#61">x</a>.index()))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">pub fn </span>get_origin_contains_loan_at_start(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
+    ) -&gt; BTreeMap&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;&gt; {
+        <a class="self" href="#66">self</a>.<a href="#79-82">get_origin_contains_loan_at_location</a>(<a href="../facts/mod.rs.html#43">RichLocation::Start</a>(<a href="#67">location</a>))
+    }
+
+    <span class="kw">pub fn </span>get_origin_contains_loan_at_mid(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
+    ) -&gt; BTreeMap&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;&gt; {
+        <a class="self" href="#73">self</a>.<a href="#79-82">get_origin_contains_loan_at_location</a>(<a href="../facts/mod.rs.html#44">RichLocation::Mid</a>(<a href="#74">location</a>))
+    }
+
+    <span class="kw">pub fn </span>get_origin_contains_loan_at_location(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        location: <a href="../facts/mod.rs.html#42">RichLocation</a>,
+    ) -&gt; BTreeMap&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;&gt; {
+        <span class="kw">let </span>info = <a class="self" href="#80">self</a>.<a href="#160-163">get_origin_contains_loan_at</a>(<a href="#81">location</a>);
+        <a href="#83">info</a>.iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(k, v)| {
+                (
+                    <a href="#85">k</a>.<a href="../../../debug_utils/to_text.rs.html#6">to_text</a>(),
+                    <a href="#85">v</a>.iter()
+                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|x| <a href="../../../debug_utils/to_text.rs.html#15">opaque_lifetime_string</a>(<a href="#89">x</a>.index()))
+                        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>(),
+                )
+            })
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">pub fn </span>lifetime_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a> {
+        <span class="kw">let </span>original_lifetimes_count = <a class="self" href="#96">self</a>.<a href="#138">get_original_lifetimes</a>().len();
+        <span class="kw">let </span>subset_lifetimes: BTreeSet&lt;<a href="../facts/mod.rs.html#9">Region</a>&gt; = <span class="self"><a href="#96">self</a>
+            </span>.facts
+            .input_facts
+            .subset_base
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|<span class="kw-2">&amp;</span>(r1, r2, <span class="kw">_</span>)| [<a href="#103">r1</a>, <a href="#103">r2</a>])
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
+        <span class="kw">let </span>opaque_lifetimes_count = <span class="self"><a href="#96">self</a>
+            </span>.<a href="#113">get_opaque_lifetimes_with_inclusions_names</a>()
+            .keys()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">count</a>();
+        <span class="kw">let </span>subset_lifetimes_count = <a href="#98">subset_lifetimes</a>.len();
+        <a href="#97">original_lifetimes_count</a> + <a href="#109">subset_lifetimes_count</a> + <a href="#105">opaque_lifetimes_count</a>
+    }
+
+    <span class="kw">pub fn </span>get_opaque_lifetimes_with_inclusions_names(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BTreeMap&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, BTreeSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;&gt; {
+        <span class="kw">let </span>opaque_lifetimes = <a class="self" href="#113">self</a>.<a href="graphviz.rs.html#24">get_opaque_lifetimes_with_inclusions</a>();
+        <span class="kw">let </span><span class="kw-2">mut </span>result = BTreeMap::new();
+        <span class="kw">for </span>lifetime_with_inclusions <span class="kw">in </span>opaque_lifetimes {
+            result.insert(
+                lifetime_with_inclusions.lifetime.to_text(),
+                lifetime_with_inclusions
+                    .included_in
+                    .iter()
+                    .map(|x| x.to_text())
+                    .collect(),
+            );
+        }
+        <a href="#115">result</a>
+    }
+
+    <span class="kw">pub fn </span>get_opaque_lifetimes_with_names(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <a class="self" href="#129">self</a>.facts
+            .input_facts
+            .placeholder
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(<span class="kw">_</span>, loan)| <a href="../../../debug_utils/to_text.rs.html#15">opaque_lifetime_string</a>(<a href="#134">loan</a>.index()))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">fn </span>get_original_lifetimes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="../facts/mod.rs.html#9">Region</a>&gt; {
+        <a class="self" href="#138">self</a>.facts
+            .input_facts
+            .loan_issued_at
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|(region, <span class="kw">_</span>, <span class="kw">_</span>)| <span class="kw-2">*</span><a href="#143">region</a>)
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">fn </span>location_to_point(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="../facts/mod.rs.html#42">RichLocation</a>) -&gt; <a href="../facts/mod.rs.html#11">Point</a> {
+        <a class="self" href="#147">self</a>.facts.location_table.<a href="../facts/mod.rs.html#104">location_to_point</a>(<a href="#147">location</a>)
+    }
+
+    <span class="kw">fn </span>get_loan_live_at(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="../facts/mod.rs.html#42">RichLocation</a>) -&gt; Vec&lt;<a href="../facts/mod.rs.html#10">Loan</a>&gt; {
+        <span class="kw">let </span>point = <a class="self" href="#151">self</a>.<a href="#147">location_to_point</a>(<a href="#151">location</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(loans) = <a class="self" href="#151">self</a>.facts.output_facts.loan_live_at.get(<span class="kw-2">&amp;</span><a href="#152">point</a>) {
+            <a href="#153">loans</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+        } <span class="kw">else </span>{
+            Vec::new()
+        }
+    }
+
+    <span class="kw">fn </span>get_origin_contains_loan_at(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        location: <a href="../facts/mod.rs.html#42">RichLocation</a>,
+    ) -&gt; BTreeMap&lt;<a href="../facts/mod.rs.html#9">Region</a>, BTreeSet&lt;<a href="../facts/mod.rs.html#10">Loan</a>&gt;&gt; {
+        <span class="kw">let </span>point = <a class="self" href="#161">self</a>.<a href="#147">location_to_point</a>(<a href="#162">location</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(map) = <a class="self" href="#161">self</a>.facts.output_facts.origin_contains_loan_at.get(<span class="kw-2">&amp;</span><a href="#164">point</a>) {
+            <a href="#165">map</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+        } <span class="kw">else </span>{
+            BTreeMap::new()
+        }
+    }
+
+    <span class="kw">fn </span>get_subset_base(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="../facts/mod.rs.html#42">RichLocation</a>) -&gt; Vec&lt;(<a href="../facts/mod.rs.html#9">Region</a>, <a href="../facts/mod.rs.html#9">Region</a>)&gt; {
+        <span class="kw">let </span>point = <a class="self" href="#172">self</a>.<a href="#147">location_to_point</a>(<a href="#172">location</a>);
+        <a class="self" href="#172">self</a>.facts
+            .input_facts
+            .subset_base
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">flat_map</a>(|<span class="kw-2">&amp;</span>(r1, r2, p)| <span class="kw">if </span>p == point { <span class="prelude-val">Some</span>((<a href="#178">r1</a>, <a href="#178">r2</a>)) } <span class="kw">else </span>{ <span class="prelude-val">None </span>})
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    }
+
+    <span class="kw">pub fn </span>get_subset_base_at_start(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; Vec&lt;(<a href="../facts/mod.rs.html#9">Region</a>, <a href="../facts/mod.rs.html#9">Region</a>)&gt; {
+        <span class="kw">let </span>rich_location = <a href="../facts/mod.rs.html#43">RichLocation::Start</a>(<a href="#182">location</a>);
+        <a class="self" href="#182">self</a>.<a href="#172">get_subset_base</a>(<a href="#183">rich_location</a>)
+    }
+
+    <span class="kw">pub fn </span>get_subset_base_at_mid(<span class="kw-2">&amp;</span><span class="self">self</span>, location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>) -&gt; Vec&lt;(<a href="../facts/mod.rs.html#9">Region</a>, <a href="../facts/mod.rs.html#9">Region</a>)&gt; {
+        <span class="kw">let </span>rich_location = <a href="../facts/mod.rs.html#44">RichLocation::Mid</a>(<a href="#187">location</a>);
+        <a class="self" href="#187">self</a>.<a href="#172">get_subset_base</a>(<a href="#188">rich_location</a>)
+    }
+
+    <span class="kw">pub fn </span>get_lifetimes_dead_on_edge(<span class="kw-2">&amp;</span><span class="self">self</span>, from: <a href="../facts/mod.rs.html#42">RichLocation</a>, to: <a href="../facts/mod.rs.html#42">RichLocation</a>) -&gt; Vec&lt;<a href="../facts/mod.rs.html#9">Region</a>&gt; {
+        <span class="kw">let </span>from_point = <a class="self" href="#192">self</a>.<a href="#147">location_to_point</a>(<a href="#192">from</a>);
+        <span class="kw">let </span>to_point = <a class="self" href="#192">self</a>.<a href="#147">location_to_point</a>(<a href="#192">to</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(from_origins) = <span class="self"><a href="#192">self</a>
+            </span>.facts
+            .output_facts
+            .origin_live_on_entry
+            .get(<span class="kw-2">&amp;</span><a href="#193">from_point</a>)
+        {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(to_origins) = <a class="self" href="#192">self</a>.facts.output_facts.origin_live_on_entry.get(<span class="kw-2">&amp;</span><a href="#194">to_point</a>) {
+                <a href="#195">from_origins</a>
+                    .iter()
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|origin| !<a href="#201">to_origins</a>.contains(<a href="#204">origin</a>))
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>()
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+            } <span class="kw">else </span>{
+                <a href="#195">from_origins</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+            }
+        } <span class="kw">else </span>{
+            Vec::new()
+        }
+    }
+
+    <span class="doccomment">/// When the Rust compiler generates Polonius facts, it creates many
+    /// temporary lifetimes. Sometimes (for example, when encoding the
+    /// constructing assignment of the aggregate with a reference-typed field)
+    /// we need to unify the lifetimes. This method constructs a map from
+    /// lifetimes known to Polonius to `base_lifetimes` indicating with which
+    /// `base_lifetimes` the lifetimes could be replaced.
+    </span><span class="kw">pub fn </span>construct_replacement_map(
+        <span class="kw-2">&amp;</span><span class="self">self</span>,
+        location: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_middle/mir/struct.Location.html">mir::Location</a>,
+        base_lifetimes: Vec&lt;<a href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">LifetimeConst</a>&gt;,
+    ) -&gt; BTreeMap&lt;<a href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">LifetimeConst</a>, <a href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">LifetimeConst</a>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>map = BTreeMap::new();
+        <span class="kw">fn </span>to_lifetime(region: <a href="../facts/mod.rs.html#9">Region</a>) -&gt; <a href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">LifetimeConst</a> {
+            LifetimeConst::new(<a href="#227">region</a>.<a href="../../../debug_utils/to_text.rs.html#6">to_text</a>())
+        }
+        <span class="kw">let </span>subset_base = <a class="self" href="#222">self</a>.<a href="#187">get_subset_base_at_mid</a>(<a href="#223">location</a>);
+        <span class="kw">for </span>lifetime <span class="kw">in </span><span class="kw-2">&amp;</span>base_lifetimes {
+            map.insert(lifetime.clone(), lifetime.clone());
+        }
+        <span class="kw">let </span><span class="kw-2">mut </span>changed = <span class="bool-val">true</span>;
+        <span class="kw">while </span>changed {
+            changed = <span class="bool-val">false</span>;
+            <span class="kw">for </span>(constrained_lifetime, constraining_lifetime) <span class="kw">in </span><span class="kw-2">&amp;</span>subset_base {
+                <span class="kw">let </span>constrained_lifetime = to_lifetime(<span class="kw-2">*</span>constrained_lifetime);
+                <span class="kw">let </span>constraining_lifetime = to_lifetime(<span class="kw-2">*</span>constraining_lifetime);
+                <span class="kw">if </span>!map.contains_key(<span class="kw-2">&amp;</span>constrained_lifetime) {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(constraining_base_lifetime) = map.get(<span class="kw-2">&amp;</span>constraining_lifetime) {
+                        map.insert(constrained_lifetime, constraining_base_lifetime.clone());
+                        changed = <span class="bool-val">true</span>;
+                    }
+                }
+            }
+        }
+        <a href="#226">map</a>
+    }
+}
+</code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_interface" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

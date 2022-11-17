@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/pest_meta-2.1.3/src/optimizer/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../pest_meta/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../pest_meta/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../pest_meta/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/pest_meta-2.4.0/src/optimizer/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../pest_meta/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -515,516 +508,675 @@
 <span id="508">508</span>
 <span id="509">509</span>
 <span id="510">510</span>
-</pre><pre class="rust"><code><span class="comment">// pest. The Elegant Parser</span>
-<span class="comment">// Copyright (c) 2018 Dragoș Tiselice</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0</span>
-<span class="comment">// &lt;LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT</span>
-<span class="comment">// license &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. All files in the project carrying such notice may not be copied,</span>
-<span class="comment">// modified, or distributed except according to those terms.</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
+<span id="546">546</span>
+<span id="547">547</span>
+<span id="548">548</span>
+<span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
+<span id="552">552</span>
+<span id="553">553</span>
+<span id="554">554</span>
+<span id="555">555</span>
+<span id="556">556</span>
+<span id="557">557</span>
+<span id="558">558</span>
+<span id="559">559</span>
+<span id="560">560</span>
+<span id="561">561</span>
+<span id="562">562</span>
+<span id="563">563</span>
+<span id="564">564</span>
+<span id="565">565</span>
+<span id="566">566</span>
+<span id="567">567</span>
+<span id="568">568</span>
+<span id="569">569</span>
+<span id="570">570</span>
+<span id="571">571</span>
+<span id="572">572</span>
+<span id="573">573</span>
+<span id="574">574</span>
+<span id="575">575</span>
+<span id="576">576</span>
+<span id="577">577</span>
+<span id="578">578</span>
+<span id="579">579</span>
+<span id="580">580</span>
+<span id="581">581</span>
+<span id="582">582</span>
+<span id="583">583</span>
+<span id="584">584</span>
+<span id="585">585</span>
+<span id="586">586</span>
+<span id="587">587</span>
+<span id="588">588</span>
+<span id="589">589</span>
+<span id="590">590</span>
+</pre><pre class="rust"><code><span class="comment">// pest. The Elegant Parser
+// Copyright (c) 2018 Dragoș Tiselice
+//
+// Licensed under the Apache License, Version 2.0
+// &lt;LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT
+// license &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your
+// option. All files in the project carrying such notice may not be copied,
+// modified, or distributed except according to those terms.
 
-<span class="kw">use</span> <a class="ident" href="../../../src/pest_meta/lib.rs.html#21">ast</a>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html">std::collections::HashMap</a>;
+</span><span class="kw">use </span><a href="../lib.rs.html#19"><span class="kw">crate</span>::ast</a>::<span class="kw-2">*</span>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html">std::collections::HashMap</a>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="macro">macro_rules!</span> <span class="ident">box_tree</span> {
-    ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">node</span>:<span class="ident">ident</span>( $(                      <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>:<span class="ident">ident</span>( $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>:<span class="ident">tt</span>)<span class="op">*</span> )     ),<span class="op">+</span> ) ) =&gt; (
-      <span class="macro-nonterminal">$</span><span class="macro-nonterminal">node</span>      ( $( <span class="ident">Box::new</span>( <span class="macro">box_tree!</span>( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">child</span>      ( $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>   )<span class="op">*</span> ) ) ) ),<span class="op">+</span> )
+<span class="attribute">#[cfg(test)]
+</span><span class="macro">macro_rules! </span>box_tree {
+    ( <span class="macro-nonterminal">$node</span>:ident( $(                      <span class="macro-nonterminal">$child</span>:ident( $(<span class="macro-nonterminal">$args</span>:tt)* )     ),+ ) ) =&gt; (
+      <span class="macro-nonterminal">$node      </span>( $( Box::new( <span class="macro">box_tree!</span>( <span class="macro-nonterminal">$child      </span>( $(<span class="macro-nonterminal">$args   </span>)* ) ) ) ),+ )
     );
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>:<span class="ident">expr</span>) =&gt; (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">expr</span>);
+    (<span class="macro-nonterminal">$expr</span>:expr) =&gt; (<span class="macro-nonterminal">$expr</span>);
 }
 
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/concatenator.rs.html#10-34">concatenator</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/factorizer.rs.html#10-38">factorizer</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/restorer.rs.html#9-157">restorer</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/rotater.rs.html#10-45">rotater</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/skipper.rs.html#10-57">skipper</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../src/pest_meta/optimizer/unroller.rs.html#10-67">unroller</a>;
+<span class="kw">mod </span><a href="concatenator.rs.html#10-33">concatenator</a>;
+<span class="kw">mod </span><a href="factorizer.rs.html#10-51">factorizer</a>;
+<span class="kw">mod </span><a href="lister.rs.html#10-42">lister</a>;
+<span class="kw">mod </span><a href="restorer.rs.html#9-153">restorer</a>;
+<span class="kw">mod </span><a href="rotater.rs.html#10-44">rotater</a>;
+<span class="kw">mod </span><a href="skipper.rs.html#10-56">skipper</a>;
+<span class="kw">mod </span><a href="unroller.rs.html#10-66">unroller</a>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">optimize</span>(<span class="ident">rules</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/ast.rs.html#11-15">Rule</a><span class="op">&gt;</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#89-93">OptimizedRule</a><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">optimized</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#89-93">OptimizedRule</a><span class="op">&gt;</span> <span class="op">=</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#28">rules</a>
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/rotater.rs.html#12">rotater::rotate</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/skipper.rs.html#12">skipper::skip</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/unroller.rs.html#12">unroller::unroll</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/concatenator.rs.html#12">concatenator::concatenate</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/factorizer.rs.html#12">factorizer::factor</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#46">rule_to_optimized_rule</a>)
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
+<span class="kw">pub fn </span>optimize(rules: Vec&lt;<a href="../ast.rs.html#11">Rule</a>&gt;) -&gt; Vec&lt;<a href="#91">OptimizedRule</a>&gt; {
+    <span class="kw">let </span>optimized: Vec&lt;<a href="#91">OptimizedRule</a>&gt; = <a href="#29">rules</a>
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="rotater.rs.html#12">rotater::rotate</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="skipper.rs.html#12">skipper::skip</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="unroller.rs.html#12">unroller::unroll</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="concatenator.rs.html#12">concatenator::concatenate</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="factorizer.rs.html#12">factorizer::factor</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="lister.rs.html#12">lister::list</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="#48">rule_to_optimized_rule</a>)
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
 
-    <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#81">to_hash_map</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#29">optimized</a>);
-    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#29">optimized</a>
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">rule</span><span class="op">|</span> <a class="ident" href="../../../src/pest_meta/optimizer/restorer.rs.html#13-16">restorer::restore_on_err</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#42">rule</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#39">rules</a>))
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    <span class="kw">let </span>rules = <a href="#83">to_hash_map</a>(<span class="kw-2">&amp;</span><a href="#30">optimized</a>);
+    <a href="#30">optimized</a>
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>()
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|rule| <a href="restorer.rs.html#13-16">restorer::restore_on_err</a>(<a href="#44">rule</a>, <span class="kw-2">&amp;</span><a href="#41">rules</a>))
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
 }
 
-<span class="kw">fn</span> <span class="ident">rule_to_optimized_rule</span>(<span class="ident">rule</span>: <a class="ident" href="../../../src/pest_meta/ast.rs.html#11-15">Rule</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#89-93">OptimizedRule</a> {
-    <span class="kw">fn</span> <span class="ident">to_optimized</span>(<span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/ast.rs.html#27-64">Expr</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a> {
-        <span class="kw">match</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">expr</a> {
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#29">Expr::Str</a>(<span class="ident">string</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#97">OptimizedExpr::Str</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#49">string</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#31">Expr::Insens</a>(<span class="ident">string</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#98">OptimizedExpr::Insens</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#50">string</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#33">Expr::Range</a>(<span class="ident">start</span>, <span class="ident">end</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#99">OptimizedExpr::Range</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#51">start</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#51">end</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#35">Expr::Ident</a>(<span class="ident">ident</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#100">OptimizedExpr::Ident</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#52">ident</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#37">Expr::PeekSlice</a>(<span class="ident">start</span>, <span class="ident">end</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#101">OptimizedExpr::PeekSlice</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#53">start</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#53">end</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#39">Expr::PosPred</a>(<span class="ident">expr</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#54">expr</a>))),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#41">Expr::NegPred</a>(<span class="ident">expr</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#55">expr</a>))),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#43">Expr::Seq</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#56">lhs</a>)), <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#56">rhs</a>)))
+<span class="kw">fn </span>rule_to_optimized_rule(rule: <a href="../ast.rs.html#11">Rule</a>) -&gt; <a href="#91">OptimizedRule</a> {
+    <span class="kw">fn </span>to_optimized(expr: <a href="../ast.rs.html#27">Expr</a>) -&gt; <a href="#98">OptimizedExpr</a> {
+        <span class="kw">match </span><a href="#49">expr</a> {
+            <a href="../ast.rs.html#29">Expr::Str</a>(string) =&gt; <a href="#99">OptimizedExpr::Str</a>(<a href="#51">string</a>),
+            <a href="../ast.rs.html#31">Expr::Insens</a>(string) =&gt; <a href="#100">OptimizedExpr::Insens</a>(<a href="#52">string</a>),
+            <a href="../ast.rs.html#33">Expr::Range</a>(start, end) =&gt; <a href="#101">OptimizedExpr::Range</a>(<a href="#53">start</a>, <a href="#53">end</a>),
+            <a href="../ast.rs.html#35">Expr::Ident</a>(ident) =&gt; <a href="#102">OptimizedExpr::Ident</a>(<a href="#54">ident</a>),
+            <a href="../ast.rs.html#37">Expr::PeekSlice</a>(start, end) =&gt; <a href="#103">OptimizedExpr::PeekSlice</a>(<a href="#55">start</a>, <a href="#55">end</a>),
+            <a href="../ast.rs.html#39">Expr::PosPred</a>(expr) =&gt; <a href="#104">OptimizedExpr::PosPred</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#56">expr</a>))),
+            <a href="../ast.rs.html#41">Expr::NegPred</a>(expr) =&gt; <a href="#105">OptimizedExpr::NegPred</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#57">expr</a>))),
+            <a href="../ast.rs.html#43">Expr::Seq</a>(lhs, rhs) =&gt; {
+                <a href="#106">OptimizedExpr::Seq</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#58">lhs</a>)), Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#58">rhs</a>)))
             }
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#45">Expr::Choice</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#59">lhs</a>)), <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#59">rhs</a>)))
+            <a href="../ast.rs.html#45">Expr::Choice</a>(lhs, rhs) =&gt; {
+                <a href="#107">OptimizedExpr::Choice</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#61">lhs</a>)), Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#61">rhs</a>)))
             }
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#47">Expr::Opt</a>(<span class="ident">expr</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#62">expr</a>))),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#49">Expr::Rep</a>(<span class="ident">expr</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#63">expr</a>))),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#61">Expr::Skip</a>(<span class="ident">strings</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#108">OptimizedExpr::Skip</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#64">strings</a>),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#63">Expr::Push</a>(<span class="ident">expr</span>) =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#65">expr</a>))),
-            <a class="ident" href="../../../src/pest_meta/ast.rs.html#51">Expr::RepOnce</a>(<span class="kw">_</span>)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/ast.rs.html#53">Expr::RepExact</a>(..)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/ast.rs.html#55">Expr::RepMin</a>(..)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/ast.rs.html#57">Expr::RepMax</a>(..)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/ast.rs.html#59">Expr::RepMinMax</a>(..) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;No valid transformation to OptimizedRule&quot;</span>),
+            <a href="../ast.rs.html#47">Expr::Opt</a>(expr) =&gt; <a href="#108">OptimizedExpr::Opt</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#64">expr</a>))),
+            <a href="../ast.rs.html#49">Expr::Rep</a>(expr) =&gt; <a href="#109">OptimizedExpr::Rep</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#65">expr</a>))),
+            <a href="../ast.rs.html#61">Expr::Skip</a>(strings) =&gt; <a href="#110">OptimizedExpr::Skip</a>(<a href="#66">strings</a>),
+            <a href="../ast.rs.html#63">Expr::Push</a>(expr) =&gt; <a href="#111">OptimizedExpr::Push</a>(Box::new(<a href="#49">to_optimized</a>(<span class="kw-2">*</span><a href="#67">expr</a>))),
+            <a href="../ast.rs.html#51">Expr::RepOnce</a>(<span class="kw">_</span>)
+            | <a href="../ast.rs.html#53">Expr::RepExact</a>(..)
+            | <a href="../ast.rs.html#55">Expr::RepMin</a>(..)
+            | <a href="../ast.rs.html#57">Expr::RepMax</a>(..)
+            | <a href="../ast.rs.html#59">Expr::RepMinMax</a>(..) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.unreachable.html">unreachable!</a>(<span class="string">&quot;No valid transformation to OptimizedRule&quot;</span>),
         }
     }
 
-    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#89-93">OptimizedRule</a> {
-        <span class="ident">name</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#46">rule</a>.<span class="ident">name</span>,
-        <span class="ident">ty</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#46">rule</a>.<span class="ident">ty</span>,
-        <span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#47">to_optimized</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#46">rule</a>.<span class="ident">expr</span>),
+    <a href="#91">OptimizedRule</a> {
+        name: <a href="#48">rule</a>.name,
+        ty: <a href="#48">rule</a>.ty,
+        expr: <a href="#49">to_optimized</a>(<a href="#48">rule</a>.expr),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">to_hash_map</span>(<span class="ident">rules</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#89-93">OptimizedRule</a>]) -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span> {
-    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#81">rules</a>
-        .<span class="ident">iter</span>()
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> (<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#84">r</a>.<span class="ident">name</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#84">r</a>.<span class="ident">expr</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()))
-        .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+<span class="kw">fn </span>to_hash_map(rules: <span class="kw-2">&amp;</span>[<a href="#91">OptimizedRule</a>]) -&gt; HashMap&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, <a href="#98">OptimizedExpr</a>&gt; {
+    <a href="#83">rules</a>
+        .iter()
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|r| (<a href="#86">r</a>.name.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <a href="#86">r</a>.expr.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()))
+        .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OptimizedRule</span> {
-    <span class="kw">pub</span> <span class="ident">name</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
-    <span class="kw">pub</span> <span class="ident">ty</span>: <a class="ident" href="../../../src/pest_meta/ast.rs.html#18-24">RuleType</a>,
-    <span class="kw">pub</span> <span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>,
+<span class="attribute">#[derive(Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>OptimizedRule {
+    <span class="kw">pub </span>name: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="kw">pub </span>ty: <a href="../ast.rs.html#18">RuleType</a>,
+    <span class="kw">pub </span>expr: <a href="#98">OptimizedExpr</a>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">OptimizedExpr</span> {
-    <span class="ident">Str</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
-    <span class="ident">Insens</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
-    <span class="ident">Range</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
-    <span class="ident">Ident</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
-    <span class="ident">PeekSlice</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a><span class="op">&gt;</span>),
-    <span class="ident">PosPred</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">NegPred</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">Seq</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">Choice</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">Opt</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">Rep</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">Skip</span>(<span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>),
-    <span class="ident">Push</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
-    <span class="ident">RestoreOnErr</span>(<span class="ident">Box</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>),
+<span class="attribute">#[derive(Clone, Debug, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>OptimizedExpr {
+    Str(<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
+    Insens(<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
+    Range(<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>, <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
+    Ident(<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>),
+    PeekSlice(<a href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>, <span class="prelude-ty">Option</span>&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.i32.html">i32</a>&gt;),
+    PosPred(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    NegPred(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    Seq(Box&lt;<a href="#98">OptimizedExpr</a>&gt;, Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    Choice(Box&lt;<a href="#98">OptimizedExpr</a>&gt;, Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    Opt(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    Rep(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    Skip(Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;),
+    Push(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
+    RestoreOnErr(Box&lt;<a href="#98">OptimizedExpr</a>&gt;),
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_top_down</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#217-221">OptimizedExprTopDownIterator</a> {
-        <span class="ident">OptimizedExprTopDownIterator::new</span>(<a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#114">self</a>)
+<span class="kw">impl </span><a href="#98">OptimizedExpr</a> {
+    <span class="kw">pub fn </span>iter_top_down(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="#219">OptimizedExprTopDownIterator</a> {
+        OptimizedExprTopDownIterator::new(<a class="self" href="#116">self</a>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map_top_down</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>,
+    <span class="kw">pub fn </span>map_top_down&lt;F&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>f: F) -&gt; <a href="#98">OptimizedExpr</a>
+    <span class="kw">where
+        </span>F: FnMut(<a href="#98">OptimizedExpr</a>) -&gt; <a href="#98">OptimizedExpr</a>,
     {
-        <span class="kw">fn</span> <span class="ident">map_internal</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>
-        <span class="kw">where</span>
-            <span class="ident">F</span>: <span class="ident">FnMut</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>,
+        <span class="kw">fn </span>map_internal&lt;F&gt;(expr: <a href="#98">OptimizedExpr</a>, f: <span class="kw-2">&amp;mut </span>F) -&gt; <a href="#98">OptimizedExpr</a>
+        <span class="kw">where
+            </span>F: FnMut(<a href="#98">OptimizedExpr</a>) -&gt; <a href="#98">OptimizedExpr</a>,
         {
-            <span class="kw">let</span> <span class="ident">expr</span> <span class="op">=</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">expr</a>);
+            <span class="kw">let </span>expr = <a href="#124">f</a>(<a href="#124">expr</a>);
 
-            <span class="kw">match</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#126">expr</a> {
-                <span class="comment">// TODO: Use box syntax when it gets stabilized.</span>
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#130">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#131">mapped</a>)
+            <span class="kw">match </span><a href="#128">expr</a> {
+                <span class="comment">// TODO: Use box syntax when it gets stabilized.
+                </span><a href="#104">OptimizedExpr::PosPred</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#132">expr</a>, <a href="#124">f</a>));
+                    <a href="#104">OptimizedExpr::PosPred</a>(<a href="#133">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#134">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#135">mapped</a>)
+                <a href="#105">OptimizedExpr::NegPred</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#136">expr</a>, <a href="#124">f</a>));
+                    <a href="#105">OptimizedExpr::NegPred</a>(<a href="#137">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped_lhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#138">lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <span class="kw">let</span> <span class="ident">mapped_rhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#138">rhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#139">mapped_lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#140">mapped_rhs</a>)
+                <a href="#106">OptimizedExpr::Seq</a>(lhs, rhs) =&gt; {
+                    <span class="kw">let </span>mapped_lhs = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#140">lhs</a>, <a href="#124">f</a>));
+                    <span class="kw">let </span>mapped_rhs = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#140">rhs</a>, <a href="#124">f</a>));
+                    <a href="#106">OptimizedExpr::Seq</a>(<a href="#141">mapped_lhs</a>, <a href="#142">mapped_rhs</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped_lhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#143">lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <span class="kw">let</span> <span class="ident">mapped_rhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#143">rhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#144">mapped_lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#145">mapped_rhs</a>)
+                <a href="#107">OptimizedExpr::Choice</a>(lhs, rhs) =&gt; {
+                    <span class="kw">let </span>mapped_lhs = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#145">lhs</a>, <a href="#124">f</a>));
+                    <span class="kw">let </span>mapped_rhs = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#145">rhs</a>, <a href="#124">f</a>));
+                    <a href="#107">OptimizedExpr::Choice</a>(<a href="#146">mapped_lhs</a>, <a href="#147">mapped_rhs</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#148">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#149">mapped</a>)
+                <a href="#109">OptimizedExpr::Rep</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#150">expr</a>, <a href="#124">f</a>));
+                    <a href="#109">OptimizedExpr::Rep</a>(<a href="#151">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#152">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#153">mapped</a>)
+                <a href="#108">OptimizedExpr::Opt</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#154">expr</a>, <a href="#124">f</a>));
+                    <a href="#108">OptimizedExpr::Opt</a>(<a href="#155">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#156">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#157">mapped</a>)
+                <a href="#111">OptimizedExpr::Push</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#124-126">map_internal</a>(<span class="kw-2">*</span><a href="#158">expr</a>, <a href="#124">f</a>));
+                    <a href="#111">OptimizedExpr::Push</a>(<a href="#159">mapped</a>)
                 }
-                <span class="ident">expr</span> =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#160">expr</a>,
+                expr =&gt; <a href="#162">expr</a>,
             }
         }
 
-        <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#122-124">map_internal</a>(<a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#118">self</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#118">f</a>)
+        <a href="#124-126">map_internal</a>(<a class="self" href="#120">self</a>, <span class="kw-2">&amp;mut </span><a href="#120">f</a>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map_bottom_up</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>,
+    <span class="kw">pub fn </span>map_bottom_up&lt;F&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>f: F) -&gt; <a href="#98">OptimizedExpr</a>
+    <span class="kw">where
+        </span>F: FnMut(<a href="#98">OptimizedExpr</a>) -&gt; <a href="#98">OptimizedExpr</a>,
     {
-        <span class="kw">fn</span> <span class="ident">map_internal</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>
-        <span class="kw">where</span>
-            <span class="ident">F</span>: <span class="ident">FnMut</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) -&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>,
+        <span class="kw">fn </span>map_internal&lt;F&gt;(expr: <a href="#98">OptimizedExpr</a>, f: <span class="kw-2">&amp;mut </span>F) -&gt; <a href="#98">OptimizedExpr</a>
+        <span class="kw">where
+            </span>F: FnMut(<a href="#98">OptimizedExpr</a>) -&gt; <a href="#98">OptimizedExpr</a>,
         {
-            <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="kw">match</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">expr</a> {
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="comment">// TODO: Use box syntax when it gets stabilized.</span>
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#176">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#178">mapped</a>)
+            <span class="kw">let </span>mapped = <span class="kw">match </span><a href="#173">expr</a> {
+                <a href="#104">OptimizedExpr::PosPred</a>(expr) =&gt; {
+                    <span class="comment">// TODO: Use box syntax when it gets stabilized.
+                    </span><span class="kw">let </span>mapped = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#178">expr</a>, <a href="#173">f</a>));
+                    <a href="#104">OptimizedExpr::PosPred</a>(<a href="#180">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#181">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#182">mapped</a>)
+                <a href="#105">OptimizedExpr::NegPred</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#183">expr</a>, <a href="#173">f</a>));
+                    <a href="#105">OptimizedExpr::NegPred</a>(<a href="#184">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped_lhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#185">lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <span class="kw">let</span> <span class="ident">mapped_rhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#185">rhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#186">mapped_lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#187">mapped_rhs</a>)
+                <a href="#106">OptimizedExpr::Seq</a>(lhs, rhs) =&gt; {
+                    <span class="kw">let </span>mapped_lhs = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#187">lhs</a>, <a href="#173">f</a>));
+                    <span class="kw">let </span>mapped_rhs = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#187">rhs</a>, <a href="#173">f</a>));
+                    <a href="#106">OptimizedExpr::Seq</a>(<a href="#188">mapped_lhs</a>, <a href="#189">mapped_rhs</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped_lhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#190">lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <span class="kw">let</span> <span class="ident">mapped_rhs</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#190">rhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#191">mapped_lhs</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#192">mapped_rhs</a>)
+                <a href="#107">OptimizedExpr::Choice</a>(lhs, rhs) =&gt; {
+                    <span class="kw">let </span>mapped_lhs = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#192">lhs</a>, <a href="#173">f</a>));
+                    <span class="kw">let </span>mapped_rhs = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#192">rhs</a>, <a href="#173">f</a>));
+                    <a href="#107">OptimizedExpr::Choice</a>(<a href="#193">mapped_lhs</a>, <a href="#194">mapped_rhs</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#195">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#196">mapped</a>)
+                <a href="#109">OptimizedExpr::Rep</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#197">expr</a>, <a href="#173">f</a>));
+                    <a href="#109">OptimizedExpr::Rep</a>(<a href="#198">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#199">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#200">mapped</a>)
+                <a href="#108">OptimizedExpr::Opt</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#201">expr</a>, <a href="#173">f</a>));
+                    <a href="#108">OptimizedExpr::Opt</a>(<a href="#202">mapped</a>)
                 }
-                <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<span class="ident">expr</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">mapped</span> <span class="op">=</span> <span class="ident">Box::new</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#203">expr</a>, <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>));
-                    <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#204">mapped</a>)
+                <a href="#111">OptimizedExpr::Push</a>(expr) =&gt; {
+                    <span class="kw">let </span>mapped = Box::new(<a href="#173-175">map_internal</a>(<span class="kw-2">*</span><a href="#205">expr</a>, <a href="#173">f</a>));
+                    <a href="#111">OptimizedExpr::Push</a>(<a href="#206">mapped</a>)
                 }
-                <span class="ident">expr</span> =&gt; <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#207">expr</a>,
+                expr =&gt; <a href="#209">expr</a>,
             };
 
-            <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171">f</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#175">mapped</a>)
+            <a href="#173">f</a>(<a href="#177">mapped</a>)
         }
 
-        <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#171-173">map_internal</a>(<a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#167">self</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#167">f</a>)
+        <a href="#173-175">map_internal</a>(<a class="self" href="#169">self</a>, <span class="kw-2">&amp;mut </span><a href="#169">f</a>)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OptimizedExprTopDownIterator</span> {
-    <span class="ident">current</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>,
-    <span class="ident">next</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>,
-    <span class="ident">right_branches</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a><span class="op">&gt;</span>,
+<span class="kw">pub struct </span>OptimizedExprTopDownIterator {
+    current: <span class="prelude-ty">Option</span>&lt;<a href="#98">OptimizedExpr</a>&gt;,
+    next: <span class="prelude-ty">Option</span>&lt;<a href="#98">OptimizedExpr</a>&gt;,
+    right_branches: Vec&lt;<a href="#98">OptimizedExpr</a>&gt;,
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#217-221">OptimizedExprTopDownIterator</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">expr</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> <span class="op">=</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#217-221">OptimizedExprTopDownIterator</a> {
-            <span class="ident">current</span>: <span class="prelude-val">None</span>,
-            <span class="ident">next</span>: <span class="prelude-val">None</span>,
-            <span class="ident">right_branches</span>: <span class="macro">vec!</span>[],
+<span class="kw">impl </span><a href="#219">OptimizedExprTopDownIterator</a> {
+    <span class="kw">pub fn </span>new(expr: <span class="kw-2">&amp;</span><a href="#98">OptimizedExpr</a>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = <a href="#219">OptimizedExprTopDownIterator</a> {
+            current: <span class="prelude-val">None</span>,
+            next: <span class="prelude-val">None</span>,
+            right_branches: <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[],
         };
-        <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#225">iter</a>.<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#234">iterate_expr</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#224">expr</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#225">iter</a>
+        <a href="#227">iter</a>.<a href="#236">iterate_expr</a>(<a href="#226">expr</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+        <a href="#227">iter</a>
     }
 
-    <span class="kw">fn</span> <span class="ident">iterate_expr</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">expr</span>: <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>) {
-        <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">current</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#234">expr</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <span class="kw">match</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#234">expr</a> {
-            <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#104">OptimizedExpr::Seq</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">right_branches</span>.<span class="ident">push</span>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#237">rhs</a>);
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">next</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#237">lhs</a>);
+    <span class="kw">fn </span>iterate_expr(<span class="kw-2">&amp;mut </span><span class="self">self</span>, expr: <a href="#98">OptimizedExpr</a>) {
+        <a class="self" href="#236">self</a>.current = <span class="prelude-val">Some</span>(<a href="#236">expr</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+        <span class="kw">match </span><a href="#236">expr</a> {
+            <a href="#106">OptimizedExpr::Seq</a>(lhs, rhs) =&gt; {
+                <a class="self" href="#236">self</a>.right_branches.push(<span class="kw-2">*</span><a href="#239">rhs</a>);
+                <a class="self" href="#236">self</a>.next = <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a href="#239">lhs</a>);
             }
-            <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#105">OptimizedExpr::Choice</a>(<span class="ident">lhs</span>, <span class="ident">rhs</span>) =&gt; {
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">right_branches</span>.<span class="ident">push</span>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#241">rhs</a>);
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">next</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#241">lhs</a>);
+            <a href="#107">OptimizedExpr::Choice</a>(lhs, rhs) =&gt; {
+                <a class="self" href="#236">self</a>.right_branches.push(<span class="kw-2">*</span><a href="#243">rhs</a>);
+                <a class="self" href="#236">self</a>.next = <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a href="#243">lhs</a>);
             }
-            <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#102">OptimizedExpr::PosPred</a>(<span class="ident">expr</span>)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#103">OptimizedExpr::NegPred</a>(<span class="ident">expr</span>)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#107">OptimizedExpr::Rep</a>(<span class="ident">expr</span>)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#106">OptimizedExpr::Opt</a>(<span class="ident">expr</span>)
-            <span class="op">|</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#109">OptimizedExpr::Push</a>(<span class="ident">expr</span>) =&gt; {
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">next</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#245">expr</a>);
+            <a href="#104">OptimizedExpr::PosPred</a>(expr)
+            | <a href="#105">OptimizedExpr::NegPred</a>(expr)
+            | <a href="#109">OptimizedExpr::Rep</a>(expr)
+            | <a href="#108">OptimizedExpr::Opt</a>(expr)
+            | <a href="#111">OptimizedExpr::Push</a>(expr) =&gt; {
+                <a class="self" href="#236">self</a>.next = <span class="prelude-val">Some</span>(<span class="kw-2">*</span><a href="#247">expr</a>);
             }
-            <span class="kw">_</span> =&gt; {
-                <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#234">self</a>.<span class="ident">next</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+            <span class="kw">_ </span>=&gt; {
+                <a class="self" href="#236">self</a>.next = <span class="prelude-val">None</span>;
             }
         }
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">Iterator</a> <span class="kw">for</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#217-221">OptimizedExprTopDownIterator</a> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#96-111">OptimizedExpr</a>;
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">Iterator</a> <span class="kw">for </span><a href="#219">OptimizedExprTopDownIterator</a> {
+    <span class="kw">type </span>Item = <a href="#98">OptimizedExpr</a>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#262">self</a>.<span class="ident">current</span>.<span class="ident">take</span>();
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">let </span>result = <a class="self" href="#264">self</a>.current.take();
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expr</span>) <span class="op">=</span> <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#262">self</a>.<span class="ident">next</span>.<span class="ident">take</span>() {
-            <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#262">self</a>.<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#234">iterate_expr</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#265">expr</a>);
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expr</span>) <span class="op">=</span> <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#262">self</a>.<span class="ident">right_branches</span>.<span class="ident">pop</span>() {
-            <a class="self" href="../../../src/pest_meta/optimizer/mod.rs.html#262">self</a>.<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#234">iterate_expr</a>(<a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#267">expr</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(expr) = <a class="self" href="#264">self</a>.next.take() {
+            <a class="self" href="#264">self</a>.<a href="#236">iterate_expr</a>(<a href="#267">expr</a>);
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(expr) = <a class="self" href="#264">self</a>.right_branches.pop() {
+            <a class="self" href="#264">self</a>.<a href="#236">iterate_expr</a>(<a href="#269">expr</a>);
         }
 
-        <a class="ident" href="../../../src/pest_meta/optimizer/mod.rs.html#263">result</a>
+        <a href="#265">result</a>
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">rotate</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">ast::Expr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Normal</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Choice</span>(
-                    <span class="ident">Choice</span>(
-                        <span class="ident">Choice</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>))),
-                        <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>))
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>rotate() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Normal,
+                expr: <span class="macro">box_tree!</span>(Choice(
+                    Choice(
+                        Choice(Str(String::from(<span class="string">&quot;a&quot;</span>)), Str(String::from(<span class="string">&quot;b&quot;</span>))),
+                        Str(String::from(<span class="string">&quot;c&quot;</span>))
                     ),
-                    <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>))
+                    Str(String::from(<span class="string">&quot;d&quot;</span>))
                 )),
             }]
         };
-        <span class="kw">let</span> <span class="ident">rotated</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Normal</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Choice</span>(
-                    <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                    <span class="ident">Choice</span>(
-                        <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>)),
-                        <span class="ident">Choice</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>)), <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>)))
+        <span class="kw">let </span>rotated = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Normal,
+                expr: <span class="macro">box_tree!</span>(Choice(
+                    Str(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Choice(
+                        Str(String::from(<span class="string">&quot;b&quot;</span>)),
+                        Choice(Str(String::from(<span class="string">&quot;c&quot;</span>)), Str(String::from(<span class="string">&quot;d&quot;</span>)))
                     )
                 )),
             }]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">rotated</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), rotated);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">skip</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">ast::Expr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Rep</span>(<span class="ident">Seq</span>(
-                    <span class="ident">NegPred</span>(<span class="ident">Choice</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>)))),
-                    <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;ANY&quot;</span>))
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>skip() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Rep(Seq(
+                    NegPred(Choice(Str(String::from(<span class="string">&quot;a&quot;</span>)), Str(String::from(<span class="string">&quot;b&quot;</span>)))),
+                    Ident(String::from(<span class="string">&quot;ANY&quot;</span>))
                 ))),
             }]
         };
-        <span class="kw">let</span> <span class="ident">skipped</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">OptimizedExpr::Skip</span>(<span class="macro">vec!</span>[<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>), <span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>)]),
+        <span class="kw">let </span>skipped = <span class="macro">vec!</span>[OptimizedRule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: OptimizedExpr::Skip(<span class="macro">vec!</span>[String::from(<span class="string">&quot;a&quot;</span>), String::from(<span class="string">&quot;b&quot;</span>)]),
         }];
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">skipped</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), skipped);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">concat_strings</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">ast::Expr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Seq</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>))),
-                    <span class="ident">Seq</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>)), <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>)))
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>concat_strings() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Seq(Str(String::from(<span class="string">&quot;a&quot;</span>)), Str(String::from(<span class="string">&quot;b&quot;</span>))),
+                    Seq(Str(String::from(<span class="string">&quot;c&quot;</span>)), Str(String::from(<span class="string">&quot;d&quot;</span>)))
                 )),
             }]
         };
-        <span class="kw">let</span> <span class="ident">concatenated</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">OptimizedExpr::Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;abcd&quot;</span>)),
+        <span class="kw">let </span>concatenated = <span class="macro">vec!</span>[OptimizedRule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: OptimizedExpr::Str(String::from(<span class="string">&quot;abcd&quot;</span>)),
         }];
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">concatenated</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), concatenated);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unroll_loop_exact</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">Expr::RepExact</span>(<span class="ident">Box::new</span>(<span class="ident">Expr::Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))), <span class="number">3</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unroll_loop_exact() {
+        <span class="kw">let </span>rules = <span class="macro">vec!</span>[Rule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: Expr::RepExact(Box::new(Expr::Ident(String::from(<span class="string">&quot;a&quot;</span>))), <span class="number">3</span>),
         }];
-        <span class="kw">let</span> <span class="ident">unrolled</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                    <span class="ident">Seq</span>(<span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)))
-                )),
-            }]
-        };
-
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">unrolled</span>);
-    }
-
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unroll_loop_max</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">Expr::RepMax</span>(<span class="ident">Box::new</span>(<span class="ident">Expr::Str</span>(<span class="string">&quot;a&quot;</span>.<span class="ident">to_owned</span>())), <span class="number">3</span>),
-        }];
-        <span class="kw">let</span> <span class="ident">unrolled</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Opt</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))),
-                    <span class="ident">Seq</span>(<span class="ident">Opt</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))), <span class="ident">Opt</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))))
+        <span class="kw">let </span>unrolled = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Ident(String::from(<span class="string">&quot;a&quot;</span>)))
                 )),
             }]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">unrolled</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), unrolled);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unroll_loop_min</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">Expr::RepMin</span>(<span class="ident">Box::new</span>(<span class="ident">Expr::Str</span>(<span class="string">&quot;a&quot;</span>.<span class="ident">to_owned</span>())), <span class="number">2</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unroll_loop_max() {
+        <span class="kw">let </span>rules = <span class="macro">vec!</span>[Rule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: Expr::RepMax(Box::new(Expr::Str(<span class="string">&quot;a&quot;</span>.to_owned())), <span class="number">3</span>),
         }];
-        <span class="kw">let</span> <span class="ident">unrolled</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                    <span class="ident">Seq</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Rep</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))))
+        <span class="kw">let </span>unrolled = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Opt(Str(String::from(<span class="string">&quot;a&quot;</span>))),
+                    Seq(Opt(Str(String::from(<span class="string">&quot;a&quot;</span>))), Opt(Str(String::from(<span class="string">&quot;a&quot;</span>))))
                 )),
             }]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">unrolled</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), unrolled);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">unroll_loop_min_max</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">Expr::RepMinMax</span>(<span class="ident">Box::new</span>(<span class="ident">Expr::Str</span>(<span class="string">&quot;a&quot;</span>.<span class="ident">to_owned</span>())), <span class="number">2</span>, <span class="number">3</span>),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unroll_loop_min() {
+        <span class="kw">let </span>rules = <span class="macro">vec!</span>[Rule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: Expr::RepMin(Box::new(Expr::Str(<span class="string">&quot;a&quot;</span>.to_owned())), <span class="number">2</span>),
         }];
-        <span class="kw">let</span> <span class="ident">unrolled</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
+        <span class="kw">let </span>unrolled = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Str(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Seq(Str(String::from(<span class="string">&quot;a&quot;</span>)), Rep(Str(String::from(<span class="string">&quot;a&quot;</span>))))
+                )),
+            }]
+        };
+
+        <span class="macro">assert_eq!</span>(optimize(rules), unrolled);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>unroll_loop_min_max() {
+        <span class="kw">let </span>rules = <span class="macro">vec!</span>[Rule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: Expr::RepMinMax(Box::new(Expr::Str(<span class="string">&quot;a&quot;</span>.to_owned())), <span class="number">2</span>, <span class="number">3</span>),
+        }];
+        <span class="kw">let </span>unrolled = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
                 <span class="comment">/* TODO possible room for improvement here:
                  * if the sequences were rolled out in the opposite
                  * order, we could further optimize the strings
                  * in cases like this.
                 Str(String::from((&quot;aa&quot;)),
                 Opt(Str(String::from(&quot;a&quot;)))
-                */</span>
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                    <span class="ident">Seq</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Opt</span>(<span class="ident">Str</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>))))
+                */
+                </span>expr: <span class="macro">box_tree!</span>(Seq(
+                    Str(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Seq(Str(String::from(<span class="string">&quot;a&quot;</span>)), Opt(Str(String::from(<span class="string">&quot;a&quot;</span>))))
                 )),
             }]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">unrolled</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), unrolled);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">concat_insensitive_strings</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">ast::Expr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Seq</span>(<span class="ident">Insens</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Insens</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>))),
-                    <span class="ident">Seq</span>(<span class="ident">Insens</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>)), <span class="ident">Insens</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>)))
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>concat_insensitive_strings() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Atomic,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Seq(Insens(String::from(<span class="string">&quot;a&quot;</span>)), Insens(String::from(<span class="string">&quot;b&quot;</span>))),
+                    Seq(Insens(String::from(<span class="string">&quot;c&quot;</span>)), Insens(String::from(<span class="string">&quot;d&quot;</span>)))
                 )),
             }]
         };
-        <span class="kw">let</span> <span class="ident">concatenated</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-            <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-            <span class="ident">ty</span>: <span class="ident">RuleType::Atomic</span>,
-            <span class="ident">expr</span>: <span class="ident">OptimizedExpr::Insens</span>(<span class="ident">String::from</span>(<span class="string">&quot;abcd&quot;</span>)),
+        <span class="kw">let </span>concatenated = <span class="macro">vec!</span>[OptimizedRule {
+            name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+            ty: RuleType::Atomic,
+            expr: OptimizedExpr::Insens(String::from(<span class="string">&quot;abcd&quot;</span>)),
         }];
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">concatenated</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), concatenated);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">long_common_sequence</span>() {
-        <span class="kw">let</span> <span class="ident">rules</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">ast::Expr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">Rule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Silent</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Choice</span>(
-                    <span class="ident">Seq</span>(
-                        <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                        <span class="ident">Seq</span>(<span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>)), <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>)))
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>long_common_sequence() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Choice(
+                    Seq(
+                        Ident(String::from(<span class="string">&quot;a&quot;</span>)),
+                        Seq(Ident(String::from(<span class="string">&quot;b&quot;</span>)), Ident(String::from(<span class="string">&quot;c&quot;</span>)))
                     ),
-                    <span class="ident">Seq</span>(
-                        <span class="ident">Seq</span>(<span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)), <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>))),
-                        <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>))
+                    Seq(
+                        Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Ident(String::from(<span class="string">&quot;b&quot;</span>))),
+                        Ident(String::from(<span class="string">&quot;d&quot;</span>))
                     )
                 )),
             }]
         };
-        <span class="kw">let</span> <span class="ident">optimized</span> <span class="op">=</span> {
-            <span class="kw">use</span> <span class="ident">optimizer::OptimizedExpr</span>::<span class="kw-2">*</span>;
-            <span class="macro">vec!</span>[<span class="ident">OptimizedRule</span> {
-                <span class="ident">name</span>: <span class="string">&quot;rule&quot;</span>.<span class="ident">to_owned</span>(),
-                <span class="ident">ty</span>: <span class="ident">RuleType::Silent</span>,
-                <span class="ident">expr</span>: <span class="macro">box_tree!</span>(<span class="ident">Seq</span>(
-                    <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;a&quot;</span>)),
-                    <span class="ident">Seq</span>(
-                        <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;b&quot;</span>)),
-                        <span class="ident">Choice</span>(<span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;c&quot;</span>)), <span class="ident">Ident</span>(<span class="ident">String::from</span>(<span class="string">&quot;d&quot;</span>)))
+        <span class="kw">let </span>optimized = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Seq(
+                        Ident(String::from(<span class="string">&quot;b&quot;</span>)),
+                        Choice(Ident(String::from(<span class="string">&quot;c&quot;</span>)), Ident(String::from(<span class="string">&quot;d&quot;</span>)))
                     )
                 )),
             }]
         };
 
-        <span class="macro">assert_eq!</span>(<span class="ident">optimize</span>(<span class="ident">rules</span>), <span class="ident">optimized</span>);
+        <span class="macro">assert_eq!</span>(optimize(rules), optimized);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>short_common_sequence() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Choice(
+                    Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Ident(String::from(<span class="string">&quot;b&quot;</span>))),
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>))
+                )),
+            }]
+        };
+        <span class="kw">let </span>optimized = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Opt(Ident(String::from(<span class="string">&quot;b&quot;</span>))))),
+            }]
+        };
+
+        <span class="macro">assert_eq!</span>(optimize(rules), optimized);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>impossible_common_sequence() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Choice(
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Ident(String::from(<span class="string">&quot;b&quot;</span>)))
+                )),
+            }]
+        };
+        <span class="kw">let </span>optimized = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Ident(String::from(<span class="string">&quot;a&quot;</span>))),
+            }]
+        };
+
+        <span class="macro">assert_eq!</span>(optimize(rules), optimized);
+    }
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>lister() {
+        <span class="kw">let </span>rules = {
+            <span class="kw">use </span><span class="kw">crate</span>::ast::Expr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[Rule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Rep(Seq(Ident(String::from(<span class="string">&quot;a&quot;</span>)), Ident(String::from(<span class="string">&quot;b&quot;</span>)))),
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>))
+                )),
+            }]
+        };
+        <span class="kw">let </span>optimized = {
+            <span class="kw">use </span><span class="kw">crate</span>::optimizer::OptimizedExpr::<span class="kw-2">*</span>;
+            <span class="macro">vec!</span>[OptimizedRule {
+                name: <span class="string">&quot;rule&quot;</span>.to_owned(),
+                ty: RuleType::Silent,
+                expr: <span class="macro">box_tree!</span>(Seq(
+                    Ident(String::from(<span class="string">&quot;a&quot;</span>)),
+                    Rep(Seq(Ident(String::from(<span class="string">&quot;b&quot;</span>)), Ident(String::from(<span class="string">&quot;a&quot;</span>))))
+                )),
+            }]
+        };
+
+        <span class="macro">assert_eq!</span>(optimize(rules), optimized);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="pest_meta" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="pest_meta" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

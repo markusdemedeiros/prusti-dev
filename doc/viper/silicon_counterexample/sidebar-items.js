@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["ModelEntry",""]],"struct":[["Model",""],["SiliconCounterexample",""]]});
+window.SIDEBAR_ITEMS = {"enum":[["ModelEntry",""]],"struct":[["DomainEntry",""],["Domains",""],["FunctionEntry",""],["Functions",""],["Model",""],["SiliconCounterexample",""]]};

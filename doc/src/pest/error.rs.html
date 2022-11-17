@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/pest-2.1.3/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../pest/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../pest/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../pest/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/pest-2.4.0/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../pest/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -812,379 +805,518 @@
 <span id="805">805</span>
 <span id="806">806</span>
 <span id="807">807</span>
-</pre><pre class="rust"><code><span class="comment">// pest. The Elegant Parser</span>
-<span class="comment">// Copyright (c) 2018 Dragoș Tiselice</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0</span>
-<span class="comment">// &lt;LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT</span>
-<span class="comment">// license &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. All files in the project carrying such notice may not be copied,</span>
-<span class="comment">// modified, or distributed except according to those terms.</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+</pre><pre class="rust"><code><span class="comment">// pest. The Elegant Parser
+// Copyright (c) 2018 Dragoș Tiselice
+//
+// Licensed under the Apache License, Version 2.0
+// &lt;LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT
+// license &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your
+// option. All files in the project carrying such notice may not be copied,
+// modified, or distributed except according to those terms.
 
-<span class="doccomment">//! Types for different kinds of parsing failures.</span>
+</span><span class="doccomment">//! Types for different kinds of parsing failures.
 
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cmp/index.html">std::cmp</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/index.html">std::error</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">std::fmt</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/mem/index.html">std::mem</a>;
+</span><span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/borrow/enum.Cow.html">alloc::borrow::Cow</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">alloc::borrow::ToOwned</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">alloc::format</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">alloc::string::String</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">alloc::string::ToString</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/vec/struct.Vec.html">alloc::vec::Vec</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/cmp/index.html">core::cmp</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/fmt/index.html">core::fmt</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/mem/index.html">core::mem</a>;
 
-<span class="kw">use</span> <a class="ident" href="../../src/pest/position.rs.html#21-27">position::Position</a>;
-<span class="kw">use</span> <a class="ident" href="../../src/pest/span.rs.html#22-32">span::Span</a>;
-<span class="kw">use</span> <a class="ident" href="../../src/pest/lib.rs.html#101">RuleType</a>;
+<span class="kw">use </span><a href="position.rs.html#21"><span class="kw">crate</span>::position::Position</a>;
+<span class="kw">use </span><a href="span.rs.html#23"><span class="kw">crate</span>::span::Span</a>;
+<span class="kw">use </span><a href="lib.rs.html#113"><span class="kw">crate</span>::RuleType</a>;
 
-<span class="doccomment">/// Parse-related error type.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Variant of the error</span>
-    <span class="kw">pub</span> <span class="ident">variant</span>: <span class="ident">ErrorVariant</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Location within the input string</span>
-    <span class="kw">pub</span> <span class="ident">location</span>: <a class="ident" href="../../src/pest/error.rs.html#54-59">InputLocation</a>,
-    <span class="doccomment">/// Line/column within the input string</span>
-    <span class="kw">pub</span> <span class="ident">line_col</span>: <a class="ident" href="../../src/pest/error.rs.html#63-68">LineColLocation</a>,
-    <span class="ident">path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>,
-    <span class="ident">line</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
-    <span class="ident">continued_line</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>,
+<span class="doccomment">/// Parse-related error type.
+</span><span class="attribute">#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = <span class="string">&quot;std&quot;</span>, derive(thiserror::Error))]
+</span><span class="kw">pub struct </span>Error&lt;R&gt; {
+    <span class="doccomment">/// Variant of the error
+    </span><span class="kw">pub </span>variant: ErrorVariant&lt;R&gt;,
+    <span class="doccomment">/// Location within the input string
+    </span><span class="kw">pub </span>location: <a href="#61">InputLocation</a>,
+    <span class="doccomment">/// Line/column within the input string
+    </span><span class="kw">pub </span>line_col: <a href="#70">LineColLocation</a>,
+    path: <span class="prelude-ty">Option</span>&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
+    line: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    continued_line: <span class="prelude-ty">Option</span>&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
 }
 
-<span class="doccomment">/// Different kinds of parsing errors.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ErrorVariant</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Generated parsing error with expected and unexpected `Rule`s</span>
-    <span class="ident">ParsingError</span> {
-        <span class="doccomment">/// Positive attempts</span>
-        <span class="ident">positives</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-        <span class="doccomment">/// Negative attempts</span>
-        <span class="ident">negatives</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Different kinds of parsing errors.
+</span><span class="attribute">#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[cfg_attr(feature = <span class="string">&quot;std&quot;</span>, derive(thiserror::Error))]
+</span><span class="kw">pub enum </span>ErrorVariant&lt;R&gt; {
+    <span class="doccomment">/// Generated parsing error with expected and unexpected `Rule`s
+    </span>ParsingError {
+        <span class="doccomment">/// Positive attempts
+        </span>positives: Vec&lt;R&gt;,
+        <span class="doccomment">/// Negative attempts
+        </span>negatives: Vec&lt;R&gt;,
     },
-    <span class="doccomment">/// Custom error with a message</span>
-    <span class="ident">CustomError</span> {
-        <span class="doccomment">/// Short explanation</span>
-        <span class="ident">message</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="doccomment">/// Custom error with a message
+    </span>CustomError {
+        <span class="doccomment">/// Short explanation
+        </span>message: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
     },
 }
 
-<span class="doccomment">/// Where an `Error` has occurred.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InputLocation</span> {
-    <span class="doccomment">/// `Error` was created by `Error::new_from_pos`</span>
-    <span class="ident">Pos</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>),
-    <span class="doccomment">/// `Error` was created by `Error::new_from_span`</span>
-    <span class="ident">Span</span>((<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
+<span class="doccomment">/// Where an `Error` has occurred.
+</span><span class="attribute">#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+</span><span class="kw">pub enum </span>InputLocation {
+    <span class="doccomment">/// `Error` was created by `Error::new_from_pos`
+    </span>Pos(<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>),
+    <span class="doccomment">/// `Error` was created by `Error::new_from_span`
+    </span>Span((<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
 }
 
-<span class="doccomment">/// Line/column where an `Error` has occurred.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LineColLocation</span> {
-    <span class="doccomment">/// Line/column pair if `Error` was created by `Error::new_from_pos`</span>
-    <span class="ident">Pos</span>((<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
-    <span class="doccomment">/// Line/column pairs if `Error` was created by `Error::new_from_span`</span>
-    <span class="ident">Span</span>((<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>), (<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
+<span class="doccomment">/// Line/column where an `Error` has occurred.
+</span><span class="attribute">#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+</span><span class="kw">pub enum </span>LineColLocation {
+    <span class="doccomment">/// Line/column pair if `Error` was created by `Error::new_from_pos`
+    </span>Pos((<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
+    <span class="doccomment">/// Line/column pairs if `Error` was created by `Error::new_from_span`
+    </span>Span((<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>), (<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)),
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <a class="ident" href="../../src/pest/lib.rs.html#101">RuleType</a><span class="op">&gt;</span> <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates `Error` from `ErrorVariant` and `Position`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use pest::error::{Error, ErrorVariant};</span>
-    <span class="doccomment">/// # use pest::Position;</span>
-    <span class="doccomment">/// # #[allow(non_camel_case_types)]</span>
-    <span class="doccomment">/// # #[allow(dead_code)]</span>
-    <span class="doccomment">/// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]</span>
-    <span class="doccomment">/// # enum Rule {</span>
-    <span class="doccomment">/// #     open_paren,</span>
-    <span class="doccomment">/// #     closed_paren</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// # let input = &quot;&quot;;</span>
-    <span class="doccomment">/// # let pos = Position::from_start(input);</span>
-    <span class="doccomment">/// let error = Error::new_from_pos(</span>
-    <span class="doccomment">///     ErrorVariant::ParsingError {</span>
-    <span class="doccomment">///         positives: vec![Rule::open_paren],</span>
-    <span class="doccomment">///         negatives: vec![Rule::closed_paren]</span>
-    <span class="doccomment">///     },</span>
-    <span class="doccomment">///     pos</span>
-    <span class="doccomment">/// );</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;{}&quot;, error);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_pass_by_value</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_from_pos</span>(<span class="ident">variant</span>: <span class="ident">ErrorVariant</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">pos</span>: <a class="ident" href="../../src/pest/position.rs.html#21-27">Position</a>) -&gt; <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-        <a class="ident" href="../../src/pest/error.rs.html#23-33">Error</a> {
-            <a class="ident" href="../../src/pest/error.rs.html#98">variant</a>,
-            <span class="ident">location</span>: <a class="ident" href="../../src/pest/error.rs.html#56">InputLocation::Pos</a>(<a class="ident" href="../../src/pest/error.rs.html#98">pos</a>.<a class="ident" href="../../src/pest/position.rs.html#84">pos</a>()),
-            <span class="ident">path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">line</span>: <a class="ident" href="../../src/pest/error.rs.html#449">visualize_whitespace</a>(<a class="ident" href="../../src/pest/error.rs.html#98">pos</a>.<a class="ident" href="../../src/pest/position.rs.html#197">line_of</a>()),
-            <span class="ident">continued_line</span>: <span class="prelude-val">None</span>,
-            <span class="ident">line_col</span>: <a class="ident" href="../../src/pest/error.rs.html#65">LineColLocation::Pos</a>(<a class="ident" href="../../src/pest/error.rs.html#98">pos</a>.<a class="ident" href="../../src/pest/position.rs.html#135">line_col</a>()),
+<span class="kw">impl</span>&lt;R: <a href="lib.rs.html#113">RuleType</a>&gt; Error&lt;R&gt; {
+    <span class="doccomment">/// Creates `Error` from `ErrorVariant` and `Position`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::{Error, ErrorVariant};
+    /// # use pest::Position;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[allow(dead_code)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// # enum Rule {
+    /// #     open_paren,
+    /// #     closed_paren
+    /// # }
+    /// # let input = &quot;&quot;;
+    /// # let pos = Position::from_start(input);
+    /// let error = Error::new_from_pos(
+    ///     ErrorVariant::ParsingError {
+    ///         positives: vec![Rule::open_paren],
+    ///         negatives: vec![Rule::closed_paren]
+    ///     },
+    ///     pos
+    /// );
+    ///
+    /// println!(&quot;{}&quot;, error);
+    /// ```
+    </span><span class="kw">pub fn </span>new_from_pos(variant: ErrorVariant&lt;R&gt;, pos: <a href="position.rs.html#21">Position</a>) -&gt; Error&lt;R&gt; {
+        <span class="kw">let </span>visualize_ws = <a href="#104">pos</a>.<a href="position.rs.html#293">match_char</a>(<span class="string">&#39;\n&#39;</span>) || <a href="#104">pos</a>.<a href="position.rs.html#293">match_char</a>(<span class="string">&#39;\r&#39;</span>);
+        <span class="kw">let </span>line_of = <a href="#104">pos</a>.<a href="position.rs.html#165">line_of</a>();
+        <span class="kw">let </span>line = <span class="kw">if </span>visualize_ws {
+            <a href="#536">visualize_whitespace</a>(<a href="#106">line_of</a>)
+        } <span class="kw">else </span>{
+            <a href="#106">line_of</a>.replace(<span class="kw-2">&amp;</span>[<span class="string">&#39;\r&#39;</span>, <span class="string">&#39;\n&#39;</span>][..], <span class="string">&quot;&quot;</span>)
+        };
+        <a href="#29">Error</a> {
+            <a href="#104">variant</a>,
+            location: <a href="#63">InputLocation::Pos</a>(<a href="#104">pos</a>.<a href="position.rs.html#83">pos</a>()),
+            path: <span class="prelude-val">None</span>,
+            <a href="#107">line</a>,
+            continued_line: <span class="prelude-val">None</span>,
+            line_col: <a href="#72">LineColLocation::Pos</a>(<a href="#104">pos</a>.<a href="position.rs.html#134">line_col</a>()),
         }
     }
 
-    <span class="doccomment">/// Creates `Error` from `ErrorVariant` and `Span`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use pest::error::{Error, ErrorVariant};</span>
-    <span class="doccomment">/// # use pest::{Position, Span};</span>
-    <span class="doccomment">/// # #[allow(non_camel_case_types)]</span>
-    <span class="doccomment">/// # #[allow(dead_code)]</span>
-    <span class="doccomment">/// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]</span>
-    <span class="doccomment">/// # enum Rule {</span>
-    <span class="doccomment">/// #     open_paren,</span>
-    <span class="doccomment">/// #     closed_paren</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// # let input = &quot;&quot;;</span>
-    <span class="doccomment">/// # let start = Position::from_start(input);</span>
-    <span class="doccomment">/// # let end = start.clone();</span>
-    <span class="doccomment">/// # let span = start.span(&amp;end);</span>
-    <span class="doccomment">/// let error = Error::new_from_span(</span>
-    <span class="doccomment">///     ErrorVariant::ParsingError {</span>
-    <span class="doccomment">///         positives: vec![Rule::open_paren],</span>
-    <span class="doccomment">///         negatives: vec![Rule::closed_paren]</span>
-    <span class="doccomment">///     },</span>
-    <span class="doccomment">///     span</span>
-    <span class="doccomment">/// );</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;{}&quot;, error);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::needless_pass_by_value</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_from_span</span>(<span class="ident">variant</span>: <span class="ident">ErrorVariant</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">span</span>: <a class="ident" href="../../src/pest/span.rs.html#22-32">Span</a>) -&gt; <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#138">span</a>.<a class="ident" href="../../src/pest/span.rs.html#134">end_pos</a>();
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">end_line_col</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#139">end</a>.<a class="ident" href="../../src/pest/position.rs.html#135">line_col</a>();
-        <span class="comment">// end position is after a \n, so we want to point to the visual lf symbol</span>
-        <span class="kw">if</span> <a class="ident" href="../../src/pest/error.rs.html#141">end_line_col</a>.<span class="number">1</span> <span class="op">==</span> <span class="number">1</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visual_end</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#139">end</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>();
-            <a class="ident" href="../../src/pest/error.rs.html#144">visual_end</a>.<a class="ident" href="../../src/pest/position.rs.html#278">skip_back</a>(<span class="number">1</span>);
-            <span class="kw">let</span> <span class="ident">lc</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#144">visual_end</a>.<a class="ident" href="../../src/pest/position.rs.html#135">line_col</a>();
-            <a class="ident" href="../../src/pest/error.rs.html#141">end_line_col</a> <span class="op">=</span> (<a class="ident" href="../../src/pest/error.rs.html#146">lc</a>.<span class="number">0</span>, <a class="ident" href="../../src/pest/error.rs.html#146">lc</a>.<span class="number">1</span> <span class="op">+</span> <span class="number">1</span>);
+    <span class="doccomment">/// Creates `Error` from `ErrorVariant` and `Span`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::{Error, ErrorVariant};
+    /// # use pest::{Position, Span};
+    /// # #[allow(non_camel_case_types)]
+    /// # #[allow(dead_code)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// # enum Rule {
+    /// #     open_paren,
+    /// #     closed_paren
+    /// # }
+    /// # let input = &quot;&quot;;
+    /// # let start = Position::from_start(input);
+    /// # let end = start.clone();
+    /// # let span = start.span(&amp;end);
+    /// let error = Error::new_from_span(
+    ///     ErrorVariant::ParsingError {
+    ///         positives: vec![Rule::open_paren],
+    ///         negatives: vec![Rule::closed_paren]
+    ///     },
+    ///     span
+    /// );
+    ///
+    /// println!(&quot;{}&quot;, error);
+    /// ```
+    </span><span class="kw">pub fn </span>new_from_span(variant: ErrorVariant&lt;R&gt;, span: <a href="span.rs.html#23">Span</a>) -&gt; Error&lt;R&gt; {
+        <span class="kw">let </span>end = <a href="#150">span</a>.<a href="span.rs.html#165">end_pos</a>();
+        <span class="kw">let </span><span class="kw-2">mut </span>end_line_col = <a href="#151">end</a>.<a href="position.rs.html#134">line_col</a>();
+        <span class="comment">// end position is after a \n, so we want to point to the visual lf symbol
+        </span><span class="kw">if </span>end_line_col.<span class="number">1 </span>== <span class="number">1 </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>visual_end = <a href="#151">end</a>;
+            <a href="#155">visual_end</a>.<a href="position.rs.html#246">skip_back</a>(<span class="number">1</span>);
+            <span class="kw">let </span>lc = <a href="#155">visual_end</a>.<a href="position.rs.html#134">line_col</a>();
+            <a href="#152">end_line_col</a> = (<a href="#157">lc</a>.<span class="number">0</span>, <a href="#157">lc</a>.<span class="number">1 </span>+ <span class="number">1</span>);
         };
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line_iter</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#138">span</a>.<a class="ident" href="../../src/pest/span.rs.html#202">lines</a>();
-        <span class="kw">let</span> <span class="ident">start_line</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#449">visualize_whitespace</a>(<a class="ident" href="../../src/pest/error.rs.html#150">line_iter</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">next</a>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>));
-        <span class="kw">let</span> <span class="ident">continued_line</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#150">line_iter</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">last</a>().<span class="ident">map</span>(<a class="ident" href="../../src/pest/error.rs.html#449">visualize_whitespace</a>);
+        <span class="kw">let </span><span class="kw-2">mut </span>line_iter = <a href="#150">span</a>.<a href="span.rs.html#233">lines</a>();
+        <span class="kw">let </span>sl = <a href="#161">line_iter</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">next</a>().unwrap_or(<span class="string">&quot;&quot;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>chars = <a href="#150">span</a>.<a href="span.rs.html#210">as_str</a>().chars();
+        <span class="kw">let </span>visualize_ws = <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.matches.html">matches!</a>(chars.next(), <span class="prelude-val">Some</span>(<span class="string">&#39;\n&#39;</span>) | <span class="prelude-val">Some</span>(<span class="string">&#39;\r&#39;</span>))
+            || <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.matches.html">matches!</a>(chars.last(), <span class="prelude-val">Some</span>(<span class="string">&#39;\n&#39;</span>) | <span class="prelude-val">Some</span>(<span class="string">&#39;\r&#39;</span>));
+        <span class="kw">let </span>start_line = <span class="kw">if </span>visualize_ws {
+            <a href="#536">visualize_whitespace</a>(<a href="#162">sl</a>)
+        } <span class="kw">else </span>{
+            <a href="#162">sl</a>.<a href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>().replace(<span class="kw-2">&amp;</span>[<span class="string">&#39;\r&#39;</span>, <span class="string">&#39;\n&#39;</span>][..], <span class="string">&quot;&quot;</span>)
+        };
+        <span class="kw">let </span>ll = <a href="#161">line_iter</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">last</a>();
+        <span class="kw">let </span>continued_line = <span class="kw">if </span>visualize_ws {
+            <a href="#171">ll</a>.map(<span class="kw-2">&amp;</span>str::to_owned)
+        } <span class="kw">else </span>{
+            <a href="#171">ll</a>.map(<a href="#536">visualize_whitespace</a>)
+        };
 
-        <a class="ident" href="../../src/pest/error.rs.html#23-33">Error</a> {
-            <a class="ident" href="../../src/pest/error.rs.html#138">variant</a>,
-            <span class="ident">location</span>: <a class="ident" href="../../src/pest/error.rs.html#58">InputLocation::Span</a>((<a class="ident" href="../../src/pest/error.rs.html#138">span</a>.<a class="ident" href="../../src/pest/span.rs.html#79">start</a>(), <a class="ident" href="../../src/pest/error.rs.html#139">end</a>.<a class="ident" href="../../src/pest/position.rs.html#84">pos</a>())),
-            <span class="ident">path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">line</span>: <a class="ident" href="../../src/pest/error.rs.html#151">start_line</a>,
-            <a class="ident" href="../../src/pest/error.rs.html#152">continued_line</a>,
-            <span class="ident">line_col</span>: <a class="ident" href="../../src/pest/error.rs.html#67">LineColLocation::Span</a>(<a class="ident" href="../../src/pest/error.rs.html#138">span</a>.<a class="ident" href="../../src/pest/span.rs.html#115">start_pos</a>().<a class="ident" href="../../src/pest/position.rs.html#135">line_col</a>(), <a class="ident" href="../../src/pest/error.rs.html#141">end_line_col</a>),
+        <a href="#29">Error</a> {
+            <a href="#150">variant</a>,
+            location: <a href="#65">InputLocation::Span</a>((<a href="#150">span</a>.<a href="span.rs.html#110">start</a>(), <a href="#151">end</a>.<a href="position.rs.html#83">pos</a>())),
+            path: <span class="prelude-val">None</span>,
+            line: <a href="#166">start_line</a>,
+            <a href="#172">continued_line</a>,
+            line_col: <a href="#74">LineColLocation::Span</a>(<a href="#150">span</a>.<a href="span.rs.html#146">start_pos</a>().<a href="position.rs.html#134">line_col</a>(), <a href="#152">end_line_col</a>),
         }
     }
 
-    <span class="doccomment">/// Returns `Error` variant with `path` which is shown when formatted with `Display`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use pest::error::{Error, ErrorVariant};</span>
-    <span class="doccomment">/// # use pest::Position;</span>
-    <span class="doccomment">/// # #[allow(non_camel_case_types)]</span>
-    <span class="doccomment">/// # #[allow(dead_code)]</span>
-    <span class="doccomment">/// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]</span>
-    <span class="doccomment">/// # enum Rule {</span>
-    <span class="doccomment">/// #     open_paren,</span>
-    <span class="doccomment">/// #     closed_paren</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// # let input = &quot;&quot;;</span>
-    <span class="doccomment">/// # let pos = Position::from_start(input);</span>
-    <span class="doccomment">/// Error::new_from_pos(</span>
-    <span class="doccomment">///     ErrorVariant::ParsingError {</span>
-    <span class="doccomment">///         positives: vec![Rule::open_paren],</span>
-    <span class="doccomment">///         negatives: vec![Rule::closed_paren]</span>
-    <span class="doccomment">///     },</span>
-    <span class="doccomment">///     pos</span>
-    <span class="doccomment">/// ).with_path(&quot;file.rs&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_path</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-        <a class="self" href="../../src/pest/error.rs.html#188">self</a>.<span class="ident">path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<a class="ident" href="../../src/pest/error.rs.html#188">path</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>());
+    <span class="doccomment">/// Returns `Error` variant with `path` which is shown when formatted with `Display`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::{Error, ErrorVariant};
+    /// # use pest::Position;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[allow(dead_code)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// # enum Rule {
+    /// #     open_paren,
+    /// #     closed_paren
+    /// # }
+    /// # let input = &quot;&quot;;
+    /// # let pos = Position::from_start(input);
+    /// Error::new_from_pos(
+    ///     ErrorVariant::ParsingError {
+    ///         positives: vec![Rule::open_paren],
+    ///         negatives: vec![Rule::closed_paren]
+    ///     },
+    ///     pos
+    /// ).with_path(&quot;file.rs&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>with_path(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; Error&lt;R&gt; {
+        <a class="self" href="#212">self</a>.path = <span class="prelude-val">Some</span>(<a href="#212">path</a>.<a href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>());
 
-        <a class="self" href="../../src/pest/error.rs.html#188">self</a>
+        <span class="self"><a href="#212">self</a>
+    </span>}
+
+    <span class="doccomment">/// Returns the path set using [`Error::with_path()`].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::{Error, ErrorVariant};
+    /// # use pest::Position;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[allow(dead_code)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// # enum Rule {
+    /// #     open_paren,
+    /// #     closed_paren
+    /// # }
+    /// # let input = &quot;&quot;;
+    /// # let pos = Position::from_start(input);
+    /// # let error = Error::new_from_pos(
+    /// #     ErrorVariant::ParsingError {
+    /// #         positives: vec![Rule::open_paren],
+    /// #         negatives: vec![Rule::closed_paren]
+    /// #     },
+    /// #     pos);
+    /// let error = error.with_path(&quot;file.rs&quot;);
+    /// assert_eq!(Some(&quot;file.rs&quot;), error.path());
+    /// ```
+    </span><span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt; {
+        <a class="self" href="#243">self</a>.path.as_deref()
     }
 
-    <span class="doccomment">/// Renames all `Rule`s if this is a [`ParsingError`]. It does nothing when called on a</span>
-    <span class="doccomment">/// [`CustomError`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Useful in order to rename verbose rules or have detailed per-`Rule` formatting.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError</span>
-    <span class="doccomment">/// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # use pest::error::{Error, ErrorVariant};</span>
-    <span class="doccomment">/// # use pest::Position;</span>
-    <span class="doccomment">/// # #[allow(non_camel_case_types)]</span>
-    <span class="doccomment">/// # #[allow(dead_code)]</span>
-    <span class="doccomment">/// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]</span>
-    <span class="doccomment">/// # enum Rule {</span>
-    <span class="doccomment">/// #     open_paren,</span>
-    <span class="doccomment">/// #     closed_paren</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// # let input = &quot;&quot;;</span>
-    <span class="doccomment">/// # let pos = Position::from_start(input);</span>
-    <span class="doccomment">/// Error::new_from_pos(</span>
-    <span class="doccomment">///     ErrorVariant::ParsingError {</span>
-    <span class="doccomment">///         positives: vec![Rule::open_paren],</span>
-    <span class="doccomment">///         negatives: vec![Rule::closed_paren]</span>
-    <span class="doccomment">///     },</span>
-    <span class="doccomment">///     pos</span>
-    <span class="doccomment">/// ).renamed_rules(|rule| {</span>
-    <span class="doccomment">///     match *rule {</span>
-    <span class="doccomment">///         Rule::open_paren =&gt; &quot;(&quot;.to_owned(),</span>
-    <span class="doccomment">///         Rule::closed_paren =&gt; &quot;closed paren&quot;.to_owned()</span>
-    <span class="doccomment">///     }</span>
-    <span class="doccomment">/// });</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">renamed_rules</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">R</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="doccomment">/// Returns the line that the error is on.
+    </span><span class="kw">pub fn </span>line(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
+        <a class="self" href="#248">self</a>.line.as_str()
+    }
+
+    <span class="doccomment">/// Renames all `Rule`s if this is a [`ParsingError`]. It does nothing when called on a
+    /// [`CustomError`].
+    ///
+    /// Useful in order to rename verbose rules or have detailed per-`Rule` formatting.
+    ///
+    /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
+    /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::{Error, ErrorVariant};
+    /// # use pest::Position;
+    /// # #[allow(non_camel_case_types)]
+    /// # #[allow(dead_code)]
+    /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+    /// # enum Rule {
+    /// #     open_paren,
+    /// #     closed_paren
+    /// # }
+    /// # let input = &quot;&quot;;
+    /// # let pos = Position::from_start(input);
+    /// Error::new_from_pos(
+    ///     ErrorVariant::ParsingError {
+    ///         positives: vec![Rule::open_paren],
+    ///         negatives: vec![Rule::closed_paren]
+    ///     },
+    ///     pos
+    /// ).renamed_rules(|rule| {
+    ///     match *rule {
+    ///         Rule::open_paren =&gt; &quot;(&quot;.to_owned(),
+    ///         Rule::closed_paren =&gt; &quot;closed paren&quot;.to_owned()
+    ///     }
+    /// });
+    /// ```
+    </span><span class="kw">pub fn </span>renamed_rules&lt;F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: F) -&gt; Error&lt;R&gt;
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw-2">&amp;</span>R) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
     {
-        <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#229">self</a>.<span class="ident">variant</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#39-44">ErrorVariant::ParsingError</a> {
-                <span class="ident">positives</span>,
-                <span class="ident">negatives</span>,
+        <span class="kw">let </span>variant = <span class="kw">match </span><a class="self" href="#287">self</a>.variant {
+            <a href="#46">ErrorVariant::ParsingError</a> {
+                positives,
+                negatives,
             } =&gt; {
-                <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="ident">Error::parsing_error_message</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#235">positives</a>, <span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#236">negatives</a>, <a class="ident" href="../../src/pest/error.rs.html#229">f</a>);
-                <a class="ident" href="../../src/pest/error.rs.html#46-49">ErrorVariant::CustomError</a> { <a class="ident" href="../../src/pest/error.rs.html#238">message</a> }
+                <span class="kw">let </span>message = Error::parsing_error_message(<span class="kw-2">&amp;</span><a href="#293">positives</a>, <span class="kw-2">&amp;</span><a href="#294">negatives</a>, <a href="#287">f</a>);
+                <a href="#53">ErrorVariant::CustomError</a> { <a href="#296">message</a> }
             }
-            <span class="ident">variant</span> =&gt; <a class="ident" href="../../src/pest/error.rs.html#241">variant</a>,
+            variant =&gt; <a href="#299">variant</a>,
         };
 
-        <a class="self" href="../../src/pest/error.rs.html#229">self</a>.<span class="ident">variant</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#233">variant</a>;
+        <a class="self" href="#287">self</a>.variant = <a href="#291">variant</a>;
 
-        <a class="self" href="../../src/pest/error.rs.html#229">self</a>
-    }
+        <span class="self"><a href="#287">self</a>
+    </span>}
 
-    <span class="kw">fn</span> <span class="ident">start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) {
-        <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#249">self</a>.<span class="ident">line_col</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#65">LineColLocation::Pos</a>(<span class="ident">line_col</span>) =&gt; <a class="ident" href="../../src/pest/error.rs.html#251">line_col</a>,
-            <a class="ident" href="../../src/pest/error.rs.html#67">LineColLocation::Span</a>(<span class="ident">start_line_col</span>, <span class="kw">_</span>) =&gt; <a class="ident" href="../../src/pest/error.rs.html#252">start_line_col</a>,
+    <span class="kw">fn </span>start(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) {
+        <span class="kw">match </span><a class="self" href="#307">self</a>.line_col {
+            <a href="#72">LineColLocation::Pos</a>(line_col) =&gt; <a href="#309">line_col</a>,
+            <a href="#74">LineColLocation::Span</a>(start_line_col, <span class="kw">_</span>) =&gt; <a href="#310">start_line_col</a>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">spacing</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#256">self</a>.<span class="ident">line_col</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#65">LineColLocation::Pos</a>((<span class="ident">line</span>, <span class="kw">_</span>)) =&gt; <a class="ident" href="../../src/pest/error.rs.html#258">line</a>,
-            <a class="ident" href="../../src/pest/error.rs.html#67">LineColLocation::Span</a>((<span class="ident">start_line</span>, <span class="kw">_</span>), (<span class="ident">end_line</span>, <span class="kw">_</span>)) =&gt; <span class="ident">cmp::max</span>(<a class="ident" href="../../src/pest/error.rs.html#259">start_line</a>, <a class="ident" href="../../src/pest/error.rs.html#259">end_line</a>),
+    <span class="kw">fn </span>spacing(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <span class="kw">let </span>line = <span class="kw">match </span><a class="self" href="#314">self</a>.line_col {
+            <a href="#72">LineColLocation::Pos</a>((line, <span class="kw">_</span>)) =&gt; <a href="#316">line</a>,
+            <a href="#74">LineColLocation::Span</a>((start_line, <span class="kw">_</span>), (end_line, <span class="kw">_</span>)) =&gt; cmp::max(<a href="#317">start_line</a>, <a href="#317">end_line</a>),
         };
 
-        <span class="kw">let</span> <span class="ident">line_str_len</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <a class="ident" href="../../src/pest/error.rs.html#257">line</a>).<span class="ident">len</span>();
+        <span class="kw">let </span>line_str_len = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{}&quot;</span>, line).len();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">spacing</span> <span class="op">=</span> <span class="ident">String::new</span>();
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<a class="ident" href="../../src/pest/error.rs.html#262">line_str_len</a> {
-            <a class="ident" href="../../src/pest/error.rs.html#264">spacing</a>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>spacing = String::new();
+        <span class="kw">for _ in </span><span class="number">0</span>..line_str_len {
+            spacing.push(<span class="string">&#39; &#39;</span>);
         }
 
-        <a class="ident" href="../../src/pest/error.rs.html#264">spacing</a>
+        <a href="#322">spacing</a>
     }
 
-    <span class="kw">fn</span> <span class="ident">underline</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">underline</span> <span class="op">=</span> <span class="ident">String::new</span>();
+    <span class="kw">fn </span>underline(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <span class="kw">let </span><span class="kw-2">mut </span>underline = String::new();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#272">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#272">self</a>.<span class="ident">line_col</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#67">LineColLocation::Span</a>(<span class="kw">_</span>, (<span class="kw">_</span>, <span class="kw-2">mut</span> <span class="ident">end</span>)) =&gt; {
-                <span class="kw">let</span> <span class="ident">inverted_cols</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#275">start</a> <span class="op">&gt;</span> <a class="ident" href="../../src/pest/error.rs.html#277">end</a>;
-                <span class="kw">if</span> <a class="ident" href="../../src/pest/error.rs.html#278">inverted_cols</a> {
-                    <span class="ident">mem::swap</span>(<span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#275">start</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#277">end</a>);
-                    <a class="ident" href="../../src/pest/error.rs.html#275">start</a> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
-                    <a class="ident" href="../../src/pest/error.rs.html#277">end</a> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>start = <a class="self" href="#330">self</a>.<a href="#307">start</a>().<span class="number">1</span>;
+        <span class="kw">let </span>end = <span class="kw">match </span><a class="self" href="#330">self</a>.line_col {
+            <a href="#74">LineColLocation::Span</a>(<span class="kw">_</span>, (<span class="kw">_</span>, <span class="kw-2">mut </span>end)) =&gt; {
+                <span class="kw">let </span>inverted_cols = <a href="#333">start</a> &gt; <a href="#335">end</a>;
+                <span class="kw">if </span>inverted_cols {
+                    mem::swap(<span class="kw-2">&amp;mut </span><a href="#333">start</a>, <span class="kw-2">&amp;mut </span><a href="#335">end</a>);
+                    <a href="#333">start</a> -= <span class="number">1</span>;
+                    <a href="#335">end</a> += <span class="number">1</span>;
                 }
 
-                <span class="prelude-val">Some</span>(<a class="ident" href="../../src/pest/error.rs.html#277">end</a>)
+                <span class="prelude-val">Some</span>(<a href="#335">end</a>)
             }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         };
-        <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#275">start</a> <span class="op">-</span> <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">line_chars</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#272">self</a>.<span class="ident">line</span>.<span class="ident">chars</span>();
+        <span class="kw">let </span>offset = <a href="#333">start</a> - <span class="number">1</span>;
+        <span class="kw">let </span>line_chars = <a class="self" href="#330">self</a>.line.chars();
 
-        <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <a class="ident" href="../../src/pest/error.rs.html#290">line_chars</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">take</a>(<a class="ident" href="../../src/pest/error.rs.html#289">offset</a>) {
-            <span class="kw">match</span> <a class="ident" href="../../src/pest/error.rs.html#292">c</a> {
-                <span class="string">&#39;\t&#39;</span> =&gt; <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39;\t&#39;</span>),
-                <span class="kw">_</span> =&gt; <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>),
+        <span class="kw">for </span>c <span class="kw">in </span>line_chars.take(offset) {
+            <span class="kw">match </span>c {
+                <span class="string">&#39;\t&#39; </span>=&gt; underline.push(<span class="string">&#39;\t&#39;</span>),
+                <span class="kw">_ </span>=&gt; underline.push(<span class="string">&#39; &#39;</span>),
             }
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">end</span>) <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#276">end</a> {
-            <span class="kw">if</span> <a class="ident" href="../../src/pest/error.rs.html#299">end</a> <span class="op">-</span> <a class="ident" href="../../src/pest/error.rs.html#275">start</a> <span class="op">&gt;</span> <span class="number">1</span> {
-                <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39;^&#39;</span>);
-                <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">2</span>..(<a class="ident" href="../../src/pest/error.rs.html#299">end</a> <span class="op">-</span> <a class="ident" href="../../src/pest/error.rs.html#275">start</a>) {
-                    <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39;-&#39;</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(end) = <a href="#334">end</a> {
+            <a href="#331">underline</a>.push(<span class="string">&#39;^&#39;</span>);
+            <span class="kw">if </span>end - start &gt; <span class="number">1 </span>{
+                <span class="kw">for _ in </span><span class="number">2</span>..(end - start) {
+                    underline.push(<span class="string">&#39;-&#39;</span>);
                 }
-                <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39;^&#39;</span>);
-            } <span class="kw">else</span> {
-                <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push</span>(<span class="string">&#39;^&#39;</span>);
+                <a href="#331">underline</a>.push(<span class="string">&#39;^&#39;</span>);
             }
-        } <span class="kw">else</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>.<span class="ident">push_str</span>(<span class="string">&quot;^---&quot;</span>)
+        } <span class="kw">else </span>{
+            <a href="#331">underline</a>.push_str(<span class="string">&quot;^---&quot;</span>)
         }
 
-        <a class="ident" href="../../src/pest/error.rs.html#273">underline</a>
+        <a href="#331">underline</a>
     }
 
-    <span class="kw">fn</span> <span class="ident">message</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#316">self</a>.<span class="ident">variant</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#39-44">ErrorVariant::ParsingError</a> {
-                <span class="kw-2">ref</span> <span class="ident">positives</span>,
-                <span class="kw-2">ref</span> <span class="ident">negatives</span>,
-            } =&gt; <span class="ident">Error::parsing_error_message</span>(<a class="ident" href="../../src/pest/error.rs.html#319">positives</a>, <a class="ident" href="../../src/pest/error.rs.html#320">negatives</a>, <span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <a class="ident" href="../../src/pest/error.rs.html#321">r</a>)),
-            <a class="ident" href="../../src/pest/error.rs.html#46-49">ErrorVariant::CustomError</a> { <span class="kw-2">ref</span> <span class="ident">message</span> } =&gt; <a class="ident" href="../../src/pest/error.rs.html#322">message</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(),
-        }
+    <span class="kw">fn </span>message(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <a class="self" href="#372">self</a>.variant.<a href="#508">message</a>().<a href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>()
     }
 
-    <span class="kw">fn</span> <span class="ident">parsing_error_message</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">positives</span>: <span class="kw-2">&amp;</span>[<span class="ident">R</span>], <span class="ident">negatives</span>: <span class="kw-2">&amp;</span>[<span class="ident">R</span>], <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">R</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="kw">fn </span>parsing_error_message&lt;F&gt;(positives: <span class="kw-2">&amp;</span>[R], negatives: <span class="kw-2">&amp;</span>[R], <span class="kw-2">mut </span>f: F) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw-2">&amp;</span>R) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
     {
-        <span class="kw">match</span> (<a class="ident" href="../../src/pest/error.rs.html#326">negatives</a>.<span class="ident">is_empty</span>(), <a class="ident" href="../../src/pest/error.rs.html#326">positives</a>.<span class="ident">is_empty</span>()) {
-            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">format!</span>(
+        <span class="kw">match </span>(<a href="#376">negatives</a>.is_empty(), <a href="#376">positives</a>.is_empty()) {
+            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(
                 <span class="string">&quot;unexpected {}; expected {}&quot;</span>,
-                <span class="ident">Error::enumerate</span>(<a class="ident" href="../../src/pest/error.rs.html#326">negatives</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#326">f</a>),
-                <span class="ident">Error::enumerate</span>(<a class="ident" href="../../src/pest/error.rs.html#326">positives</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#326">f</a>)
+                Error::enumerate(negatives, <span class="kw-2">&amp;mut </span>f),
+                Error::enumerate(positives, <span class="kw-2">&amp;mut </span>f)
             ),
-            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;unexpected {}&quot;</span>, <span class="ident">Error::enumerate</span>(<a class="ident" href="../../src/pest/error.rs.html#326">negatives</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#326">f</a>)),
-            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; <span class="macro">format!</span>(<span class="string">&quot;expected {}&quot;</span>, <span class="ident">Error::enumerate</span>(<a class="ident" href="../../src/pest/error.rs.html#326">positives</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/pest/error.rs.html#326">f</a>)),
-            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; <span class="string">&quot;unknown parsing error&quot;</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>(),
+            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;unexpected {}&quot;</span>, Error::enumerate(negatives, <span class="kw-2">&amp;mut </span>f)),
+            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;expected {}&quot;</span>, Error::enumerate(positives, <span class="kw-2">&amp;mut </span>f)),
+            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) =&gt; <span class="string">&quot;unknown parsing error&quot;</span>.<a href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>(),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">enumerate</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">rules</span>: <span class="kw-2">&amp;</span>[<span class="ident">R</span>], <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">R</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="kw">fn </span>enumerate&lt;F&gt;(rules: <span class="kw-2">&amp;</span>[R], f: <span class="kw-2">&amp;mut </span>F) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>
+    <span class="kw">where
+        </span>F: FnMut(<span class="kw-2">&amp;</span>R) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
     {
-        <span class="kw">match</span> <a class="ident" href="../../src/pest/error.rs.html#342">rules</a>.<span class="ident">len</span>() {
-            <span class="number">1</span> =&gt; <a class="ident" href="../../src/pest/error.rs.html#342">f</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#342">rules</a>[<span class="number">0</span>]),
-            <span class="number">2</span> =&gt; <span class="macro">format!</span>(<span class="string">&quot;{} or {}&quot;</span>, <a class="ident" href="../../src/pest/error.rs.html#342">f</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#342">rules</a>[<span class="number">0</span>]), <a class="ident" href="../../src/pest/error.rs.html#342">f</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#342">rules</a>[<span class="number">1</span>])),
-            <span class="ident">l</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">separated</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#342">rules</a>
-                    .<span class="ident">iter</span>()
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">take</a>(<a class="ident" href="../../src/pest/error.rs.html#349">l</a> <span class="op">-</span> <span class="number">1</span>)
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <a class="ident" href="../../src/pest/error.rs.html#342">f</a>(<a class="ident" href="../../src/pest/error.rs.html#353">r</a>))
-                    .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
-                    .<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>);
-                <span class="macro">format!</span>(<span class="string">&quot;{}, or {}&quot;</span>, <a class="ident" href="../../src/pest/error.rs.html#350">separated</a>, <a class="ident" href="../../src/pest/error.rs.html#342">f</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../src/pest/error.rs.html#342">rules</a>[<a class="ident" href="../../src/pest/error.rs.html#349">l</a> <span class="op">-</span> <span class="number">1</span>]))
+        <span class="kw">match </span><a href="#392">rules</a>.len() {
+            <span class="number">1 </span>=&gt; <a href="#392">f</a>(<span class="kw-2">&amp;</span><a href="#392">rules</a>[<span class="number">0</span>]),
+            <span class="number">2 </span>=&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{} or {}&quot;</span>, f(<span class="kw-2">&amp;</span>rules[<span class="number">0</span>]), f(<span class="kw-2">&amp;</span>rules[<span class="number">1</span>])),
+            l =&gt; {
+                <span class="kw">let </span>non_separated = <a href="#392">f</a>(<span class="kw-2">&amp;</span><a href="#392">rules</a>[<a href="#399">l</a> - <span class="number">1</span>]);
+                <span class="kw">let </span>separated = <a href="#392">rules</a>
+                    .iter()
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">take</a>(<a href="#399">l</a> - <span class="number">1</span>)
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<a href="#392">f</a>)
+                    .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+                    .join(<span class="string">&quot;, &quot;</span>);
+                <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{}, or {}&quot;</span>, separated, non_separated)
             }
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <span class="kw">let</span> <span class="ident">spacing</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#256">spacing</a>();
-        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>
-            .<span class="ident">path</span>
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">path</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{}:&quot;</span>, <a class="ident" href="../../src/pest/error.rs.html#366">path</a>))
-            .<span class="ident">unwrap_or_default</span>();
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>format(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <span class="kw">let </span>spacing = <a class="self" href="#412">self</a>.<a href="#314">spacing</a>();
+        <span class="kw">let </span>path = <span class="self"><a href="#412">self</a>
+            </span>.path
+            .as_ref()
+            .map(|path| <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{}:&quot;</span>, path))
+            .unwrap_or_default();
 
-        <span class="kw">let</span> <span class="ident">pair</span> <span class="op">=</span> (<a class="self" href="../../src/pest/error.rs.html#361">self</a>.<span class="ident">line_col</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <span class="kw-2">&amp;</span><a class="self" href="../../src/pest/error.rs.html#361">self</a>.<span class="ident">continued_line</span>);
-        <span class="kw">if</span> <span class="kw">let</span> (<a class="ident" href="../../src/pest/error.rs.html#67">LineColLocation::Span</a>(<span class="kw">_</span>, <span class="ident">end</span>), <span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">continued_line</span>)) <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#369">pair</a> {
-            <span class="kw">let</span> <span class="ident">has_line_gap</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#370">end</a>.<span class="number">0</span> <span class="op">-</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">0</span> <span class="op">&gt;</span> <span class="number">1</span>;
-            <span class="kw">if</span> <a class="ident" href="../../src/pest/error.rs.html#371">has_line_gap</a> {
-                <span class="macro">format!</span>(
+        <span class="kw">let </span>pair = (<a class="self" href="#412">self</a>.line_col.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>(), <span class="kw-2">&amp;</span><a class="self" href="#412">self</a>.continued_line);
+        <span class="kw">if let </span>(<a href="#74">LineColLocation::Span</a>(<span class="kw">_</span>, end), <span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>continued_line)) = <a href="#420">pair</a> {
+            <span class="kw">let </span>has_line_gap = <a href="#421">end</a>.<span class="number">0 </span>- <a class="self" href="#412">self</a>.<a href="#307">start</a>().<span class="number">0 </span>&gt; <span class="number">1</span>;
+            <span class="kw">if </span>has_line_gap {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(
                     <span class="string">&quot;{s    }--&gt; {p}{ls}:{c}\n\
                      {s    } |\n\
                      {ls:w$} | {line}\n\
@@ -1193,19 +1325,19 @@
                      {s    } | {underline}\n\
                      {s    } |\n\
                      {s    } = {message}&quot;</span>,
-                    <span class="ident">s</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#362">spacing</a>,
-                    <span class="ident">w</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#362">spacing</a>.<span class="ident">len</span>(),
-                    <span class="ident">p</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#363">path</a>,
-                    <span class="ident">ls</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">0</span>,
-                    <span class="ident">le</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#370">end</a>.<span class="number">0</span>,
-                    <span class="ident">c</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">1</span>,
-                    <span class="ident">line</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<span class="ident">line</span>,
-                    <span class="ident">continued_line</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#370">continued_line</a>,
-                    <span class="ident">underline</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#272">underline</a>(),
-                    <span class="ident">message</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#316">message</a>()
+                    s = spacing,
+                    w = spacing.len(),
+                    p = path,
+                    ls = <span class="self">self</span>.start().<span class="number">0</span>,
+                    le = end.<span class="number">0</span>,
+                    c = <span class="self">self</span>.start().<span class="number">1</span>,
+                    line = <span class="self">self</span>.line,
+                    continued_line = continued_line,
+                    underline = <span class="self">self</span>.underline(),
+                    message = <span class="self">self</span>.message()
                 )
-            } <span class="kw">else</span> {
-                <span class="macro">format!</span>(
+            } <span class="kw">else </span>{
+                <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(
                     <span class="string">&quot;{s    }--&gt; {p}{ls}:{c}\n\
                      {s    } |\n\
                      {ls:w$} | {line}\n\
@@ -1213,290 +1345,327 @@
                      {s    } | {underline}\n\
                      {s    } |\n\
                      {s    } = {message}&quot;</span>,
-                    <span class="ident">s</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#362">spacing</a>,
-                    <span class="ident">w</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#362">spacing</a>.<span class="ident">len</span>(),
-                    <span class="ident">p</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#363">path</a>,
-                    <span class="ident">ls</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">0</span>,
-                    <span class="ident">le</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#370">end</a>.<span class="number">0</span>,
-                    <span class="ident">c</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">1</span>,
-                    <span class="ident">line</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<span class="ident">line</span>,
-                    <span class="ident">continued_line</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#370">continued_line</a>,
-                    <span class="ident">underline</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#272">underline</a>(),
-                    <span class="ident">message</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#316">message</a>()
+                    s = spacing,
+                    w = spacing.len(),
+                    p = path,
+                    ls = <span class="self">self</span>.start().<span class="number">0</span>,
+                    le = end.<span class="number">0</span>,
+                    c = <span class="self">self</span>.start().<span class="number">1</span>,
+                    line = <span class="self">self</span>.line,
+                    continued_line = continued_line,
+                    underline = <span class="self">self</span>.underline(),
+                    message = <span class="self">self</span>.message()
                 )
             }
-        } <span class="kw">else</span> {
-            <span class="macro">format!</span>(
+        } <span class="kw">else </span>{
+            <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(
                 <span class="string">&quot;{s}--&gt; {p}{l}:{c}\n\
                  {s} |\n\
                  {l} | {line}\n\
                  {s} | {underline}\n\
                  {s} |\n\
                  {s} = {message}&quot;</span>,
-                <span class="ident">s</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#362">spacing</a>,
-                <span class="ident">p</span> <span class="op">=</span> <a class="ident" href="../../src/pest/error.rs.html#363">path</a>,
-                <span class="ident">l</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">0</span>,
-                <span class="ident">c</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#249">start</a>().<span class="number">1</span>,
-                <span class="ident">line</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<span class="ident">line</span>,
-                <span class="ident">underline</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#272">underline</a>(),
-                <span class="ident">message</span> <span class="op">=</span> <a class="self" href="../../src/pest/error.rs.html#361">self</a>.<a class="ident" href="../../src/pest/error.rs.html#316">message</a>()
+                s = spacing,
+                p = path,
+                l = <span class="self">self</span>.start().<span class="number">0</span>,
+                c = <span class="self">self</span>.start().<span class="number">1</span>,
+                line = <span class="self">self</span>.line,
+                underline = <span class="self">self</span>.underline(),
+                message = <span class="self">self</span>.message()
             )
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <a class="ident" href="../../src/pest/lib.rs.html#101">RuleType</a><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for</span> <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <span class="macro">write!</span>(<a class="ident" href="../../src/pest/error.rs.html#435">f</a>, <span class="string">&quot;{}&quot;</span>, <a class="self" href="../../src/pest/error.rs.html#435">self</a>.<a class="ident" href="../../src/pest/error.rs.html#361">format</a>())
-    }
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;i</span>, <span class="ident">R</span>: <a class="ident" href="../../src/pest/lib.rs.html#101">RuleType</a><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html">error::Error</a> <span class="kw">for</span> <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
-        <span class="kw">match</span> <a class="self" href="../../src/pest/error.rs.html#441">self</a>.<span class="ident">variant</span> {
-            <a class="ident" href="../../src/pest/error.rs.html#39-44">ErrorVariant::ParsingError</a> { .. } =&gt; <span class="string">&quot;parsing error&quot;</span>,
-            <a class="ident" href="../../src/pest/error.rs.html#46-49">ErrorVariant::CustomError</a> { <span class="kw-2">ref</span> <span class="ident">message</span> } =&gt; <a class="ident" href="../../src/pest/error.rs.html#444">message</a>,
+<span class="kw">impl</span>&lt;R: <a href="lib.rs.html#113">RuleType</a>&gt; ErrorVariant&lt;R&gt; {
+    <span class="doccomment">///
+    /// Returns the error message for [`ErrorVariant`]
+    ///
+    /// If [`ErrorVariant`] is [`CustomError`], it returns a
+    /// [`Cow::Borrowed`] reference to [`message`]. If [`ErrorVariant`] is [`ParsingError`], a
+    /// [`Cow::Owned`] containing &quot;expected [ErrorVariant::ParsingError::positives] [ErrorVariant::ParsingError::negatives]&quot; is returned.
+    ///
+    /// [`ErrorVariant`]: enum.ErrorVariant.html
+    /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
+    /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
+    /// [`Cow::Owned`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Owned
+    /// [`Cow::Borrowed`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Borrowed
+    /// [`message`]: enum.ErrorVariant.html#variant.CustomError.field.message
+    /// # Examples
+    ///
+    /// ```
+    /// # use pest::error::ErrorVariant;
+    /// let variant = ErrorVariant::&lt;()&gt;::CustomError {
+    ///     message: String::from(&quot;unexpected error&quot;)
+    /// };
+    ///
+    /// println!(&quot;{}&quot;, variant.message());
+    </span><span class="kw">pub fn </span>message(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Cow&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt; {
+        <span class="kw">match </span><span class="self"><a href="#508">self</a> </span>{
+            <a href="#46">ErrorVariant::ParsingError</a> {
+                <span class="kw-2">ref </span>positives,
+                <span class="kw-2">ref </span>negatives,
+            } =&gt; Cow::Owned(Error::parsing_error_message(<a href="#511">positives</a>, <a href="#512">negatives</a>, |r| {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{:?}&quot;</span>, r)
+            })),
+            <a href="#53">ErrorVariant::CustomError</a> { <span class="kw-2">ref </span>message } =&gt; Cow::Borrowed(<a href="#516">message</a>),
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">visualize_whitespace</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-    <a class="ident" href="../../src/pest/error.rs.html#449">input</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>().<span class="ident">replace</span>(<span class="string">&#39;\r&#39;</span>, <span class="string">&quot;␍&quot;</span>).<span class="ident">replace</span>(<span class="string">&#39;\n&#39;</span>, <span class="string">&quot;␊&quot;</span>)
+<span class="kw">impl</span>&lt;R: <a href="lib.rs.html#113">RuleType</a>&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for </span>Error&lt;R&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#522">f</a>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.format())
+    }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::position</span>;
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="kw">impl</span>&lt;R: <a href="lib.rs.html#113">RuleType</a>&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for </span>ErrorVariant&lt;R&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <span class="kw">match </span><span class="self"><a href="#528">self</a> </span>{
+            <a href="#46">ErrorVariant::ParsingError</a> { .. } =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#528">f</a>, <span class="string">&quot;parsing error: {}&quot;</span>, <span class="self">self</span>.message()),
+            <a href="#53">ErrorVariant::CustomError</a> { .. } =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#528">f</a>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.message()),
+        }
+    }
+}
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_parsing_error_mixed</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+<span class="kw">fn </span>visualize_whitespace(input: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+    <a href="#536">input</a>.<a href="https://doc.rust-lang.org/nightly/alloc/borrow/trait.ToOwned.html">to_owned</a>().replace(<span class="string">&#39;\r&#39;</span>, <span class="string">&quot;␍&quot;</span>).replace(<span class="string">&#39;\n&#39;</span>, <span class="string">&quot;␊&quot;</span>)
+}
+
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::position;
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>alloc::vec;
+
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_parsing_error_mixed() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                negatives: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
             },
-            <span class="ident">pos</span>,
+            pos,
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unexpected 4, 5, or 6; expected 1, 2, or 3&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_parsing_error_positives</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_parsing_error_positives() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>],
+                negatives: <span class="macro">vec!</span>[],
             },
-            <span class="ident">pos</span>,
+            pos,
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = expected 1 or 2&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_parsing_error_negatives</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_parsing_error_negatives() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[],
+                negatives: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
             },
-            <span class="ident">pos</span>,
+            pos,
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unexpected 4, 5, or 6&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_parsing_error_unknown</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_parsing_error_unknown() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[],
+                negatives: <span class="macro">vec!</span>[],
             },
-            <span class="ident">pos</span>,
+            pos,
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unknown parsing error&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_pos</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: big one&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_pos() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: big one&quot;</span>.to_owned(),
             },
-            <span class="ident">pos</span>,
+            pos,
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: big one&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_span_two_lines</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nefgh&quot;</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">9</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_span</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: big one&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_span_two_lines() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nefgh&quot;</span>;
+        <span class="kw">let </span>start = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>end = position::Position::new(input, <span class="number">9</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_span(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: big one&quot;</span>.to_owned(),
             },
-            <span class="ident">start</span>.<span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="ident">end</span>),
+            start.span(<span class="kw-2">&amp;</span>end),
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;3 | efgh&quot;</span>,
                 <span class="string">&quot;  |  ^^&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: big one&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_span_three_lines</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nefgh&quot;</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">9</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_span</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: big one&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_span_three_lines() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nefgh&quot;</span>;
+        <span class="kw">let </span>start = position::Position::new(input, <span class="number">1</span>).unwrap();
+        <span class="kw">let </span>end = position::Position::new(input, <span class="number">9</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_span(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: big one&quot;</span>.to_owned(),
             },
-            <span class="ident">start</span>.<span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="ident">end</span>),
+            start.span(<span class="kw-2">&amp;</span>end),
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 1:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;1 | ab␊&quot;</span>,
+                <span class="string">&quot;1 | ab&quot;</span>,
                 <span class="string">&quot;  | ...&quot;</span>,
                 <span class="string">&quot;3 | efgh&quot;</span>,
                 <span class="string">&quot;  |  ^^&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: big one&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_span_two_lines_inverted_cols</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;abcdef\ngh&quot;</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">5</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">8</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_span</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: big one&quot;</span>.<span class="ident">to_owned</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_span_two_lines_inverted_cols() {
+        <span class="kw">let </span>input = <span class="string">&quot;abcdef\ngh&quot;</span>;
+        <span class="kw">let </span>start = position::Position::new(input, <span class="number">5</span>).unwrap();
+        <span class="kw">let </span>end = position::Position::new(input, <span class="number">8</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_span(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: big one&quot;</span>.to_owned(),
             },
-            <span class="ident">start</span>.<span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="ident">end</span>),
+            start.span(<span class="kw-2">&amp;</span>end),
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 1:6&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;1 | abcdef␊&quot;</span>,
+                <span class="string">&quot;1 | abcdef&quot;</span>,
                 <span class="string">&quot;2 | gh&quot;</span>,
                 <span class="string">&quot;  | ^----^&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: big one&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_span_end_after_newline</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;abcdef\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">7</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">start</span>.<span class="ident">at_start</span>());
-        <span class="macro">assert!</span>(<span class="ident">end</span>.<span class="ident">at_end</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_span_end_after_newline() {
+        <span class="kw">let </span>input = <span class="string">&quot;abcdef\n&quot;</span>;
+        <span class="kw">let </span>start = position::Position::new(input, <span class="number">0</span>).unwrap();
+        <span class="kw">let </span>end = position::Position::new(input, <span class="number">7</span>).unwrap();
+        <span class="macro">assert!</span>(start.at_start());
+        <span class="macro">assert!</span>(end.at_end());
 
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_span</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: big one&quot;</span>.<span class="ident">to_owned</span>(),
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_span(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: big one&quot;</span>.to_owned(),
             },
-            <span class="ident">start</span>.<span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="ident">end</span>),
+            start.span(<span class="kw-2">&amp;</span>end),
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 1:1&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
@@ -1505,27 +1674,27 @@
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: big one&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">display_custom_span_empty</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert!</span>(<span class="ident">start</span>.<span class="ident">at_start</span>());
-        <span class="macro">assert!</span>(<span class="ident">end</span>.<span class="ident">at_end</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>display_custom_span_empty() {
+        <span class="kw">let </span>input = <span class="string">&quot;&quot;</span>;
+        <span class="kw">let </span>start = position::Position::new(input, <span class="number">0</span>).unwrap();
+        <span class="kw">let </span>end = position::Position::new(input, <span class="number">0</span>).unwrap();
+        <span class="macro">assert!</span>(start.at_start());
+        <span class="macro">assert!</span>(end.at_end());
 
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_span</span>(
-            <span class="ident">ErrorVariant::CustomError</span> {
-                <span class="ident">message</span>: <span class="string">&quot;error: empty&quot;</span>.<span class="ident">to_owned</span>(),
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_span(
+            ErrorVariant::CustomError {
+                message: <span class="string">&quot;error: empty&quot;</span>.to_owned(),
             },
-            <span class="ident">start</span>.<span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="ident">end</span>),
+            start.span(<span class="kw-2">&amp;</span>end),
         );
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 1:1&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
@@ -1534,79 +1703,79 @@
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = error: empty&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">mapped_parsing_error</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>mapped_parsing_error() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                negatives: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
             },
-            <span class="ident">pos</span>,
+            pos,
         )
-        .<span class="ident">renamed_rules</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>));
+        .renamed_rules(|n| <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, n + <span class="number">1</span>));
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; 2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unexpected 5, 6, or 7; expected 2, 3, or 4&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">error_with_path</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;ab\ncd\nef&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">4</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>error_with_path() {
+        <span class="kw">let </span>input = <span class="string">&quot;ab\ncd\nef&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">4</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                negatives: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
             },
-            <span class="ident">pos</span>,
+            pos,
         )
-        .<span class="ident">with_path</span>(<span class="string">&quot;file.rs&quot;</span>);
+        .with_path(<span class="string">&quot;file.rs&quot;</span>);
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; file.rs:2:2&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
-                <span class="string">&quot;2 | cd␊&quot;</span>,
+                <span class="string">&quot;2 | cd&quot;</span>,
                 <span class="string">&quot;  |  ^---&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unexpected 4, 5, or 6; expected 1, 2, or 3&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">underline_with_tabs</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;a\txbc&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="ident">position::Position::new</span>(<span class="ident">input</span>, <span class="number">2</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">error</span>: <span class="ident">Error</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Error::new_from_pos</span>(
-            <span class="ident">ErrorVariant::ParsingError</span> {
-                <span class="ident">positives</span>: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
-                <span class="ident">negatives</span>: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>underline_with_tabs() {
+        <span class="kw">let </span>input = <span class="string">&quot;a\txbc&quot;</span>;
+        <span class="kw">let </span>pos = position::Position::new(input, <span class="number">2</span>).unwrap();
+        <span class="kw">let </span>error: Error&lt;u32&gt; = Error::new_from_pos(
+            ErrorVariant::ParsingError {
+                positives: <span class="macro">vec!</span>[<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>],
+                negatives: <span class="macro">vec!</span>[<span class="number">4</span>, <span class="number">5</span>, <span class="number">6</span>],
             },
-            <span class="ident">pos</span>,
+            pos,
         )
-        .<span class="ident">with_path</span>(<span class="string">&quot;file.rs&quot;</span>);
+        .with_path(<span class="string">&quot;file.rs&quot;</span>);
 
         <span class="macro">assert_eq!</span>(
-            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>),
+            <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, error),
             <span class="macro">vec!</span>[
                 <span class="string">&quot; --&gt; file.rs:1:3&quot;</span>,
                 <span class="string">&quot;  |&quot;</span>,
@@ -1615,10 +1784,9 @@
                 <span class="string">&quot;  |&quot;</span>,
                 <span class="string">&quot;  = unexpected 4, 5, or 6; expected 1, 2, or 3&quot;</span>,
             ]
-            .<span class="ident">join</span>(<span class="string">&quot;\n&quot;</span>)
+            .join(<span class="string">&quot;\n&quot;</span>)
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pest" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="pest" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

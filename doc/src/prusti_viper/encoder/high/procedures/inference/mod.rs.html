@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script src="../../../../../../crates.js"></script><script defer src="../../../../../../main.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script><script defer src="../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -49,50 +42,71 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="self">self</span>::{<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#21-38">state::FoldUnfoldState</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/visitor/mod.rs.html#28-42">visitor::Visitor</a>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::encoder</span>::{<a class="ident" href="../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/encoder.rs.html#63-99">Encoder</a>};
-<span class="kw">use</span> <a class="ident" href="../../../../../../prusti_common/config/index.html">prusti_common::config</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.DefId.html">rustc_hir::def_id::DefId</a>;
-<span class="kw">use</span> <span class="ident">vir_crate</span>::{
-    <a class="ident" href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">common::graphviz::ToGraphviz</a>,
-    <span class="ident">high</span>::{<a class="self" href="../../../../../../vir/high/index.html">self</a> <span class="kw">as</span> <span class="ident">vir_high</span>},
-    <span class="ident">middle</span>::{<a class="self" href="../../../../../../vir/middle/index.html">self</a> <span class="kw">as</span> <span class="ident">vir_mid</span>},
+<span id="45">45</span>
+<span id="46">46</span>
+<span id="47">47</span>
+<span id="48">48</span>
+<span id="49">49</span>
+<span id="50">50</span>
+<span id="51">51</span>
+<span id="52">52</span>
+<span id="53">53</span>
+<span id="54">54</span>
+<span id="55">55</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This module contains the code for inferring ghost operations such as `fold`
+//! and `unfold`. Since in the presence of unsafe code we cannot be sure that
+//! this algorithm will always succeed, we track under which conditions a
+//! specific folding state exists. The key observation is that each
+//! stack-allocated variable is allocated and deallocated only as a whole.
+//! Threrefore, for each variable we track its unfolding state, which can be
+//! either unconditional (the state is the same on all incoming paths) or
+//! conditional (the state depends on the incoming path).
+//!
+//! The data structures used for tracking the state are in the `state` module.
+
+</span><span class="kw">use </span><span class="self">self</span>::{<a href="state/fold_unfold_state.rs.html#14">state::FoldUnfoldState</a>, <a href="visitor/mod.rs.html#34">visitor::Visitor</a>};
+<span class="kw">use </span><span class="kw">crate</span>::encoder::{<a href="../../../errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>, <a href="../../../encoder.rs.html#66">Encoder</a>};
+<span class="kw">use </span><a href="../../../../../../prusti_utils/config/index.html">prusti_common::config</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.DefId.html">prusti_rustc_interface::hir::def_id::DefId</a>;
+<span class="kw">use </span>vir_crate::{
+    <a href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">common::graphviz::ToGraphviz</a>,
+    middle::{<span class="self"><a href="../../../../../../vir/middle/index.html">self</a> </span><span class="kw">as </span>vir_mid},
+    typed::{<span class="self"><a href="../../../../../../vir/typed/index.html">self</a> </span><span class="kw">as </span>vir_typed},
 };
 
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#1-96">action</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/ensurer.rs.html#1-328">ensurer</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#1-21">permission</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/semantics.rs.html#1-635">semantics</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/state.rs.html#1-510">state</a>;
-<span class="kw">mod</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/visitor/mod.rs.html#1-345">visitor</a>;
+<span class="kw">mod </span><a href="action.rs.html#1-141">action</a>;
+<span class="kw">mod </span><a href="ensurer.rs.html#1-517">ensurer</a>;
+<span class="kw">mod </span><a href="permission.rs.html#1-46">permission</a>;
+<span class="kw">mod </span><a href="semantics.rs.html#1-766">semantics</a>;
+<span class="kw">mod </span><a href="state/mod.rs.html#1-11">state</a>;
+<span class="kw">mod </span><a href="visitor/mod.rs.html#1-542">visitor</a>;
 
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">infer_shape_operations</span><span class="op">&lt;</span><span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;v</span><span class="op">&gt;</span>(
-    <span class="ident">encoder</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Encoder</span><span class="op">&lt;</span><span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span>,
-    <span class="ident">proc_def_id</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.DefId.html">DefId</a>,
-    <span class="ident">procedure</span>: <a class="ident" href="../../../../../../vir/gen/high/cfg/procedure/struct.ProcedureDecl.html">vir_high::ProcedureDecl</a>,
-) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/middle/cfg/procedure/struct.ProcedureDecl.html">vir_mid::ProcedureDecl</a><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">config::dump_debug_info</span>() {
-        <span class="kw">let</span> <span class="ident">source_filename</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#19">encoder</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/encoder.rs.html#206">env</a>().<span class="ident">source_file_name</span>();
-        <span class="ident">prusti_common::report::log::report_with_writer</span>(
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>infer_shape_operations&lt;<span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;v</span>&gt;(
+    encoder: <span class="kw-2">&amp;mut </span>Encoder&lt;<span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt;,
+    proc_def_id: <a href="https://doc.rust-lang.org/nightly/nightly-rustc/rustc_span/def_id/struct.DefId.html">DefId</a>,
+    procedure: <a href="../../../../../../vir/gen/typed/cfg/procedure/struct.ProcedureDecl.html">vir_typed::ProcedureDecl</a>,
+) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../vir/gen/middle/cfg/procedure/struct.ProcedureDecl.html">vir_mid::ProcedureDecl</a>&gt; {
+    <span class="kw">if </span>config::dump_debug_info() {
+        <span class="kw">let </span>source_filename = <a href="#30">encoder</a>.<a href="../../../encoder.rs.html#219">env</a>().name.source_file_name();
+        prusti_common::report::log::report_with_writer(
             <span class="string">&quot;graphviz_method_before_foldunfold&quot;</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;{}.{}.dot&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#24">source_filename</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#21">procedure</a>.<span class="ident">name</span>),
-            <span class="op">|</span><span class="ident">writer</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#21">procedure</a>.<a class="ident" href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">to_graphviz</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#28">writer</a>).<span class="ident">unwrap</span>(),
+            <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{}.{}.dot&quot;</span>, source_filename, procedure.name),
+            |writer| <a href="#32">procedure</a>.<a href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">to_graphviz</a>(<a href="#39">writer</a>).unwrap(),
         );
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> <span class="op">=</span> <span class="ident">Visitor::new</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#19">encoder</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#20">proc_def_id</a>);
-    <span class="kw">let</span> <span class="ident">initial_state</span> <span class="op">=</span> <span class="ident">FoldUnfoldState::new</span>();
-    <span class="kw">let</span> <span class="ident">shaped_procedure</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#31">visitor</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/visitor/mod.rs.html#61-65">infer_procedure</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#21">procedure</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#32">initial_state</a>)<span class="question-mark">?</span>;
-    <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#31">visitor</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/visitor/mod.rs.html#342">cancel_crash_graphviz</a>();
-    <span class="kw">if</span> <span class="ident">config::dump_debug_info</span>() {
-        <span class="kw">let</span> <span class="ident">source_filename</span> <span class="op">=</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#19">encoder</a>.<a class="ident" href="../../../../../../src/prusti_viper/encoder/encoder.rs.html#206">env</a>().<span class="ident">source_file_name</span>();
-        <span class="ident">prusti_common::report::log::report_with_writer</span>(
+    <span class="kw">let </span><span class="kw-2">mut </span>visitor = Visitor::new(<a href="#30">encoder</a>, <a href="#31">proc_def_id</a>);
+    <span class="kw">let </span>initial_state = FoldUnfoldState::new();
+    <span class="kw">let </span>shaped_procedure = visitor.infer_procedure(procedure, initial_state)<span class="question-mark">?</span>;
+    <a href="#42">visitor</a>.<a href="visitor/mod.rs.html#539">cancel_crash_graphviz</a>();
+    <span class="kw">if </span>config::dump_debug_info() {
+        <span class="kw">let </span>source_filename = <a href="#30">encoder</a>.<a href="../../../encoder.rs.html#219">env</a>().name.source_file_name();
+        prusti_common::report::log::report_with_writer(
             <span class="string">&quot;graphviz_method_after_foldunfold&quot;</span>,
-            <span class="macro">format!</span>(<span class="string">&quot;{}.{}.dot&quot;</span>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#36">source_filename</a>, <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#33">shaped_procedure</a>.<span class="ident">name</span>),
-            <span class="op">|</span><span class="ident">writer</span><span class="op">|</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#33">shaped_procedure</a>.<a class="ident" href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">to_graphviz</a>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#40">writer</a>).<span class="ident">unwrap</span>(),
+            <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.format.html">format!</a>(<span class="string">&quot;{}.{}.dot&quot;</span>, source_filename, shaped_procedure.name),
+            |writer| <a href="#44">shaped_procedure</a>.<a href="../../../../../../vir/common/graphviz/trait.ToGraphviz.html">to_graphviz</a>(<a href="#51">writer</a>).unwrap(),
         );
     }
-    <span class="prelude-val">Ok</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/mod.rs.html#33">shaped_procedure</a>)
+    <span class="prelude-val">Ok</span>(<a href="#44">shaped_procedure</a>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

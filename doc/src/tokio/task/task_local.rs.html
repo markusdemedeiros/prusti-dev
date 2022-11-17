@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.18.2/src/task/task_local.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>task_local.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../tokio/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../tokio/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../tokio/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/tokio-1.21.2/src/task/task_local.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>task_local.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../tokio/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -307,308 +300,599 @@
 <span id="300">300</span>
 <span id="301">301</span>
 <span id="302">302</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">pin_project_lite::pin_project</span>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/cell/struct.RefCell.html">std::cell::RefCell</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html">std::error::Error</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">std::future::Future</a>;
-<span class="kw">use</span> <span class="ident">std::marker::PhantomPinned</span>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/pin/struct.Pin.html">std::pin::Pin</a>;
-<span class="kw">use</span> <span class="ident">std::task</span>::{<a class="ident" href="https://doc.rust-lang.org/nightly/core/task/wake/struct.Context.html">Context</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/core/task/poll/enum.Poll.html">Poll</a>};
-<span class="kw">use</span> <span class="ident">std</span>::{<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">fmt</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/thread/index.html">thread</a>};
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+</pre><pre class="rust"><code><span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/cell/struct.RefCell.html">std::cell::RefCell</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/error/trait.Error.html">std::error::Error</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">std::future::Future</a>;
+<span class="kw">use </span>std::marker::PhantomPinned;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/pin/struct.Pin.html">std::pin::Pin</a>;
+<span class="kw">use </span>std::task::{<a href="https://doc.rust-lang.org/nightly/core/task/wake/struct.Context.html">Context</a>, <a href="https://doc.rust-lang.org/nightly/core/task/poll/enum.Poll.html">Poll</a>};
+<span class="kw">use </span>std::{<a href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">fmt</a>, <a href="https://doc.rust-lang.org/nightly/core/mem/index.html">mem</a>, <a href="https://doc.rust-lang.org/nightly/std/thread/index.html">thread</a>};
 
-<span class="doccomment">/// Declares a new task-local key of type [`tokio::task::LocalKey`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Syntax</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The macro wraps any number of static declarations and makes them local to the current task.</span>
-<span class="doccomment">/// Publicity and attributes for each static is preserved. For example:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// # use tokio::task_local;</span>
-<span class="doccomment">/// task_local! {</span>
-<span class="doccomment">///     pub static ONE: u32;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     #[allow(unused)]</span>
-<span class="doccomment">///     static TWO: f32;</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// # fn main() {}</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [LocalKey documentation][`tokio::task::LocalKey`] for more</span>
-<span class="doccomment">/// information.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`tokio::task::LocalKey`]: struct@crate::task::LocalKey</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rt&quot;</span>)))]</span>
-<span class="macro">macro_rules!</span> <span class="ident">task_local</span> {
-     <span class="comment">// empty (base case for the recursion)</span>
-    () =&gt; {};
+<span class="doccomment">/// Declares a new task-local key of type [`tokio::task::LocalKey`].
+///
+/// # Syntax
+///
+/// The macro wraps any number of static declarations and makes them local to the current task.
+/// Publicity and attributes for each static is preserved. For example:
+///
+/// # Examples
+///
+/// ```
+/// # use tokio::task_local;
+/// task_local! {
+///     pub static ONE: u32;
+///
+///     #[allow(unused)]
+///     static TWO: f32;
+/// }
+/// # fn main() {}
+/// ```
+///
+/// See [LocalKey documentation][`tokio::task::LocalKey`] for more
+/// information.
+///
+/// [`tokio::task::LocalKey`]: struct@crate::task::LocalKey
+</span><span class="attribute">#[macro_export]
+#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;rt&quot;</span>)))]
+</span><span class="macro">macro_rules! </span>task_local {
+     <span class="comment">// empty (base case for the recursion)
+    </span>() =&gt; {};
 
-    ($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span>:<span class="ident">vis</span> <span class="kw">static</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span>; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) =&gt; {
-        <span class="macro-nonterminal">$</span><span class="macro">crate::__task_local_inner!</span>($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>]</span>)<span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>);
-        <span class="macro-nonterminal">$</span><span class="macro">crate::task_local!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>);
+    ($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>:meta]</span>)* <span class="macro-nonterminal">$vis</span>:vis <span class="kw">static </span><span class="macro-nonterminal">$name</span>:ident: <span class="macro-nonterminal">$t</span>:ty; $(<span class="macro-nonterminal">$rest</span>:tt)<span class="kw-2">*</span>) =&gt; {
+        <span class="macro-nonterminal">$</span><span class="macro">crate::__task_local_inner!</span>($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>]</span>)* <span class="macro-nonterminal">$vis $name</span>, <span class="macro-nonterminal">$t</span>);
+        <span class="macro-nonterminal">$</span><span class="macro">crate::task_local!</span>($(<span class="macro-nonterminal">$rest</span>)<span class="kw-2">*</span>);
     };
 
-    ($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span>:<span class="ident">vis</span> <span class="kw">static</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span>) =&gt; {
-        <span class="macro-nonterminal">$</span><span class="macro">crate::__task_local_inner!</span>($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>]</span>)<span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>);
+    ($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>:meta]</span>)* <span class="macro-nonterminal">$vis</span>:vis <span class="kw">static </span><span class="macro-nonterminal">$name</span>:ident: <span class="macro-nonterminal">$t</span>:ty) =&gt; {
+        <span class="macro-nonterminal">$</span><span class="macro">crate::__task_local_inner!</span>($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>]</span>)* <span class="macro-nonterminal">$vis $name</span>, <span class="macro-nonterminal">$t</span>);
     }
 }
 
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="attribute">#[<span class="ident">macro_export</span>]</span>
-<span class="macro">macro_rules!</span> <span class="ident">__task_local_inner</span> {
-    ($(<span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">attr</span>:<span class="ident">meta</span>]</span>)<span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span>:<span class="ident">vis</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span>) =&gt; {
-        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">vis</span> <span class="kw">static</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::task::LocalKey</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span><span class="op">&gt;</span> <span class="op">=</span> {
-            <span class="macro">std::thread_local!</span> {
-                <span class="kw">static</span> <span class="ident">__KEY</span>: <span class="ident">std::cell::RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::cell::RefCell::new</span>(<span class="prelude-val">None</span>);
+<span class="attribute">#[doc(hidden)]
+#[cfg(not(tokio_no_const_thread_local))]
+#[macro_export]
+</span><span class="macro">macro_rules! </span>__task_local_inner {
+    ($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>:meta]</span>)* <span class="macro-nonterminal">$vis</span>:vis <span class="macro-nonterminal">$name</span>:ident, <span class="macro-nonterminal">$t</span>:ty) =&gt; {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>]</span>)*
+        <span class="macro-nonterminal">$vis </span><span class="kw">static </span><span class="macro-nonterminal">$name</span>: <span class="macro-nonterminal">$crate::task::LocalKey</span>&lt;<span class="macro-nonterminal">$t</span>&gt; = {
+            <span class="macro">std::thread_local! </span>{
+                <span class="kw">static </span>__KEY: std::cell::RefCell&lt;<span class="prelude-ty">Option</span>&lt;<span class="macro-nonterminal">$t</span>&gt;&gt; = <span class="kw">const </span>{ std::cell::RefCell::new(<span class="prelude-val">None</span>) };
             }
 
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::task::LocalKey</span> { <span class="ident">inner</span>: <span class="ident">__KEY</span> }
+            <span class="macro-nonterminal">$crate::task::LocalKey </span>{ inner: __KEY }
         };
     };
 }
 
-<span class="doccomment">/// A key for task-local data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This type is generated by the `task_local!` macro.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Unlike [`std::thread::LocalKey`], `tokio::task::LocalKey` will</span>
-<span class="doccomment">/// _not_ lazily initialize the value on first access. Instead, the</span>
-<span class="doccomment">/// value is first initialized when the future containing</span>
-<span class="doccomment">/// the task-local is first polled by a futures executor, like Tokio.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// # async fn dox() {</span>
-<span class="doccomment">/// tokio::task_local! {</span>
-<span class="doccomment">///     static NUMBER: u32;</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// NUMBER.scope(1, async move {</span>
-<span class="doccomment">///     assert_eq!(NUMBER.get(), 1);</span>
-<span class="doccomment">/// }).await;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// NUMBER.scope(2, async move {</span>
-<span class="doccomment">///     assert_eq!(NUMBER.get(), 2);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     NUMBER.scope(3, async move {</span>
-<span class="doccomment">///         assert_eq!(NUMBER.get(), 3);</span>
-<span class="doccomment">///     }).await;</span>
-<span class="doccomment">/// }).await;</span>
-<span class="doccomment">/// # }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// [`std::thread::LocalKey`]: struct@std::thread::LocalKey</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rt&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">inner</span>: <span class="ident">thread::LocalKey</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-}
-
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Sets a value `T` as the task-local value for the future `F`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// On completion of `scope`, the task-local will be dropped.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ### Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # async fn dox() {</span>
-    <span class="doccomment">/// tokio::task_local! {</span>
-    <span class="doccomment">///     static NUMBER: u32;</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// NUMBER.scope(1, async move {</span>
-    <span class="doccomment">///     println!(&quot;task local value: {}&quot;, NUMBER.get());</span>
-    <span class="doccomment">/// }).await;</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">TaskLocalFuture</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a>,
-    {
-        <a class="ident" href="../../../src/tokio/task/task_local.rs.html#211-244">TaskLocalFuture</a> {
-            <span class="ident">local</span>: <a class="self" href="../../../src/tokio/task/task_local.rs.html#119">self</a>,
-            <span class="ident">slot</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#119">value</a>),
-            <span class="ident">future</span>: <a class="ident" href="../../../src/tokio/task/task_local.rs.html#119">f</a>,
-            <span class="ident">_pinned</span>: <span class="ident">PhantomPinned</span>,
-        }
-    }
-
-    <span class="doccomment">/// Sets a value `T` as the task-local value for the closure `F`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// On completion of `scope`, the task-local will be dropped.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ### Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # async fn dox() {</span>
-    <span class="doccomment">/// tokio::task_local! {</span>
-    <span class="doccomment">///     static NUMBER: u32;</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// NUMBER.sync_scope(1, || {</span>
-    <span class="doccomment">///     println!(&quot;task local value: {}&quot;, NUMBER.get());</span>
-    <span class="doccomment">/// });</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sync_scope</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">R</span>,
-    {
-        <span class="kw">let</span> <span class="ident">scope</span> <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#211-244">TaskLocalFuture</a> {
-            <span class="ident">local</span>: <a class="self" href="../../../src/tokio/task/task_local.rs.html#148">self</a>,
-            <span class="ident">slot</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#148">value</a>),
-            <span class="ident">future</span>: (),
-            <span class="ident">_pinned</span>: <span class="ident">PhantomPinned</span>,
-        };
-        <span class="macro">crate::pin!</span>(<span class="ident">scope</span>);
-        <a class="ident" href="../../../src/tokio/task/task_local.rs.html#158">scope</a>.<a class="ident" href="../../../src/tokio/task/task_local.rs.html#247">with_task</a>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#148">f</a>())
-    }
-
-    <span class="doccomment">/// Accesses the current task-local and runs the provided closure.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will panic if not called within the context</span>
-    <span class="doccomment">/// of a future containing a task-local with the corresponding key.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">R</span>,
-    {
-        <a class="self" href="../../../src/tokio/task/task_local.rs.html#168">self</a>.<a class="ident" href="../../../src/tokio/task/task_local.rs.html#183-185">try_with</a>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#168">f</a>).<span class="ident">expect</span>(
-            <span class="string">&quot;cannot access a Task Local Storage value \
-             without setting it via `LocalKey::set`&quot;</span>,
-        )
-    }
-
-    <span class="doccomment">/// Accesses the current task-local and runs the provided closure.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the task-local with the associated key is not present, this</span>
-    <span class="doccomment">/// method will return an `AccessError`. For a panicking variant,</span>
-    <span class="doccomment">/// see `with`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_with</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <a class="ident" href="../../../src/tokio/task/task_local.rs.html#286-288">AccessError</a><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">R</span>,
-    {
-        <a class="self" href="../../../src/tokio/task/task_local.rs.html#183">self</a>.<span class="ident">inner</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#187">v</a>.<span class="ident">borrow</span>().<span class="ident">as_ref</span>() {
-                <span class="prelude-val">Ok</span>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#183">f</a>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#188">val</a>))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">Err</span>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#286-288">AccessError</a> { <span class="ident">_private</span>: () })
+<span class="attribute">#[doc(hidden)]
+#[cfg(tokio_no_const_thread_local)]
+#[macro_export]
+</span><span class="macro">macro_rules! </span>__task_local_inner {
+    ($(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>:meta]</span>)* <span class="macro-nonterminal">$vis</span>:vis <span class="macro-nonterminal">$name</span>:ident, <span class="macro-nonterminal">$t</span>:ty) =&gt; {
+        $(<span class="attribute">#[<span class="macro-nonterminal">$attr</span>]</span>)*
+        <span class="macro-nonterminal">$vis </span><span class="kw">static </span><span class="macro-nonterminal">$name</span>: <span class="macro-nonterminal">$crate::task::LocalKey</span>&lt;<span class="macro-nonterminal">$t</span>&gt; = {
+            <span class="macro">std::thread_local! </span>{
+                <span class="kw">static </span>__KEY: std::cell::RefCell&lt;<span class="prelude-ty">Option</span>&lt;<span class="macro-nonterminal">$t</span>&gt;&gt; = std::cell::RefCell::new(<span class="prelude-val">None</span>);
             }
-        })
-    }
+
+            <span class="macro-nonterminal">$crate::task::LocalKey </span>{ inner: __KEY }
+        };
+    };
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Returns a copy of the task-local value</span>
-    <span class="doccomment">/// if the task-local value implements `Copy`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="self">self</span>) -&gt; <span class="ident">T</span> {
-        <a class="self" href="../../../src/tokio/task/task_local.rs.html#200">self</a>.<a class="ident" href="../../../src/tokio/task/task_local.rs.html#168-170">with</a>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw-2">*</span><a class="ident" href="../../../src/tokio/task/task_local.rs.html#201">v</a>)
-    }
+<span class="doccomment">/// A key for task-local data.
+///
+/// This type is generated by the [`task_local!`] macro.
+///
+/// Unlike [`std::thread::LocalKey`], `tokio::task::LocalKey` will
+/// _not_ lazily initialize the value on first access. Instead, the
+/// value is first initialized when the future containing
+/// the task-local is first polled by a futures executor, like Tokio.
+///
+/// # Examples
+///
+/// ```
+/// # async fn dox() {
+/// tokio::task_local! {
+///     static NUMBER: u32;
+/// }
+///
+/// NUMBER.scope(1, async move {
+///     assert_eq!(NUMBER.get(), 1);
+/// }).await;
+///
+/// NUMBER.scope(2, async move {
+///     assert_eq!(NUMBER.get(), 2);
+///
+///     NUMBER.scope(3, async move {
+///         assert_eq!(NUMBER.get(), 3);
+///     }).await;
+/// }).await;
+/// # }
+/// ```
+///
+/// [`std::thread::LocalKey`]: struct@std::thread::LocalKey
+/// [`task_local!`]: ../macro.task_local.html
+</span><span class="attribute">#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;rt&quot;</span>)))]
+</span><span class="kw">pub struct </span>LocalKey&lt;T: <span class="lifetime">&#39;static</span>&gt; {
+    <span class="attribute">#[doc(hidden)]
+    </span><span class="kw">pub </span>inner: thread::LocalKey&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;T&gt;&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <a class="ident" href="../../../src/tokio/task/task_local.rs.html#206">f</a>.<span class="ident">pad</span>(<span class="string">&quot;LocalKey { .. }&quot;</span>)
-    }
-}
-
-<span class="macro">pin_project!</span> {
-    <span class="doccomment">/// A future that sets a value `T` of a task local for the future `F` during</span>
-    <span class="doccomment">/// its execution.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The value of the task-local must be `&#39;static` and will be dropped on the</span>
-    <span class="doccomment">/// completion of the future.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Created by the function [`LocalKey::scope`](self::LocalKey::scope).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ### Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// # async fn dox() {</span>
-    <span class="doccomment">/// tokio::task_local! {</span>
-    <span class="doccomment">///     static NUMBER: u32;</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// NUMBER.scope(1, async move {</span>
-    <span class="doccomment">///     println!(&quot;task local value: {}&quot;, NUMBER.get());</span>
-    <span class="doccomment">/// }).await;</span>
-    <span class="doccomment">/// # }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TaskLocalFuture</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="lifetime">&#39;static</span>
+<span class="kw">impl</span>&lt;T: <span class="lifetime">&#39;static</span>&gt; LocalKey&lt;T&gt; {
+    <span class="doccomment">/// Sets a value `T` as the task-local value for the future `F`.
+    ///
+    /// On completion of `scope`, the task-local will be dropped.
+    ///
+    /// ### Panics
+    ///
+    /// If you poll the returned future inside a call to [`with`] or
+    /// [`try_with`] on the same `LocalKey`, then the call to `poll` will panic.
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// # async fn dox() {
+    /// tokio::task_local! {
+    ///     static NUMBER: u32;
+    /// }
+    ///
+    /// NUMBER.scope(1, async move {
+    ///     println!(&quot;task local value: {}&quot;, NUMBER.get());
+    /// }).await;
+    /// # }
+    /// ```
+    ///
+    /// [`with`]: fn@Self::with
+    /// [`try_with`]: fn@Self::try_with
+    </span><span class="kw">pub fn </span>scope&lt;F&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>, value: T, f: F) -&gt; TaskLocalFuture&lt;T, F&gt;
+    <span class="kw">where
+        </span>F: <a href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a>,
     {
-        <span class="ident">local</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-        <span class="ident">slot</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-        <span class="attribute">#[<span class="ident">pin</span>]</span>
-        <span class="ident">future</span>: <span class="ident">F</span>,
-        <span class="attribute">#[<span class="ident">pin</span>]</span>
-        <span class="ident">_pinned</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/struct.PhantomPinned.html">PhantomPinned</a>,
+        <a href="#324">TaskLocalFuture</a> {
+            local: <a class="self" href="#146">self</a>,
+            slot: <span class="prelude-val">Some</span>(<a href="#146">value</a>),
+            future: <span class="prelude-val">Some</span>(<a href="#146">f</a>),
+            _pinned: PhantomPinned,
+        }
     }
-}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">TaskLocalFuture</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">with_task</span><span class="op">&lt;</span><span class="ident">F2</span>: <span class="ident">FnOnce</span>(<span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">F</span><span class="op">&gt;</span>) -&gt; <span class="ident">R</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>, <span class="ident">f</span>: <span class="ident">F2</span>) -&gt; <span class="ident">R</span> {
-        <span class="kw">struct</span> <span class="ident">Guard</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-            <span class="ident">local</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">LocalKey</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-            <span class="ident">slot</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-            <span class="ident">prev</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Sets a value `T` as the task-local value for the closure `F`.
+    ///
+    /// On completion of `scope`, the task-local will be dropped.
+    ///
+    /// ### Panics
+    ///
+    /// This method panics if called inside a call to [`with`] or [`try_with`]
+    /// on the same `LocalKey`.
+    ///
+    /// ### Examples
+    ///
+    /// ```
+    /// # async fn dox() {
+    /// tokio::task_local! {
+    ///     static NUMBER: u32;
+    /// }
+    ///
+    /// NUMBER.sync_scope(1, || {
+    ///     println!(&quot;task local value: {}&quot;, NUMBER.get());
+    /// });
+    /// # }
+    /// ```
+    ///
+    /// [`with`]: fn@Self::with
+    /// [`try_with`]: fn@Self::try_with
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>sync_scope&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>, value: T, f: F) -&gt; R
+    <span class="kw">where
+        </span>F: FnOnce() -&gt; R,
+    {
+        <span class="kw">let </span><span class="kw-2">mut </span>value = <span class="prelude-val">Some</span>(<a href="#184">value</a>);
+        <span class="kw">match </span><a class="self" href="#184">self</a>.<a href="#195-197">scope_inner</a>(<span class="kw-2">&amp;mut </span><a href="#188">value</a>, <a href="#184">f</a>) {
+            <span class="prelude-val">Ok</span>(res) =&gt; <a href="#190">res</a>,
+            <span class="prelude-val">Err</span>(err) =&gt; <a href="#191">err</a>.<a href="#430">panic</a>(),
+        }
+    }
+
+    <span class="kw">fn </span>scope_inner&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>, slot: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;T&gt;, f: F) -&gt; <span class="prelude-ty">Result</span>&lt;R, <a href="#423">ScopeInnerErr</a>&gt;
+    <span class="kw">where
+        </span>F: FnOnce() -&gt; R,
+    {
+        <span class="kw">struct </span>Guard&lt;<span class="lifetime">&#39;a</span>, T: <span class="lifetime">&#39;static</span>&gt; {
+            local: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>LocalKey&lt;T&gt;,
+            slot: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><span class="prelude-ty">Option</span>&lt;T&gt;,
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html">Drop</a> <span class="kw">for</span> <span class="ident">Guard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-            <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <a class="self" href="../../../src/tokio/task/task_local.rs.html#255">self</a>.<span class="ident">local</span>.<span class="ident">inner</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#256">c</a>.<span class="ident">replace</span>(<a class="self" href="../../../src/tokio/task/task_local.rs.html#255">self</a>.<span class="ident">prev</span>.<span class="ident">take</span>()));
-                <span class="kw-2">*</span><a class="self" href="../../../src/tokio/task/task_local.rs.html#255">self</a>.<span class="ident">slot</span> <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#256">value</a>;
+        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: <span class="lifetime">&#39;static</span>&gt; <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html">Drop</a> <span class="kw">for </span>Guard&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+            <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="comment">// This should not panic.
+                //
+                // We know that the RefCell was not borrowed before the call to
+                // `scope_inner`, so the only way for this to panic is if the
+                // closure has created but not destroyed a RefCell guard.
+                // However, we never give user-code access to the guards, so
+                // there&#39;s no way for user-code to forget to destroy a guard.
+                //
+                // The call to `with` also should not panic, since the
+                // thread-local wasn&#39;t destroyed when we first called
+                // `scope_inner`, and it shouldn&#39;t have gotten destroyed since
+                // then.
+                </span><a class="self" href="#205">self</a>.local.inner.with(|inner| {
+                    <span class="kw">let </span><span class="kw-2">mut </span>ref_mut = <a href="#218">inner</a>.borrow_mut();
+                    <a href="https://doc.rust-lang.org/nightly/core/mem/fn.swap.html">mem::swap</a>(<a class="self" href="#205">self</a>.slot, <span class="kw-2">&amp;mut *</span><a href="#219">ref_mut</a>);
+                });
             }
         }
 
-        <span class="kw">let</span> <span class="ident">project</span> <span class="op">=</span> <a class="self" href="../../../src/tokio/task/task_local.rs.html#247">self</a>.<a class="ident" href="../../../src/tokio/task/task_local.rs.html#211-244">project</a>();
-        <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#261">project</a>.<span class="ident">slot</span>.<span class="ident">take</span>();
+        <span class="self">self</span>.inner.try_with(|inner| {
+            inner
+                .try_borrow_mut()
+                .map(|<span class="kw-2">mut </span>ref_mut| mem::swap(slot, <span class="kw-2">&amp;mut *</span>ref_mut))
+        })<span class="question-mark">??</span>;
 
-        <span class="kw">let</span> <span class="ident">prev</span> <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#261">project</a>.<span class="ident">local</span>.<span class="ident">inner</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#264">c</a>.<span class="ident">replace</span>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#262">val</a>));
+        <span class="kw">let </span>guard = <a href="#199">Guard</a> { local: <a class="self" href="#195">self</a>, <a href="#195">slot</a> };
 
-        <span class="kw">let</span> <span class="ident">_guard</span> <span class="op">=</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#248-252">Guard</a> {
-            <a class="ident" href="../../../src/tokio/task/task_local.rs.html#264">prev</a>,
-            <span class="ident">slot</span>: <a class="ident" href="../../../src/tokio/task/task_local.rs.html#261">project</a>.<span class="ident">slot</span>,
-            <span class="ident">local</span>: <span class="kw-2">*</span><a class="ident" href="../../../src/tokio/task/task_local.rs.html#261">project</a>.<span class="ident">local</span>,
-        };
+        <span class="kw">let </span>res = <a href="#195">f</a>();
 
-        <a class="ident" href="../../../src/tokio/task/task_local.rs.html#247">f</a>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#261">project</a>.<span class="ident">future</span>)
+        <a href="https://doc.rust-lang.org/nightly/core/mem/fn.drop.html">drop</a>(<a href="#231">guard</a>);
+
+        <span class="prelude-val">Ok</span>(<a href="#233">res</a>)
+    }
+
+    <span class="doccomment">/// Accesses the current task-local and runs the provided closure.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the task local doesn&#39;t have a value set.
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>with&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>, f: F) -&gt; R
+    <span class="kw">where
+        </span>F: FnOnce(<span class="kw-2">&amp;</span>T) -&gt; R,
+    {
+        <span class="kw">match </span><a class="self" href="#246">self</a>.<a href="#261-263">try_with</a>(<a href="#246">f</a>) {
+            <span class="prelude-val">Ok</span>(res) =&gt; <a href="#251">res</a>,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;cannot access a task-local storage value without setting it first&quot;</span>),
+        }
+    }
+
+    <span class="doccomment">/// Accesses the current task-local and runs the provided closure.
+    ///
+    /// If the task-local with the associated key is not present, this
+    /// method will return an `AccessError`. For a panicking variant,
+    /// see `with`.
+    </span><span class="kw">pub fn </span>try_with&lt;F, R&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>, f: F) -&gt; <span class="prelude-ty">Result</span>&lt;R, <a href="#405">AccessError</a>&gt;
+    <span class="kw">where
+        </span>F: FnOnce(<span class="kw-2">&amp;</span>T) -&gt; R,
+    {
+        <span class="comment">// If called after the thread-local storing the task-local is destroyed,
+        // then we are outside of a closure where the task-local is set.
+        //
+        // Therefore, it is correct to return an AccessError if `try_with`
+        // returns an error.
+        </span><span class="kw">let </span>try_with_res = <a class="self" href="#261">self</a>.inner.try_with(|v| {
+            <span class="comment">// This call to `borrow` cannot panic because no user-defined code
+            // runs while a `borrow_mut` call is active.
+            </span><a href="#270">v</a>.borrow().as_ref().map(<a href="#261">f</a>)
+        });
+
+        <span class="kw">match </span><a href="#270">try_with_res</a> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(res)) =&gt; <span class="prelude-val">Ok</span>(<a href="#277">res</a>),
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) | <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<a href="#405">AccessError</a> { _private: () }),
+        }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="lifetime">&#39;static</span>, <span class="ident">F</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a><span class="op">&gt;</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a> <span class="kw">for</span> <span class="ident">TaskLocalFuture</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">F::Output</span>;
-
-    <span class="kw">fn</span> <span class="ident">poll</span>(<span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>, <span class="ident">cx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <a class="self" href="../../../src/tokio/task/task_local.rs.html#279">self</a>.<a class="ident" href="../../../src/tokio/task/task_local.rs.html#247">with_task</a>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#280">f</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">poll</a>(<a class="ident" href="../../../src/tokio/task/task_local.rs.html#279">cx</a>))
+<span class="kw">impl</span>&lt;T: <a href="https://doc.rust-lang.org/nightly/core/marker/trait.Copy.html">Copy</a> + <span class="lifetime">&#39;static</span>&gt; LocalKey&lt;T&gt; {
+    <span class="doccomment">/// Returns a copy of the task-local value
+    /// if the task-local value implements `Copy`.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the task local doesn&#39;t have a value set.
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><span class="self">self</span>) -&gt; T {
+        <a class="self" href="#291">self</a>.<a href="#246-248">with</a>(|v| <span class="kw-2">*</span><a href="#292">v</a>)
     }
 }
 
-<span class="doccomment">/// An error returned by [`LocalKey::try_with`](method@LocalKey::try_with).</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AccessError</span> {
-    <span class="ident">_private</span>: (),
-}
-
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#286-288">AccessError</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <a class="ident" href="../../../src/tokio/task/task_local.rs.html#291">f</a>.<span class="ident">debug_struct</span>(<span class="string">&quot;AccessError&quot;</span>).<span class="ident">finish</span>()
+<span class="kw">impl</span>&lt;T: <span class="lifetime">&#39;static</span>&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span>LocalKey&lt;T&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a href="#297">f</a>.pad(<span class="string">&quot;LocalKey { .. }&quot;</span>)
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#286-288">AccessError</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display::fmt</a>(<span class="string">&quot;task-local value not set&quot;</span>, <a class="ident" href="../../../src/tokio/task/task_local.rs.html#297">f</a>)
+<span class="doccomment">/// A future that sets a value `T` of a task local for the future `F` during
+/// its execution.
+///
+/// The value of the task-local must be `&#39;static` and will be dropped on the
+/// completion of the future.
+///
+/// Created by the function [`LocalKey::scope`](self::LocalKey::scope).
+///
+/// ### Examples
+///
+/// ```
+/// # async fn dox() {
+/// tokio::task_local! {
+///     static NUMBER: u32;
+/// }
+///
+/// NUMBER.scope(1, async move {
+///     println!(&quot;task local value: {}&quot;, NUMBER.get());
+/// }).await;
+/// # }
+/// ```
+</span><span class="comment">// Doesn&#39;t use pin_project due to custom Drop.
+</span><span class="kw">pub struct </span>TaskLocalFuture&lt;T, F&gt;
+<span class="kw">where
+    </span>T: <span class="lifetime">&#39;static</span>,
+{
+    local: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>LocalKey&lt;T&gt;,
+    slot: <span class="prelude-ty">Option</span>&lt;T&gt;,
+    future: <span class="prelude-ty">Option</span>&lt;F&gt;,
+    _pinned: <a href="https://doc.rust-lang.org/nightly/core/marker/struct.PhantomPinned.html">PhantomPinned</a>,
+}
+
+<span class="kw">impl</span>&lt;T: <span class="lifetime">&#39;static</span>, F: <a href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a>&gt; <a href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">Future</a> <span class="kw">for </span>TaskLocalFuture&lt;T, F&gt; {
+    <span class="kw">type </span>Output = F::Output;
+
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>poll(<span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, cx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
+        <span class="comment">// safety: The TaskLocalFuture struct is `!Unpin` so there is no way to
+        // move `self.future` from now on.
+        </span><span class="kw">let </span>this = <span class="kw">unsafe </span>{ Pin::into_inner_unchecked(<a class="self" href="#338">self</a>) };
+        <span class="kw">let </span><span class="kw-2">mut </span>future_opt = <span class="kw">unsafe </span>{ Pin::new_unchecked(<span class="kw-2">&amp;mut </span><a href="#341">this</a>.future) };
+
+        <span class="kw">let </span>res =
+            <a href="#341">this</a>.local
+                .<a href="#195-197">scope_inner</a>(<span class="kw-2">&amp;mut </span><a href="#341">this</a>.slot, || <span class="kw">match </span><a href="#342">future_opt</a>.as_mut().as_pin_mut() {
+                    <span class="prelude-val">Some</span>(fut) =&gt; {
+                        <span class="kw">let </span>res = <a href="#347">fut</a>.<a href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html">poll</a>(<a href="#338">cx</a>);
+                        <span class="kw">if </span>res.is_ready() {
+                            <a href="#342">future_opt</a>.set(<span class="prelude-val">None</span>);
+                        }
+                        <span class="prelude-val">Some</span>(<a href="#348">res</a>)
+                    }
+                    <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+                });
+
+        <span class="kw">match </span><a href="#344">res</a> {
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(res)) =&gt; <a href="#358">res</a>,
+            <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;`TaskLocalFuture` polled after completion&quot;</span>),
+            <span class="prelude-val">Err</span>(err) =&gt; <a href="#360">err</a>.<a href="#430">panic</a>(),
+        }
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html">Error</a> <span class="kw">for</span> <a class="ident" href="../../../src/tokio/task/task_local.rs.html#286-288">AccessError</a> {}
+<span class="kw">impl</span>&lt;T: <span class="lifetime">&#39;static</span>, F&gt; <a href="https://doc.rust-lang.org/nightly/core/ops/drop/trait.Drop.html">Drop</a> <span class="kw">for </span>TaskLocalFuture&lt;T, F&gt; {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">if </span>mem::needs_drop::&lt;F&gt;() &amp;&amp; <span class="self">self</span>.future.is_some() {
+            <span class="comment">// Drop the future while the task-local is set, if possible. Otherwise
+            // the future is dropped normally when the `Option&lt;F&gt;` field drops.
+            </span><span class="kw">let </span>future = <span class="kw-2">&amp;mut </span><a class="self" href="#366">self</a>.future;
+            <span class="kw">let _ </span>= <a class="self" href="#366">self</a>.local.<a href="#195-197">scope_inner</a>(<span class="kw-2">&amp;mut </span><a class="self" href="#366">self</a>.slot, || {
+                <span class="kw-2">*</span><a href="#370">future</a> = <span class="prelude-val">None</span>;
+            });
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;T: <span class="lifetime">&#39;static</span>, F&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span>TaskLocalFuture&lt;T, F&gt;
+<span class="kw">where
+    </span>T: <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a>,
+{
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <span class="doccomment">/// Format the Option without Some.
+        </span><span class="kw">struct </span>TransparentOption&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+            value: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;T&gt;,
+        }
+        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a>&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span>TransparentOption&lt;<span class="lifetime">&#39;a</span>, T&gt; {
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+                <span class="kw">match </span><a class="self" href="#388">self</a>.value.as_ref() {
+                    <span class="prelude-val">Some</span>(value) =&gt; <a href="#390">value</a>.<a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt</a>(<a href="#388">f</a>),
+                    <span class="comment">// Hitting the None branch should not be possible.
+                    </span><span class="prelude-val">None </span>=&gt; <a href="#388">f</a>.pad(<span class="string">&quot;&lt;missing&gt;&quot;</span>),
+                }
+            }
+        }
+
+        <a href="#382">f</a>.debug_struct(<span class="string">&quot;TaskLocalFuture&quot;</span>)
+            .field(<span class="string">&quot;value&quot;</span>, <span class="kw-2">&amp;</span><a href="#384">TransparentOption</a> { value: <span class="kw-2">&amp;</span><a class="self" href="#382">self</a>.slot })
+            .finish()
+    }
+}
+
+<span class="doccomment">/// An error returned by [`LocalKey::try_with`](method@LocalKey::try_with).
+</span><span class="attribute">#[derive(Clone, Copy, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>AccessError {
+    _private: (),
+}
+
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span><a href="#405">AccessError</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a href="#410">f</a>.debug_struct(<span class="string">&quot;AccessError&quot;</span>).finish()
+    }
+}
+
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for </span><a href="#405">AccessError</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display::fmt</a>(<span class="string">&quot;task-local value not set&quot;</span>, <a href="#416">f</a>)
+    }
+}
+
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/error/trait.Error.html">Error</a> <span class="kw">for </span><a href="#405">AccessError</a> {}
+
+<span class="kw">enum </span>ScopeInnerErr {
+    BorrowError,
+    AccessError,
+}
+
+<span class="kw">impl </span><a href="#423">ScopeInnerErr</a> {
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>panic(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ! {
+        <span class="kw">match </span><span class="self"><a href="#430">self</a> </span>{
+            <span class="self">Self</span>::BorrowError =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;cannot enter a task-local scope while the task-local storage is borrowed&quot;</span>),
+            <span class="self">Self</span>::AccessError =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/std/macro.panic.html">panic!</a>(<span class="string">&quot;cannot enter a task-local scope during or after destruction of the underlying thread-local&quot;</span>),
+        }
+    }
+}
+
+<span class="kw">impl </span>From&lt;<a href="https://doc.rust-lang.org/nightly/core/cell/struct.BorrowMutError.html">std::cell::BorrowMutError</a>&gt; <span class="kw">for </span><a href="#423">ScopeInnerErr</a> {
+    <span class="kw">fn </span>from(<span class="kw">_</span>: <a href="https://doc.rust-lang.org/nightly/core/cell/struct.BorrowMutError.html">std::cell::BorrowMutError</a>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::BorrowError
+    }
+}
+
+<span class="kw">impl </span>From&lt;<a href="https://doc.rust-lang.org/nightly/std/thread/local/struct.AccessError.html">std::thread::AccessError</a>&gt; <span class="kw">for </span><a href="#423">ScopeInnerErr</a> {
+    <span class="kw">fn </span>from(<span class="kw">_</span>: <a href="https://doc.rust-lang.org/nightly/std/thread/local/struct.AccessError.html">std::thread::AccessError</a>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::AccessError
+    }
+}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tokio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tokio" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

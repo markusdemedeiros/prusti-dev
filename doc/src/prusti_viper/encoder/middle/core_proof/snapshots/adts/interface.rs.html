@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/middle/core_proof/snapshots/adts/interface.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>interface.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../../storage.js"></script><script src="../../../../../../../crates.js"></script><script defer src="../../../../../../../main.js"></script><script defer src="../../../../../../../source-script.js"></script><script defer src="../../../../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/middle/core_proof/snapshots/adts/interface.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>interface.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../../storage.js"></script><script defer src="../../../../../../../source-script.js"></script><script defer src="../../../../../../../source-files.js"></script><script defer src="../../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -220,221 +213,278 @@
 <span id="213">213</span>
 <span id="214">214</span>
 <span id="215">215</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::encoder</span>::{
-    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>,
-    <span class="ident">middle::core_proof</span>::{
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#27-131">adts::AdtsInterface</a>,
-        <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/lowerer/mod.rs.html#62-77">lowerer::Lowerer</a>,
-        <span class="ident">snapshots</span>::{<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#15-18">valid_call</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#27-30">valid_call2</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#16-85">SnapshotValuesInterface</a>},
+<span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
+<span id="237">237</span>
+<span id="238">238</span>
+<span id="239">239</span>
+<span id="240">240</span>
+<span id="241">241</span>
+<span id="242">242</span>
+<span id="243">243</span>
+<span id="244">244</span>
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::encoder::{
+    <a href="../../../../errors/spanned_encoding_error.rs.html#23">errors::SpannedEncodingResult</a>,
+    middle::core_proof::{
+        <a href="../../adts/interface.rs.html#27">adts::AdtsInterface</a>,
+        <a href="../../lowerer/mod.rs.html#88">lowerer::Lowerer</a>,
+        snapshots::{<a href="../validity/interface.rs.html#16-19">valid_call</a>, <a href="../validity/interface.rs.html#28-31">valid_call2</a>, <a href="../values/interface.rs.html#16">SnapshotValuesInterface</a>},
     },
 };
-<span class="kw">use</span> <span class="ident">vir_crate::low</span>::{<a class="self" href="../../../../../../../vir/low/index.html">self</a> <span class="kw">as</span> <span class="ident">vir_low</span>};
+<span class="kw">use </span>vir_crate::low::{<span class="self"><a href="../../../../../../../vir/low/index.html">self</a> </span><span class="kw">as </span>vir_low};
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">trait</span> <span class="ident">SnapshotAdtsInterface</span> {
-    <span class="comment">// Names.</span>
+<span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">trait </span>SnapshotAdtsInterface {
+    <span class="comment">// Names.
 
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_constant_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_struct_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>;
-    <span class="doccomment">/// Sometimes the same value can be constructed by multiple constructors.</span>
-    <span class="doccomment">/// This method allows constructing alternative contructor&#39;s name.</span>
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_struct_alternative_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_enum_variant_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>;
+    </span><span class="kw">fn </span>snapshot_destructor_constant_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;;
+    <span class="kw">fn </span>snapshot_constructor_struct_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;;
+    <span class="doccomment">/// Sometimes the same value can be constructed by multiple constructors.
+    /// This method allows constructing alternative contructor&#39;s name.
+    </span><span class="kw">fn </span>snapshot_constructor_struct_alternative_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;;
+    <span class="kw">fn </span>snapshot_constructor_enum_variant_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;;
 
-    <span class="comment">// Calls.</span>
+    <span class="comment">// Calls.
 
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_constant_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">snapshot_alternative_constructor_struct_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_struct_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">field_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-        <span class="ident">argument</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_enum_variant_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-        <span class="ident">argument</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>;
+    </span><span class="kw">fn </span>snapshot_constructor_constant_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        arguments: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;;
+    <span class="kw">fn </span>snapshot_alternative_constructor_struct_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        arguments: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;;
+    <span class="kw">fn </span>snapshot_destructor_struct_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        field_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        field_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+        argument: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;;
+    <span class="kw">fn </span>snapshot_destructor_enum_variant_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+        argument: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;;
 
-    <span class="comment">// Registration.</span>
+    <span class="comment">// Registration.
 
-    <span class="kw">fn</span> <span class="ident">register_constant_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameter_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">register_struct_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameters</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">register_alternative_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameters</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">register_enum_variant_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">discriminant</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>;
+    </span><span class="kw">fn </span>register_constant_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        parameter_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+    ) -&gt; SpannedEncodingResult&lt;()&gt;;
+    <span class="kw">fn </span>register_struct_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt;;
+    <span class="doccomment">/// If `use_main_constructor_destructors` is `true`, then uses destructors
+    /// with `variant_name == &quot;&quot;`.
+    </span><span class="kw">fn </span>register_alternative_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        use_main_constructor_destructors: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt;;
+    <span class="kw">fn </span>register_alternative_constructor_with_injectivity_axioms(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        use_main_constructor_destructors: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt;;
+    <span class="kw">fn </span>register_enum_variant_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        discriminant: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;()&gt;;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>: <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;v</span><span class="op">&gt;</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#11-88">SnapshotAdtsInterface</a> <span class="kw">for</span> <span class="ident">Lowerer</span><span class="op">&lt;</span><span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_constant_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#92">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#38-42">adt_destructor_main_name</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#93">domain_name</a>, <span class="string">&quot;value&quot;</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>: <span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;tcx</span>: <span class="lifetime">&#39;v</span>&gt; <a href="#11">SnapshotAdtsInterface</a> <span class="kw">for </span>Lowerer&lt;<span class="lifetime">&#39;p</span>, <span class="lifetime">&#39;v</span>, <span class="lifetime">&#39;tcx</span>&gt; {
+    <span class="kw">fn </span>snapshot_destructor_constant_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <a class="self" href="#102">self</a>.<a href="../../adts/interface.rs.html#38-42">adt_destructor_main_name</a>(<a href="#103">domain_name</a>, <span class="string">&quot;value&quot;</span>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_struct_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#98">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#30">adt_constructor_main_name</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#99">domain_name</a>)
+    <span class="kw">fn </span>snapshot_constructor_struct_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <a class="self" href="#108">self</a>.<a href="../../adts/interface.rs.html#30">adt_constructor_main_name</a>(<a href="#109">domain_name</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_struct_alternative_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#104">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#33-37">adt_constructor_variant_name</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#105">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#106">variant_name</a>)
+    <span class="kw">fn </span>snapshot_constructor_struct_alternative_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <a class="self" href="#114">self</a>.<a href="../../adts/interface.rs.html#33-37">adt_constructor_variant_name</a>(<a href="#115">domain_name</a>, <a href="#116">variant_name</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_enum_variant_name</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#111">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#33-37">adt_constructor_variant_name</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#112">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#113">variant_name</a>)
+    <span class="kw">fn </span>snapshot_constructor_enum_variant_name(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <a class="self" href="#121">self</a>.<a href="../../adts/interface.rs.html#33-37">adt_constructor_variant_name</a>(<a href="#122">domain_name</a>, <a href="#123">variant_name</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_constructor_constant_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#118">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#54-58">adt_constructor_main_call</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#119">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#120">arguments</a>)
+    <span class="kw">fn </span>snapshot_constructor_constant_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        arguments: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt; {
+        <a class="self" href="#128">self</a>.<a href="../../adts/interface.rs.html#54-58">adt_constructor_main_call</a>(<a href="#129">domain_name</a>, <a href="#130">arguments</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_alternative_constructor_struct_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#125">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#61-66">adt_constructor_variant_call</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#126">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#127">variant_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#128">arguments</a>)
+    <span class="kw">fn </span>snapshot_alternative_constructor_struct_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        arguments: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt; {
+        <a class="self" href="#135">self</a>.<a href="../../adts/interface.rs.html#61-66">adt_constructor_variant_call</a>(<a href="#136">domain_name</a>, <a href="#137">variant_name</a>, <a href="#138">arguments</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_struct_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">field_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">field_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-        <span class="ident">argument</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#133">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#67-73">adt_destructor_main_call</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#134">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#135">field_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#136">field_type</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#137">argument</a>)
+    <span class="kw">fn </span>snapshot_destructor_struct_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        field_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        field_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+        argument: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt; {
+        <a class="self" href="#143">self</a>.<a href="../../adts/interface.rs.html#67-73">adt_destructor_main_call</a>(<a href="#144">domain_name</a>, <a href="#145">field_name</a>, <a href="#146">field_type</a>, <a href="#147">argument</a>)
     }
-    <span class="kw">fn</span> <span class="ident">snapshot_destructor_enum_variant_call</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-        <span class="ident">argument</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#142">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#82-89">adt_destructor_variant_call</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#143">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#144">variant_name</a>, <span class="string">&quot;value&quot;</span>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#145">variant_type</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#146">argument</a>)
+    <span class="kw">fn </span>snapshot_destructor_enum_variant_call(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+        argument: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>&gt; {
+        <a class="self" href="#152">self</a>.<a href="../../adts/interface.rs.html#82-89">adt_destructor_variant_call</a>(<a href="#153">domain_name</a>, <a href="#154">variant_name</a>, <span class="string">&quot;value&quot;</span>, <a href="#155">variant_type</a>, <a href="#156">argument</a>)
     }
-    <span class="kw">fn</span> <span class="ident">register_constant_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameter_type</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#151">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#98-110">adt_register_main_constructor</a>(
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#152">domain_name</a>,
-            <span class="macro">vars!</span> { <span class="ident">value</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#153">parameter_type</a>}},
+    <span class="kw">fn </span>register_constant_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        parameter_type: <a href="../../../../../../../vir/gen/low/ast/ty/enum.Type.html">vir_low::Type</a>,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <span class="kw">use </span>vir_low::macros::<span class="kw-2">*</span>;
+        <a class="self" href="#161">self</a>.<a href="../../adts/interface.rs.html#98-110">adt_register_main_constructor</a>(
+            <a href="#162">domain_name</a>,
+            <a class="macro" href="../../../../../../../vir/vir/low/macros/macro.vars.html">vars! </a>{ value: {parameter_type}},
             <span class="bool-val">true</span>,
-            <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#27-30">valid_call2</a>),
+            <span class="prelude-val">Some</span>(<a href="../validity/interface.rs.html#28-31">valid_call2</a>),
         )
     }
-    <span class="kw">fn</span> <span class="ident">register_struct_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameters</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#164">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#98-110">adt_register_main_constructor</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#165">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#166">parameters</a>, <span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#27-30">valid_call2</a>))
+    <span class="kw">fn </span>register_struct_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <a class="self" href="#174">self</a>.<a href="../../adts/interface.rs.html#98-110">adt_register_main_constructor</a>(<a href="#175">domain_name</a>, <a href="#176">parameters</a>, <span class="bool-val">true</span>, <span class="prelude-val">Some</span>(<a href="../validity/interface.rs.html#28-31">valid_call2</a>))
     }
-    <span class="kw">fn</span> <span class="ident">register_alternative_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">parameters</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#171">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#117-130">adt_register_variant_constructor</a>(
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#172">domain_name</a>,
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#173">variant_name</a>,
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#174">parameters</a>,
+    <span class="kw">fn </span>register_alternative_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        use_main_constructor_destructors: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <a class="self" href="#181">self</a>.<a href="../../adts/interface.rs.html#122-136">adt_register_variant_constructor</a>(
+            <a href="#182">domain_name</a>,
+            <a href="#183">variant_name</a>,
+            <a href="#184">use_main_constructor_destructors</a>,
+            <a href="#185">parameters</a>,
             <span class="bool-val">false</span>,
-            <span class="prelude-val">None</span>::<span class="op">&lt;</span><span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw">_</span>, <span class="kw-2">&amp;</span><span class="kw">_</span>) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>(<a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>, <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>)<span class="op">&gt;</span><span class="op">&gt;</span>,
+            <span class="prelude-val">None</span>::&lt;<span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="kw">_</span>, <span class="kw-2">&amp;</span><span class="kw">_</span>) -&gt; SpannedEncodingResult&lt;(<a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>, <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>)&gt;&gt;,
         )
     }
-    <span class="kw">fn</span> <span class="ident">register_enum_variant_constructor</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">variant_domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
-        <span class="ident">discriminant</span>: <a class="ident" href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
-    ) -&gt; <span class="ident">SpannedEncodingResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">use</span> <a class="ident" href="../../../../../../../vir/low/macros/index.html">vir_low::macros</a>::<span class="kw-2">*</span>;
-        <span class="kw">let</span> <span class="ident">parameter_type</span> <span class="op">=</span> <span class="ident">vir_low::Type::domain</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#188">variant_domain_name</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>());
-        <span class="kw">let</span> <span class="ident">discriminant_name</span> <span class="op">=</span> <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#185">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/values/interface.rs.html#40">encode_discriminant_name</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#186">domain_name</a>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">valid_call_with_discriminant</span> <span class="op">=</span>
-            <span class="kw">move</span> <span class="op">|</span><span class="ident">domain_name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="ident">variable</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">validity_call</span> <span class="op">=</span> <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/validity/interface.rs.html#15-18">valid_call</a>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#195">domain_name</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#195">variable</a>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">discriminant_call</span> <span class="op">=</span> <span class="ident">vir_low::Expression::domain_function_call</span>(
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#195">domain_name</a>,
-                    <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#193">discriminant_name</a>,
-                    <span class="macro">vec!</span>[<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#195">variable</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>()],
-                    <span class="ident">vir_low::Type::Int</span>,
-                );
-                <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span>
-                    <span class="macro">expr!</span> { [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#196">validity_call</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()] <span class="op">&amp;&amp;</span> ([<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#197">discriminant_call</a>] <span class="op">==</span> [<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#189">discriminant</a>]) };
-                <span class="prelude-val">Ok</span>((<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#196">validity_call</a>, <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#203">guard</a>))
-            };
-        <a class="self" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#185">self</a>.<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/adts/interface.rs.html#117-130">adt_register_variant_constructor</a>(
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#186">domain_name</a>,
-            <a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#187">variant_name</a>,
-            <span class="macro">vars!</span> { <span class="ident">value</span>: {<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#192">parameter_type</a>}},
+    <span class="kw">fn </span>register_alternative_constructor_with_injectivity_axioms(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        use_main_constructor_destructors: <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>,
+        parameters: Vec&lt;<a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>&gt;,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <a class="self" href="#197">self</a>.<a href="../../adts/interface.rs.html#122-136">adt_register_variant_constructor</a>(
+            <a href="#198">domain_name</a>,
+            <a href="#199">variant_name</a>,
+            <a href="#200">use_main_constructor_destructors</a>,
+            <a href="#201">parameters</a>,
             <span class="bool-val">true</span>,
-            <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../../src/prusti_viper/encoder/middle/core_proof/snapshots/adts/interface.rs.html#194">valid_call_with_discriminant</a>),
+            <span class="prelude-val">Some</span>(<a href="../validity/interface.rs.html#28-31">valid_call2</a>),
+        )
+    }
+    <span class="kw">fn </span>register_enum_variant_constructor(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        variant_domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>,
+        discriminant: <a href="../../../../../../../vir/gen/low/ast/expression/enum.Expression.html">vir_low::Expression</a>,
+    ) -&gt; SpannedEncodingResult&lt;()&gt; {
+        <span class="kw">use </span>vir_low::macros::<span class="kw-2">*</span>;
+        <span class="kw">let </span>parameter_type = vir_low::Type::domain(<a href="#216">variant_domain_name</a>.<a href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>());
+        <span class="kw">let </span>discriminant_name = <span class="self">self</span>.encode_discriminant_name(domain_name)<span class="question-mark">?</span>;
+        <span class="kw">let </span>valid_call_with_discriminant =
+            <span class="kw">move </span>|domain_name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, variable: <span class="kw-2">&amp;</span><a href="../../../../../../../vir/gen/low/ast/variable/struct.VariableDecl.html">vir_low::VariableDecl</a>| {
+                <span class="kw">let </span>validity_call = valid_call(domain_name, variable)<span class="question-mark">?</span>;
+                <span class="kw">let </span>discriminant_call = vir_low::Expression::domain_function_call(
+                    <a href="#223">domain_name</a>,
+                    <a href="#221">discriminant_name</a>,
+                    <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[variable.clone().into()],
+                    vir_low::Type::Int,
+                );
+                <span class="kw">let </span>guard =
+                    <a class="macro" href="../../../../../../../vir/vir/low/macros/macro.expr.html">expr! </a>{ [validity_call.clone()] &amp;&amp; ([discriminant_call] == [discriminant]) };
+                <span class="prelude-val">Ok</span>((<a href="#224">validity_call</a>, <a href="#231">guard</a>))
+            };
+        <a class="self" href="#213">self</a>.<a href="../../adts/interface.rs.html#122-136">adt_register_variant_constructor</a>(
+            <a href="#214">domain_name</a>,
+            <a href="#215">variant_name</a>,
+            <span class="bool-val">false</span>,
+            <a class="macro" href="../../../../../../../vir/vir/low/macros/macro.vars.html">vars! </a>{ value: {parameter_type}},
+            <span class="bool-val">true</span>,
+            <span class="prelude-val">Some</span>(<a href="#222">valid_call_with_discriminant</a>),
         )
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

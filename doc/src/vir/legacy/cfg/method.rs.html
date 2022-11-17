@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vir/src/legacy/cfg/method.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>method.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../vir/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../vir/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../vir/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `vir/src/legacy/cfg/method.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>method.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../vir/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -375,380 +368,375 @@
 <span id="368">368</span>
 <span id="369">369</span>
 <span id="370">370</span>
-<span id="371">371</span>
-<span id="372">372</span>
-</pre><pre class="rust"><code><span class="comment">// © 2019, ETH Zurich</span>
-<span class="comment">//</span>
-<span class="comment">// This Source Code Form is subject to the terms of the Mozilla Public</span>
-<span class="comment">// License, v. 2.0. If a copy of the MPL was not distributed with this</span>
-<span class="comment">// file, You can obtain one at http://mozilla.org/MPL/2.0/.</span>
+</pre><pre class="rust"><code><span class="comment">// © 2019, ETH Zurich
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <a class="ident" href="../../../../src/vir/common/identifier.rs.html#1-3">common::identifier::WithIdentifier</a>,
-    <span class="ident">legacy</span>::{<a class="ident" href="../../../../src/vir/legacy/mod.rs.html#12">ast</a>::<span class="kw-2">*</span>, <a class="ident" href="../../../../src/vir/legacy/gather_labels.rs.html#3">gather_labels::gather_labels</a>},
+</span><span class="kw">use crate</span>::{
+    <a href="../../common/identifier.rs.html#1">common::identifier::WithIdentifier</a>,
+    legacy::{<a href="../mod.rs.html#12">ast</a>::<span class="kw-2">*</span>, <a href="../gather_labels.rs.html#3">gather_labels::gather_labels</a>},
 };
-<span class="kw">use</span> <span class="ident">derivative::Derivative</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections</span>::{<a class="ident" href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html">HashMap</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html">HashSet</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/collections/vec_deque/struct.VecDeque.html">VecDeque</a>},
-    <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">fmt</a>,
-    <a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.FromIterator.html">iter::FromIterator</a>,
+<span class="kw">use </span><a href="../../../../derivative/derive.Derivative.html">derivative::Derivative</a>;
+<span class="kw">use </span>log::{<a href="../../../../log/macro.debug.html">debug</a>, <a href="../../../../log/macro.trace.html">trace</a>};
+<span class="kw">use </span>std::{
+    collections::{<a href="https://doc.rust-lang.org/nightly/std/collections/hash/map/struct.HashMap.html">HashMap</a>, <a href="https://doc.rust-lang.org/nightly/std/collections/hash/set/struct.HashSet.html">HashSet</a>, <a href="https://doc.rust-lang.org/nightly/alloc/collections/vec_deque/struct.VecDeque.html">VecDeque</a>},
+    <a href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">fmt</a>,
+    <a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.FromIterator.html">iter::FromIterator</a>,
 };
-<span class="kw">use</span> <a class="ident" href="../../../../uuid/struct.Uuid.html">uuid::Uuid</a>;
+<span class="kw">use </span><a href="../../../../uuid/struct.Uuid.html">uuid::Uuid</a>;
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RETURN_LABEL</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> <span class="op">=</span> <span class="string">&quot;end_of_method&quot;</span>;
+<span class="kw">pub const </span>RETURN_LABEL: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> = <span class="string">&quot;end_of_method&quot;</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Derivative</span>)]</span>
-<span class="attribute">#[<span class="ident">derivative</span>(<span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#24-34">CfgMethod</a> {
-    <span class="attribute">#[<span class="ident">derivative</span>(<span class="ident">Hash</span> <span class="op">=</span> <span class="string">&quot;ignore&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">method_name</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
-    <span class="kw">pub</span> <span class="ident">formal_arg_count</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
-    <span class="kw">pub</span> <span class="ident">formal_returns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">local_vars</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">derivative</span>(<span class="ident">Hash</span> <span class="op">=</span> <span class="string">&quot;ignore&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">labels</span>: <span class="ident">HashSet</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">basic_blocks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#37-40">CfgBlock</a><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">basic_blocks_labels</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Derivative)]
+#[derivative(Hash, PartialEq)]
+#[derive(Debug, Clone, Eq, serde::Serialize, serde::Deserialize)]
+</span><span class="kw">pub struct </span><a href="#25">CfgMethod</a> {
+    <span class="attribute">#[derivative(Hash = <span class="string">&quot;ignore&quot;</span>, PartialEq = <span class="string">&quot;ignore&quot;</span>)]
+    </span><span class="kw">pub </span>method_name: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+    <span class="kw">pub </span>formal_returns: Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt;,
+    <span class="kw">pub </span>local_vars: Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt;,
+    <span class="attribute">#[derivative(Hash = <span class="string">&quot;ignore&quot;</span>, PartialEq = <span class="string">&quot;ignore&quot;</span>)]
+    </span><span class="kw">pub </span>labels: HashSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
+    <span class="kw">pub </span>basic_blocks: Vec&lt;<a href="#37">CfgBlock</a>&gt;,
+    <span class="kw">pub </span>basic_blocks_labels: Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt;,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#37-40">CfgBlock</a> {
-    <span class="kw">pub</span> <span class="ident">stmts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/stmt.rs.html#19-73">Stmt</a><span class="op">&gt;</span>,
-    <span class="kw">pub</span> <span class="ident">successor</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#43-48">Successor</a>,
+<span class="attribute">#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize, Hash)]
+</span><span class="kw">pub struct </span>CfgBlock {
+    <span class="kw">pub </span>stmts: Vec&lt;<a href="../ast/stmt.rs.html#20">Stmt</a>&gt;,
+    <span class="kw">pub </span>successor: <a href="#43">Successor</a>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#43-48">Successor</a> {
-    <span class="ident">Undefined</span>,
-    <span class="ident">Return</span>,
-    <span class="ident">Goto</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>),
-    <span class="ident">GotoSwitch</span>(<span class="ident">Vec</span><span class="op">&lt;</span>(<a class="ident" href="../../../../src/vir/legacy/ast/expr.rs.html#18-77">Expr</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>)<span class="op">&gt;</span>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>),
+<span class="attribute">#[derive(Debug, Clone, Eq, PartialEq, serde::Serialize, serde::Deserialize, Hash)]
+</span><span class="kw">pub enum </span>Successor {
+    Undefined,
+    Return,
+    Goto(<a href="#53">CfgBlockIndex</a>),
+    GotoSwitch(Vec&lt;(<a href="../ast/expr.rs.html#19">Expr</a>, <a href="#53">CfgBlockIndex</a>)&gt;, <a href="#53">CfgBlockIndex</a>),
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Derivative</span>)]</span>
-<span class="attribute">#[<span class="ident">derivative</span>(<span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> {
-    <span class="kw">pub</span> <span class="ident">block_index</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
+<span class="attribute">#[derive(Derivative)]
+#[derivative(Hash, PartialEq, Eq)]
+#[derive(Clone, Copy, serde::Serialize, serde::Deserialize)]
+</span><span class="kw">pub struct </span><a href="#53">CfgBlockIndex</a> {
+    <span class="kw">pub </span>block_index: <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <span class="macro">write!</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#58">f</a>, <span class="string">&quot;cfg:{}&quot;</span>, <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#58">self</a>.<span class="ident">block_index</span>)
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span><a href="#53">CfgBlockIndex</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span><a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Formatter.html">fmt::Formatter</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#58">f</a>, <span class="string">&quot;cfg:{}&quot;</span>, <span class="self">self</span>.block_index)
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#43-48">Successor</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_return</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-        <span class="macro">matches!</span>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#64">self</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#45">Successor::Return</a>)
+<span class="kw">impl </span><a href="#43">Successor</a> {
+    <span class="kw">pub fn </span>is_return(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.matches.html">matches!</a>(<span class="self">self</span>, Successor::Return)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_following</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#68">self</a> {
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#44">Successor::Undefined</a> <span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#45">Successor::Return</a> =&gt; <span class="macro">vec!</span>[],
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#46">Successor::Goto</a>(<span class="ident">target</span>) =&gt; <span class="macro">vec!</span>[<span class="kw-2">*</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#71">target</a>],
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#47">Successor::GotoSwitch</a>(<span class="ident">guarded_targets</span>, <span class="ident">default_target</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#72">guarded_targets</a>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#73">g</a>.<span class="number">1</span>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#73">res</a>.<span class="ident">push</span>(<span class="kw-2">*</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#72">default_target</a>);
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#73">res</a>
+    <span class="kw">pub fn </span>get_following(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self"><a href="#68">self</a> </span>{
+            <a href="#44">Successor::Undefined</a> | <a href="#45">Successor::Return</a> =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[],
+            <a href="#46">Successor::Goto</a>(target) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="kw-2">*</span>target],
+            <a href="#47">Successor::GotoSwitch</a>(guarded_targets, default_target) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>res: Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; = <a href="#72">guarded_targets</a>.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|g| <a href="#73">g</a>.<span class="number">1</span>).<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>();
+                <a href="#73">res</a>.push(<span class="kw-2">*</span><a href="#72">default_target</a>);
+                <a href="#73">res</a>
             }
         }
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">weak_eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#82">self</a>.<span class="ident">block_index</span> <span class="op">==</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#82">other</a>.<span class="ident">block_index</span>
+<span class="kw">impl </span><a href="#53">CfgBlockIndex</a> {
+    <span class="kw">pub fn </span>weak_eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><a href="#53">CfgBlockIndex</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+        <a class="self" href="#82">self</a>.block_index == <a href="#82">other</a>.block_index
     }
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#85">self</a>.<span class="ident">block_index</span>
+    <span class="kw">pub fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a> {
+        <a class="self" href="#85">self</a>.block_index
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#24-34">CfgMethod</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">method_name</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
-        <span class="ident">formal_arg_count</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
-        <span class="ident">formal_returns</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span>,
-        <span class="ident">local_vars</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#24-34">CfgMethod</a> {
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#92">method_name</a>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#93">formal_arg_count</a>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#94">formal_returns</a>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#95">local_vars</a>,
-            <span class="ident">labels</span>: <span class="ident">HashSet::new</span>(),
-            <span class="ident">basic_blocks</span>: <span class="macro">vec!</span>[],
-            <span class="ident">basic_blocks_labels</span>: <span class="macro">vec!</span>[],
+<span class="kw">impl </span><a href="#25">CfgMethod</a> {
+    <span class="kw">pub fn </span>new(
+        method_name: <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>,
+        formal_returns: Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt;,
+        local_vars: Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <a href="#25">CfgMethod</a> {
+            <a href="#92">method_name</a>,
+            <a href="#93">formal_returns</a>,
+            <a href="#94">local_vars</a>,
+            labels: HashSet::new(),
+            basic_blocks: <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[],
+            basic_blocks_labels: <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[],
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#108">self</a>.<span class="ident">method_name</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+    <span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <a class="self" href="#106">self</a>.method_name.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">labels</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">HashSet</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#112">self</a>.<span class="ident">labels</span>
+    <span class="kw">pub fn </span>labels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>HashSet&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <span class="kw-2">&amp;</span><a class="self" href="#110">self</a>.labels
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">basic_blocks_labels</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#116">self</a>.<span class="ident">basic_blocks_labels</span>
+    <span class="kw">pub fn </span>basic_blocks_labels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <span class="kw-2">&amp;</span><a class="self" href="#114">self</a>.basic_blocks_labels
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_formal_returns</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span> {
-        <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#120">self</a>.<span class="ident">formal_returns</span>
+    <span class="kw">pub fn </span>get_formal_returns(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt; {
+        <span class="kw-2">&amp;</span><a class="self" href="#118">self</a>.formal_returns
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">block_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> {
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> { <span class="ident">block_index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">index</a> }
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>block_index(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>) -&gt; <a href="#53">CfgBlockIndex</a> {
+        <a href="#53">CfgBlockIndex</a> { block_index: <a href="#122">index</a> }
     }
 
-    <span class="kw">fn</span> <span class="ident">is_fresh_local_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#128">self</a>.<span class="ident">formal_returns</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#129">x</a>.<span class="ident">name</span> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">name</a>)
-            <span class="op">&amp;&amp;</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#128">self</a>.<span class="ident">local_vars</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#130">x</a>.<span class="ident">name</span> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">name</a>)
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#128">self</a>.<span class="ident">labels</span>.<span class="ident">contains</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">name</a>)
-            <span class="op">&amp;&amp;</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#128">self</a>.<span class="ident">basic_blocks_labels</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#132">x</a> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">name</a>)
+    <span class="kw">fn </span>is_fresh_local_name(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+        <a class="self" href="#126">self</a>.formal_returns.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(|x| <a href="#127">x</a>.name != <a href="#126">name</a>)
+            &amp;&amp; <a class="self" href="#126">self</a>.local_vars.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(|x| <a href="#128">x</a>.name != <a href="#126">name</a>)
+            &amp;&amp; !<a class="self" href="#126">self</a>.labels.contains(<a href="#126">name</a>)
+            &amp;&amp; <a class="self" href="#126">self</a>.basic_blocks_labels.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(|x| <a href="#130">x</a> != <a href="#126">name</a>)
     }
 
-    <span class="doccomment">/// Returns all formal arguments, formal returns, and local variables</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_all_vars</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vars</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#290-293">LocalVar</a><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#137">vars</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#136">self</a>.<span class="ident">formal_returns</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#137">vars</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#136">self</a>.<span class="ident">local_vars</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#137">vars</a>
+    <span class="doccomment">/// Returns all formal arguments, formal returns, and local variables
+    </span><span class="kw">pub fn </span>get_all_vars(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>vars: Vec&lt;<a href="../ast/common.rs.html#302">LocalVar</a>&gt; = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
+        <a href="#135">vars</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="#134">self</a>.formal_returns.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+        <a href="#135">vars</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="#134">self</a>.local_vars.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>());
+        <a href="#135">vars</a>
     }
 
-    <span class="doccomment">/// Returns all labels</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_all_labels</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">labels</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#145">labels</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#144">self</a>.<span class="ident">labels</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#145">labels</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#144">self</a>.<span class="ident">basic_blocks_labels</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#145">labels</a>
+    <span class="doccomment">/// Returns all labels
+    </span><span class="kw">pub fn </span>get_all_labels(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>labels: Vec&lt;<a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a>&gt; = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
+        <a href="#143">labels</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="#142">self</a>.labels.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        <a href="#143">labels</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="self" href="#142">self</a>.basic_blocks_labels.iter().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">cloned</a>());
+        <a href="#143">labels</a>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_local_var</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="ident">typ</span>: <a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#175-187">Type</a>) {
-        <span class="macro">assert!</span>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#151">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">is_fresh_local_name</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#151">name</a>));
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#151">self</a>.<span class="ident">local_vars</span>.<span class="ident">push</span>(<span class="ident">LocalVar::new</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#151">name</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#151">typ</a>));
+    <span class="kw">pub fn </span>add_local_var(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, typ: <a href="../ast/common.rs.html#183">Type</a>) {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(<span class="self">self</span>.is_fresh_local_name(name));
+        <a class="self" href="#149">self</a>.local_vars.push(LocalVar::new(<a href="#149">name</a>, <a href="#149">typ</a>));
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_formal_return</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="ident">typ</span>: <a class="ident" href="../../../../src/vir/legacy/ast/common.rs.html#175-187">Type</a>) {
-        <span class="macro">assert!</span>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#156">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">is_fresh_local_name</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#156">name</a>));
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#156">self</a>.<span class="ident">formal_returns</span>.<span class="ident">push</span>(<span class="ident">LocalVar::new</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#156">name</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#156">typ</a>));
+    <span class="kw">pub fn </span>add_formal_return(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, typ: <a href="../ast/common.rs.html#183">Type</a>) {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(<span class="self">self</span>.is_fresh_local_name(name));
+        <a class="self" href="#154">self</a>.formal_returns.push(LocalVar::new(<a href="#154">name</a>, <a href="#154">typ</a>));
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_stmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>, <span class="ident">stmt</span>: <a class="ident" href="../../../../src/vir/legacy/ast/stmt.rs.html#19-73">Stmt</a>) {
-        <span class="kw">for</span> <span class="ident">label_name</span> <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/gather_labels.rs.html#3">gather_labels</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#161">stmt</a>) {
+    <span class="kw">pub fn </span>add_stmt(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: <a href="#53">CfgBlockIndex</a>, stmt: <a href="../ast/stmt.rs.html#20">Stmt</a>) {
+        <span class="kw">for </span>label_name <span class="kw">in </span>gather_labels(<span class="kw-2">&amp;</span>stmt) {
             <span class="macro">assert!</span>(
-                <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#161">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#128">is_fresh_local_name</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#162">label_name</a>),
+                <span class="self">self</span>.is_fresh_local_name(<span class="kw-2">&amp;</span>label_name),
                 <span class="string">&quot;label {} is not fresh&quot;</span>,
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#162">label_name</a>
+                label_name
             );
-            <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#161">self</a>.<span class="ident">labels</span>.<span class="ident">insert</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#162">label_name</a>);
+            <span class="self">self</span>.labels.insert(label_name);
         }
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#161">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#161">index</a>.<span class="ident">block_index</span>].<span class="ident">stmts</span>.<span class="ident">push</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#161">stmt</a>);
+        <a class="self" href="#159">self</a>.basic_blocks[<a href="#159">index</a>.block_index].stmts.push(<a href="#159">stmt</a>);
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_stmts</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>, <span class="ident">stmts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/stmt.rs.html#19-73">Stmt</a><span class="op">&gt;</span>) {
-        <span class="kw">for</span> <span class="ident">stmt</span> <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#173">stmts</a> {
-            <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#173">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#161">add_stmt</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#173">index</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#174">stmt</a>);
+    <span class="kw">pub fn </span>add_stmts(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: <a href="#53">CfgBlockIndex</a>, stmts: Vec&lt;<a href="../ast/stmt.rs.html#20">Stmt</a>&gt;) {
+        <span class="kw">for </span>stmt <span class="kw">in </span>stmts {
+            <span class="self">self</span>.add_stmt(index, stmt);
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_block</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">label</span>: <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="ident">stmts</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/ast/stmt.rs.html#19-73">Stmt</a><span class="op">&gt;</span>) -&gt; <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a> {
-        <span class="macro">assert!</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a>.<span class="ident">chars</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">take</a>(<span class="number">1</span>).<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#180">c</a>.<span class="ident">is_alphabetic</span>() <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#180">c</a> <span class="op">==</span> <span class="string">&#39;_&#39;</span>));
-        <span class="macro">assert!</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a>
-            .<span class="ident">chars</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">skip</a>(<span class="number">1</span>)
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#184">c</a>.<span class="ident">is_alphanumeric</span>() <span class="op">|</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#184">c</a> <span class="op">==</span> <span class="string">&#39;_&#39;</span>));
-        <span class="macro">assert!</span>(
-            <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#179">self</a>.<span class="ident">basic_blocks_labels</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">all</a>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#186">l</a> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a>),
+    <span class="kw">pub fn </span>add_block(<span class="kw-2">&amp;mut </span><span class="self">self</span>, label: <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, stmts: Vec&lt;<a href="../ast/stmt.rs.html#20">Stmt</a>&gt;) -&gt; <a href="#53">CfgBlockIndex</a> {
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(label.chars().take(<span class="number">1</span>).all(|c| c.is_alphabetic() || c == <span class="string">&#39;_&#39;</span>));
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(label
+            .chars()
+            .skip(<span class="number">1</span>)
+            .all(|c| c.is_alphanumeric() || c == <span class="string">&#39;_&#39;</span>));
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(
+            <span class="self">self</span>.basic_blocks_labels.iter().all(|l| l != label),
             <span class="string">&quot;Label {} is already used&quot;</span>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a>
+            label
         );
-        <span class="macro">assert!</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#19">RETURN_LABEL</a>);
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#179">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>();
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#179">self</a>.<span class="ident">basic_blocks_labels</span>.<span class="ident">push</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">label</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>());
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#179">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">push</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#37-40">CfgBlock</a> {
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#179">stmts</a>,
-            <span class="ident">successor</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#44">Successor::Undefined</a>,
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(label != RETURN_LABEL);
+        <span class="kw">let </span>index = <a class="self" href="#177">self</a>.basic_blocks.len();
+        <a class="self" href="#177">self</a>.basic_blocks_labels.push(<a href="#177">label</a>.<a href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>());
+        <a class="self" href="#177">self</a>.basic_blocks.push(<a href="#37">CfgBlock</a> {
+            <a href="#177">stmts</a>,
+            successor: <a href="#44">Successor::Undefined</a>,
         });
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#179">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">block_index</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#191">index</a>)
+        <a class="self" href="#177">self</a>.<a href="#122">block_index</a>(<a href="#189">index</a>)
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_successor</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>) -&gt; <span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#43-48">Successor</a> {
-        <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#201">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#201">index</a>.<span class="ident">block_index</span>].<span class="ident">successor</span>
+    <span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">pub fn </span>get_successor(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: <a href="#53">CfgBlockIndex</a>) -&gt; <span class="kw-2">&amp;</span><a href="#43">Successor</a> {
+        <span class="kw-2">&amp;</span><a class="self" href="#199">self</a>.basic_blocks[<a href="#199">index</a>.block_index].successor
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_successor</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>, <span class="ident">successor</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#43-48">Successor</a>) {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#206">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#206">index</a>.<span class="ident">block_index</span>].<span class="ident">successor</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#206">successor</a>;
+    <span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">pub fn </span>set_successor(<span class="kw-2">&amp;mut </span><span class="self">self</span>, index: <a href="#53">CfgBlockIndex</a>, successor: <a href="#43">Successor</a>) {
+        <a class="self" href="#204">self</a>.basic_blocks[<a href="#204">index</a>.block_index].successor = <a href="#204">successor</a>;
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_preceding</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">target_index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#210">self</a>.<span class="ident">basic_blocks</span>
-            .<span class="ident">iter</span>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">enumerate</a>()
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#214">x</a>.<span class="number">1</span>.<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>().<span class="ident">contains</span>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#210">target_index</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#210">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">block_index</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#215">x</a>.<span class="number">0</span>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    <span class="kw">pub fn </span>get_preceding(<span class="kw-2">&amp;</span><span class="self">self</span>, target_index: <a href="#53">CfgBlockIndex</a>) -&gt; Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; {
+        <a class="self" href="#208">self</a>.basic_blocks
+            .iter()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">enumerate</a>()
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">filter</a>(|x| <a href="#212">x</a>.<span class="number">1</span>.successor.<a href="#68">get_following</a>().contains(<span class="kw-2">&amp;</span><a href="#208">target_index</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|x| <a class="self" href="#208">self</a>.<a href="#122">block_index</a>(<a href="#213">x</a>.<span class="number">0</span>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">predecessors</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">HashMap</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">HashMap::new</span>();
-        <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">block</span>) <span class="kw">in</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#220">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">enumerate</a>() {
-            <span class="kw">for</span> <span class="ident">successor</span> <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#222">block</a>.<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>() {
-                <span class="kw">let</span> <span class="ident">entry</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#221">result</a>.<span class="ident">entry</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#223">successor</a>.<span class="ident">block_index</span>).<span class="ident">or_insert_with</span>(<span class="ident">Vec::new</span>);
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#224">entry</a>.<span class="ident">push</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#222">index</a>);
+    <span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">pub fn </span>predecessors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; HashMap&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>, Vec&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt;&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>result = HashMap::new();
+        <span class="kw">for </span>(index, block) <span class="kw">in </span><span class="self">self</span>.basic_blocks.iter().enumerate() {
+            <span class="kw">for </span>successor <span class="kw">in </span>block.successor.get_following() {
+                <span class="kw">let </span>entry = result.entry(successor.block_index).or_insert_with(Vec::new);
+                entry.push(index);
             }
         }
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#221">result</a>
+        <a href="#219">result</a>
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_indices</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> {
-        (<span class="number">0</span>..<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#232">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>())
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#232">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">block_index</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#234">i</a>))
-            .<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
+    <span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">pub fn </span>get_indices(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; {
+        (<span class="number">0</span>..<a class="self" href="#230">self</a>.basic_blocks.len())
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">map</a>(|i| <a class="self" href="#230">self</a>.<a href="#122">block_index</a>(<a href="#232">i</a>))
+            .<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">collect</a>()
     }
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_block_label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>) -&gt; <span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
-        <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#239">self</a>.<span class="ident">basic_blocks_labels</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#239">index</a>.<span class="ident">block_index</span>]
+    <span class="attribute">#[allow(dead_code)]
+    </span><span class="kw">pub fn </span>get_block_label(<span class="kw-2">&amp;</span><span class="self">self</span>, index: <a href="#53">CfgBlockIndex</a>) -&gt; <span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
+        <span class="kw-2">&amp;</span><a class="self" href="#237">self</a>.basic_blocks_labels[<a href="#237">index</a>.block_index]
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_loops</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">in_degree</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0</span>; <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>()];
+    <span class="kw">pub fn </span>has_loops(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a> {
+        <span class="kw">let </span><span class="kw-2">mut </span>in_degree = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="number">0</span>; <span class="self">self</span>.basic_blocks.len()];
 
-        <span class="kw">for</span> <span class="ident">index</span> <span class="kw">in</span> <span class="number">0</span>..<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>() {
-            <span class="kw">for</span> <span class="ident">succ</span> <span class="kw">in</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#246">index</a>].<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>() {
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#244">in_degree</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#247">succ</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#85">index</a>()] <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            }
-        }
-
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue</span> <span class="op">=</span> <span class="ident">VecDeque::new</span>();
-        <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">value</span>) <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#244">in_degree</a>.<span class="ident">iter</span>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">enumerate</a>() {
-            <span class="kw">if</span> <span class="kw-2">*</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#253">value</a> <span class="op">==</span> <span class="number">0</span> {
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#252">queue</a>.<span class="ident">push_back</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#253">index</a>);
+        <span class="kw">for </span>index <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.basic_blocks.len() {
+            <span class="kw">for </span>succ <span class="kw">in </span><span class="self">self</span>.basic_blocks[index].successor.get_following() {
+                in_degree[succ.index()] += <span class="number">1</span>;
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visited_count</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>queue = VecDeque::new();
+        <span class="kw">for </span>(index, value) <span class="kw">in </span>in_degree.iter().enumerate() {
+            <span class="kw">if </span><span class="kw-2">*</span>value == <span class="number">0 </span>{
+                queue.push_back(index);
+            }
+        }
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">curr_index</span>) <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#252">queue</a>.<span class="ident">pop_front</span>() {
-            <span class="kw">for</span> <span class="ident">succ</span> <span class="kw">in</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#261">curr_index</a>].<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>() {
-                <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#244">in_degree</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#262">succ</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#85">index</a>()] <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>visited_count = <span class="number">0</span>;
 
-                <span class="kw">if</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#244">in_degree</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#262">succ</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#85">index</a>()] <span class="op">==</span> <span class="number">0</span> {
-                    <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#252">queue</a>.<span class="ident">push_back</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#262">succ</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#85">index</a>());
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(curr_index) = queue.pop_front() {
+            <span class="kw">for </span>succ <span class="kw">in </span><span class="self">self</span>.basic_blocks[curr_index].successor.get_following() {
+                in_degree[succ.index()] -= <span class="number">1</span>;
+
+                <span class="kw">if </span>in_degree[succ.index()] == <span class="number">0 </span>{
+                    queue.push_back(succ.index());
                 }
             }
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#259">visited_count</a> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            visited_count += <span class="number">1</span>;
         }
 
-        <span class="macro">debug_assert!</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#259">visited_count</a> <span class="op">&lt;</span><span class="op">=</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>());
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#259">visited_count</a> <span class="op">!</span><span class="op">=</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#243">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>()
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.debug_assert.html">debug_assert!</a>(visited_count &lt;= <span class="self">self</span>.basic_blocks.len());
+        <a href="#257">visited_count</a> != <a class="self" href="#241">self</a>.basic_blocks.len()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_topological_sort</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> {
-        <span class="kw">if</span> <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#276">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">Vec::new</span>()
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visited</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="bool-val">false</span>; <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#276">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>()];
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">topo_sorted</span>: <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+    <span class="kw">pub fn </span>get_topological_sort(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; {
+        <span class="kw">if </span><span class="self">self</span>.basic_blocks.is_empty() {
+            Vec::new()
+        } <span class="kw">else </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>visited: Vec&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt; = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="bool-val">false</span>; <span class="self">self</span>.basic_blocks.len()];
+            <span class="kw">let </span><span class="kw-2">mut </span>topo_sorted: Vec&lt;<a href="#53">CfgBlockIndex</a>&gt; = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
 
-            <span class="comment">// The first basic block always stays first.</span>
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#280">visited</a>[<span class="number">0</span>] <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="comment">// The first basic block always stays first.
+            </span><a href="#278">visited</a>[<span class="number">0</span>] = <span class="bool-val">true</span>;
 
-            <span class="comment">// The remaining basic blocks.</span>
-            <span class="kw">for</span> <span class="ident">index</span> <span class="kw">in</span> <span class="number">1</span>..<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#276">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>() {
-                <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#280">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#287">index</a>] {
-                    <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#276">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#299-304">topological_sort_impl</a>(<span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#280">visited</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#281">topo_sorted</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#287">index</a>);
+            <span class="comment">// The remaining basic blocks.
+            </span><span class="kw">for </span>index <span class="kw">in </span><span class="number">1</span>..<span class="self">self</span>.basic_blocks.len() {
+                <span class="kw">if </span>!visited[index] {
+                    <span class="self">self</span>.topological_sort_impl(<span class="kw-2">&amp;mut </span>visited, <span class="kw-2">&amp;mut </span>topo_sorted, index);
                 }
             }
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">final_blocks</span> <span class="op">=</span> <span class="macro">vec!</span>[<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#276">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">block_index</a>(<span class="number">0</span>)];
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#293">final_blocks</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#281">topo_sorted</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a class="ident" href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">rev</a>());
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#293">final_blocks</a>
+            <span class="kw">let </span><span class="kw-2">mut </span>final_blocks = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="self">self</span>.block_index(<span class="number">0</span>)];
+            <a href="#291">final_blocks</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.Extend.html">extend</a>(<a href="#279">topo_sorted</a>.<a href="https://doc.rust-lang.org/nightly/core/iter/traits/collect/trait.IntoIterator.html">into_iter</a>().<a href="https://doc.rust-lang.org/nightly/core/iter/traits/iterator/trait.Iterator.html">rev</a>());
+            <a href="#291">final_blocks</a>
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">topological_sort_impl</span>(
+    <span class="kw">fn </span>topological_sort_impl(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">visited</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a><span class="op">&gt;</span>,
-        <span class="ident">topo_sorted</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span>,
-        <span class="ident">curr_index</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
+        visited: <span class="kw-2">&amp;mut </span>Vec&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.bool.html">bool</a>&gt;,
+        topo_sorted: <span class="kw-2">&amp;mut </span>Vec&lt;<a href="#53">CfgBlockIndex</a>&gt;,
+        curr_index: <a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>,
     ) {
-        <span class="macro">assert!</span>(<span class="op">!</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#301">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#303">curr_index</a>]);
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#301">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#303">curr_index</a>] <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">let</span> <span class="ident">curr_block</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#300">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#303">curr_index</a>];
-        <span class="kw">let</span> <span class="ident">following</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#307">curr_block</a>.<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>();
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.assert.html">assert!</a>(!visited[curr_index]);
+        <a href="#299">visited</a>[<a href="#301">curr_index</a>] = <span class="bool-val">true</span>;
+        <span class="kw">let </span>curr_block = <span class="kw-2">&amp;</span><a class="self" href="#298">self</a>.basic_blocks[<a href="#301">curr_index</a>];
+        <span class="kw">let </span>following = <a href="#305">curr_block</a>.successor.<a href="#68">get_following</a>();
 
-        <span class="kw">for</span> <span class="ident">block_index</span> <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#308">following</a> {
-            <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#310">block_index</a>.<span class="ident">block_index</span>;
-            <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#301">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#311">index</a>] {
-                <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#300">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#299-304">topological_sort_impl</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#301">visited</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#302">topo_sorted</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#311">index</a>);
+        <span class="kw">for </span>block_index <span class="kw">in </span>following {
+            <span class="kw">let </span>index = block_index.block_index;
+            <span class="kw">if </span>!visited[index] {
+                <span class="self">self</span>.topological_sort_impl(visited, topo_sorted, index);
             }
         }
 
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#302">topo_sorted</a>.<span class="ident">push</span>(<a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#300">self</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#124">block_index</a>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#303">curr_index</a>))
+        <a href="#300">topo_sorted</a>.push(<a class="self" href="#298">self</a>.<a href="#122">block_index</a>(<a href="#301">curr_index</a>))
     }
 
-    <span class="doccomment">/// Find some path from the `start_block` to the `end_block`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The returned path includes both `start_block` and `end_block`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_path</span>(
+    <span class="doccomment">/// Find some path from the `start_block` to the `end_block`.
+    ///
+    /// The returned path includes both `start_block` and `end_block`.
+    </span><span class="kw">pub fn </span>find_path(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">start_block</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>,
-        <span class="ident">end_block</span>: <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#53-55">CfgBlockIndex</a><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="macro">trace!</span>(
+        start_block: <a href="#53">CfgBlockIndex</a>,
+        end_block: <a href="#53">CfgBlockIndex</a>,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;<a href="#53">CfgBlockIndex</a>&gt;&gt; {
+        <a class="macro" href="../../../../log/macro.trace.html">trace!</a>(
             <span class="string">&quot;[enter] find_path start={:?} end={:?}&quot;</span>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#325">start_block</a>,
-            <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#326">end_block</a>
+            start_block,
+            end_block
         );
-        <span class="kw">if</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#325">start_block</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#82">weak_eq</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#326">end_block</a>) {
-            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#325">start_block</a>]);
+        <span class="kw">if </span>start_block.weak_eq(<span class="kw-2">&amp;</span>end_block) {
+            <span class="kw">return </span><span class="prelude-val">Some</span>(<a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[start_block]);
         }
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visited</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="bool-val">false</span>; <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#324">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>()];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">came_from</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#324">self</a>.<span class="ident">basic_blocks</span>.<span class="ident">len</span>()];
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">to_visit</span> <span class="op">=</span> <span class="ident">VecDeque::new</span>();
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#338">to_visit</a>.<span class="ident">push_back</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#325">start_block</a>);
-        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#336">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#325">start_block</a>.<span class="ident">block_index</span>] <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">while</span> <span class="op">!</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#338">to_visit</a>.<span class="ident">is_empty</span>() {
-            <span class="kw">let</span> <span class="ident">curr_block_index</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#338">to_visit</a>.<span class="ident">pop_front</span>().<span class="ident">unwrap</span>();
-            <span class="macro">trace!</span>(<span class="string">&quot;curr_block_index={:?}&quot;</span>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#342">curr_block_index</a>);
-            <span class="kw">let</span> <span class="ident">curr_block</span> <span class="op">=</span> <span class="kw-2">&amp;</span><a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#324">self</a>.<span class="ident">basic_blocks</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#342">curr_block_index</a>.<span class="ident">block_index</span>];
-            <span class="kw">for</span> <span class="ident">successor_block</span> <span class="kw">in</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#344">curr_block</a>.<span class="ident">successor</span>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#68">get_following</a>() {
-                <span class="kw">if</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>.<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#82">weak_eq</a>(<span class="kw-2">&amp;</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#326">end_block</a>) {
-                    <span class="macro">debug!</span>(<span class="string">&quot;came_from={:?}&quot;</span>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#337">came_from</a>);
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path</span> <span class="op">=</span> <span class="macro">vec!</span>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>, <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#342">curr_block_index</a>];
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#342">curr_block_index</a>;
-                    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">previous</span>) <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#337">came_from</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#349">index</a>.<span class="ident">block_index</span>] {
-                        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#348">path</a>.<span class="ident">push</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#350">previous</a>);
-                        <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#349">index</a> <span class="op">=</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#350">previous</a>;
+        <span class="kw">let </span><span class="kw-2">mut </span>visited = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="bool-val">false</span>; <span class="self">self</span>.basic_blocks.len()];
+        <span class="kw">let </span><span class="kw-2">mut </span>came_from = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[<span class="prelude-val">None</span>; <span class="self">self</span>.basic_blocks.len()];
+        <span class="kw">let </span><span class="kw-2">mut </span>to_visit = VecDeque::new();
+        <a href="#336">to_visit</a>.push_back(<a href="#323">start_block</a>);
+        <a href="#334">visited</a>[<a href="#323">start_block</a>.block_index] = <span class="bool-val">true</span>;
+        <span class="kw">while </span>!to_visit.is_empty() {
+            <span class="kw">let </span>curr_block_index = to_visit.pop_front().unwrap();
+            <span class="macro">trace!</span>(<span class="string">&quot;curr_block_index={:?}&quot;</span>, curr_block_index);
+            <span class="kw">let </span>curr_block = <span class="kw-2">&amp;</span><span class="self">self</span>.basic_blocks[curr_block_index.block_index];
+            <span class="kw">for </span>successor_block <span class="kw">in </span>curr_block.successor.get_following() {
+                <span class="kw">if </span>successor_block.weak_eq(<span class="kw-2">&amp;</span>end_block) {
+                    <span class="macro">debug!</span>(<span class="string">&quot;came_from={:?}&quot;</span>, came_from);
+                    <span class="kw">let </span><span class="kw-2">mut </span>path = <span class="macro">vec!</span>[successor_block, curr_block_index];
+                    <span class="kw">let </span><span class="kw-2">mut </span>index = curr_block_index;
+                    <span class="kw">while let </span><span class="prelude-val">Some</span>(previous) = came_from[index.block_index] {
+                        path.push(previous);
+                        index = previous;
                     }
-                    <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#348">path</a>.<span class="ident">reverse</span>();
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#348">path</a>);
+                    path.reverse();
+                    <span class="kw">return </span><span class="prelude-val">Some</span>(path);
                 }
-                <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#336">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>.<span class="ident">block_index</span>] {
-                    <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#336">visited</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>.<span class="ident">block_index</span>] <span class="op">=</span> <span class="bool-val">true</span>;
-                    <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#337">came_from</a>[<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>.<span class="ident">block_index</span>] <span class="op">=</span> <span class="prelude-val">Some</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#342">curr_block_index</a>);
-                    <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#338">to_visit</a>.<span class="ident">push_back</span>(<a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#345">successor_block</a>);
+                <span class="kw">if </span>!visited[successor_block.block_index] {
+                    visited[successor_block.block_index] = <span class="bool-val">true</span>;
+                    came_from[successor_block.block_index] = <span class="prelude-val">Some</span>(curr_block_index);
+                    to_visit.push_back(successor_block);
                 }
             }
         }
-        <span class="prelude-val">None</span>
-    }
+        <span class="prelude-val">None
+    </span>}
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../../src/vir/common/identifier.rs.html#1-3">WithIdentifier</a> <span class="kw">for</span> <a class="ident" href="../../../../src/vir/legacy/cfg/method.rs.html#24-34">CfgMethod</a> {
-    <span class="kw">fn</span> <span class="ident">get_identifier</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
-        <a class="self" href="../../../../src/vir/legacy/cfg/method.rs.html#369">self</a>.<span class="ident">method_name</span>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
+<span class="kw">impl </span><a href="../../common/identifier.rs.html#1">WithIdentifier</a> <span class="kw">for </span><a href="#25">CfgMethod</a> {
+    <span class="kw">fn </span>get_identifier(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/alloc/string/struct.String.html">String</a> {
+        <a class="self" href="#367">self</a>.method_name.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vir" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="vir" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

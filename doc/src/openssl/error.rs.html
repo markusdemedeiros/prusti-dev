@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.10.40/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script src="../../crates.js"></script><script defer src="../../main.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../openssl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../openssl/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../openssl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/openssl-0.10.42/src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../openssl/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -331,332 +324,447 @@
 <span id="324">324</span>
 <span id="325">325</span>
 <span id="326">326</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Errors returned by OpenSSL library.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! OpenSSL errors are stored in an `ErrorStack`.  Most methods in the crate</span>
-<span class="doccomment">//! returns a `Result&lt;T, ErrorStack&gt;` type.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! use openssl::error::ErrorStack;</span>
-<span class="doccomment">//! use openssl::bn::BigNum;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let an_error = BigNum::from_dec_str(&quot;Cannot parse letters&quot;);</span>
-<span class="doccomment">//! match an_error {</span>
-<span class="doccomment">//!     Ok(_)  =&gt; (),</span>
-<span class="doccomment">//!     Err(e) =&gt; println!(&quot;Parsing Error: {:?}&quot;, e),</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="kw">use</span> <span class="ident">cfg_if::cfg_if</span>;
-<span class="kw">use</span> <span class="ident">libc</span>::{<a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>, <a class="ident" href="../../libc/unix/type.c_int.html">c_int</a>, <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/not_x32/type.c_ulong.html">c_ulong</a>};
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/borrow/enum.Cow.html">std::borrow::Cow</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/index.html">std::error</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/ffi/type.CStr.html">std::ffi::CStr</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">std::fmt</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/io/index.html">std::io</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/ptr/index.html">std::ptr</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/alloc/str/index.html">std::str</a>;
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Errors returned by OpenSSL library.
+//!
+//! OpenSSL errors are stored in an `ErrorStack`.  Most methods in the crate
+//! returns a `Result&lt;T, ErrorStack&gt;` type.
+//!
+//! # Examples
+//!
+//! ```
+//! use openssl::error::ErrorStack;
+//! use openssl::bn::BigNum;
+//!
+//! let an_error = BigNum::from_dec_str(&quot;Cannot parse letters&quot;);
+//! match an_error {
+//!     Ok(_)  =&gt; (),
+//!     Err(e) =&gt; println!(&quot;Parsing Error: {:?}&quot;, e),
+//! }
+//! ```
+</span><span class="kw">use </span><a href="../../cfg_if/macro.cfg_if.html">cfg_if::cfg_if</a>;
+<span class="kw">use </span>libc::{<a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>, <a href="../../libc/unix/type.c_int.html">c_int</a>};
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/borrow/enum.Cow.html">std::borrow::Cow</a>;
+<span class="attribute">#[cfg(boringssl)]
+</span><span class="kw">use </span>std::convert::TryInto;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/std/error/index.html">std::error</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/ffi/c_str/struct.CStr.html">std::ffi::CStr</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/fmt/index.html">std::fmt</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/std/io/index.html">std::io</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/ptr/index.html">std::ptr</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/alloc/str/index.html">std::str</a>;
 
-<span class="doccomment">/// Collection of [`Error`]s from OpenSSL.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Error`]: struct.Error.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ErrorStack</span>(<span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a><span class="op">&gt;</span>);
+<span class="attribute">#[cfg(not(boringssl))]
+</span><span class="kw">type </span>ErrType = <a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/not_x32/type.c_ulong.html">libc::c_ulong</a>;
+<span class="attribute">#[cfg(boringssl)]
+</span><span class="kw">type </span>ErrType = libc::c_uint;
 
-<span class="kw">impl</span> <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a> {
-    <span class="doccomment">/// Returns the contents of the OpenSSL error stack.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>() -&gt; <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">vec</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">Error::get</span>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#37">vec</a>.<span class="ident">push</span>(<a class="ident" href="../../src/openssl/error.rs.html#38">err</a>);
+<span class="doccomment">/// Collection of [`Error`]s from OpenSSL.
+///
+/// [`Error`]: struct.Error.html
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>ErrorStack(Vec&lt;<a href="#100">Error</a>&gt;);
+
+<span class="kw">impl </span><a href="#39">ErrorStack</a> {
+    <span class="doccomment">/// Returns the contents of the OpenSSL error stack.
+    </span><span class="kw">pub fn </span>get() -&gt; <a href="#39">ErrorStack</a> {
+        <span class="kw">let </span><span class="kw-2">mut </span>vec = <a class="macro" href="https://doc.rust-lang.org/nightly/alloc/macro.vec.html">vec!</a>[];
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(err) = Error::get() {
+            vec.push(err);
         }
-        <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a>(<a class="ident" href="../../src/openssl/error.rs.html#37">vec</a>)
+        <a href="#39">ErrorStack</a>(<a href="#44">vec</a>)
     }
 
-    <span class="doccomment">/// Pushes the errors back onto the OpenSSL error stack.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">for</span> <span class="ident">error</span> <span class="kw">in</span> <a class="self" href="../../src/openssl/error.rs.html#45">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#54">errors</a>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#46">error</a>.<a class="ident" href="../../src/openssl/error.rs.html#145">put</a>();
+    <span class="doccomment">/// Pushes the errors back onto the OpenSSL error stack.
+    </span><span class="kw">pub fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">for </span>error <span class="kw">in </span><span class="self">self</span>.errors() {
+            error.put();
         }
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a> {
-    <span class="doccomment">/// Returns the errors in the stack.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">errors</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a>] {
-        <span class="kw-2">&amp;</span><a class="self" href="../../src/openssl/error.rs.html#54">self</a>.<span class="number">0</span>
-    }
+<span class="kw">impl </span><a href="#39">ErrorStack</a> {
+    <span class="doccomment">/// Returns the errors in the stack.
+    </span><span class="kw">pub fn </span>errors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<a href="#100">Error</a>] {
+        <span class="kw-2">&amp;</span><a class="self" href="#61">self</a>.<span class="number">0
+    </span>}
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <span class="kw">if</span> <a class="self" href="../../src/openssl/error.rs.html#60">self</a>.<span class="number">0</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <a class="ident" href="../../src/openssl/error.rs.html#60">fmt</a>.<span class="ident">write_str</span>(<span class="string">&quot;OpenSSL error&quot;</span>);
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for </span><a href="#39">ErrorStack</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <span class="kw">if </span><span class="self">self</span>.<span class="number">0</span>.is_empty() {
+            <span class="kw">return </span><a href="#67">fmt</a>.write_str(<span class="string">&quot;OpenSSL error&quot;</span>);
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first</span> <span class="op">=</span> <span class="bool-val">true</span>;
-        <span class="kw">for</span> <span class="ident">err</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><a class="self" href="../../src/openssl/error.rs.html#60">self</a>.<span class="number">0</span> {
-            <span class="kw">if</span> <span class="op">!</span><a class="ident" href="../../src/openssl/error.rs.html#65">first</a> {
-                <a class="ident" href="../../src/openssl/error.rs.html#60">fmt</a>.<span class="ident">write_str</span>(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>first = <span class="bool-val">true</span>;
+        <span class="kw">for </span>err <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
+            <span class="kw">if </span>!first {
+                fmt.write_str(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
             }
-            <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#60">fmt</a>, <span class="string">&quot;{}&quot;</span>, <a class="ident" href="../../src/openssl/error.rs.html#66">err</a>)<span class="question-mark">?</span>;
-            <a class="ident" href="../../src/openssl/error.rs.html#65">first</a> <span class="op">=</span> <span class="bool-val">false</span>;
+            <span class="macro">write!</span>(fmt, <span class="string">&quot;{}&quot;</span>, err)<span class="question-mark">?</span>;
+            first = <span class="bool-val">false</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html">error::Error</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a> {}
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/error/trait.Error.html">error::Error</a> <span class="kw">for </span><a href="#39">ErrorStack</a> {}
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a><span class="op">&gt;</span> <span class="kw">for</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html">io::Error</a> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">e</span>: <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html">io::Error</a> {
-        <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <a class="ident" href="../../src/openssl/error.rs.html#80">e</a>)
+<span class="kw">impl </span>From&lt;<a href="#39">ErrorStack</a>&gt; <span class="kw">for </span><a href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html">io::Error</a> {
+    <span class="kw">fn </span>from(e: <a href="#39">ErrorStack</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/io/error/struct.Error.html">io::Error</a> {
+        io::Error::new(io::ErrorKind::Other, <a href="#87">e</a>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a><span class="op">&gt;</span> <span class="kw">for</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html">fmt::Error</a> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <a class="ident" href="../../src/openssl/error.rs.html#32">ErrorStack</a>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html">fmt::Error</a> {
-        <span class="ident">fmt::Error</span>
+<span class="kw">impl </span>From&lt;<a href="#39">ErrorStack</a>&gt; <span class="kw">for </span><a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html">fmt::Error</a> {
+    <span class="kw">fn </span>from(<span class="kw">_</span>: <a href="#39">ErrorStack</a>) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/struct.Error.html">fmt::Error</a> {
+        fmt::Error
     }
 }
 
-<span class="doccomment">/// An error reported from OpenSSL.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span> {
-    <span class="ident">code</span>: <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/not_x32/type.c_ulong.html">c_ulong</a>,
-    <span class="ident">file</span>: <span class="kw-2">*const</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
-    <span class="ident">line</span>: <a class="ident" href="../../libc/unix/type.c_int.html">c_int</a>,
-    <span class="ident">func</span>: <span class="kw-2">*const</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
-    <span class="ident">data</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="doccomment">/// An error reported from OpenSSL.
+</span><span class="attribute">#[derive(Clone)]
+</span><span class="kw">pub struct </span>Error {
+    code: <a href="#31">ErrType</a>,
+    file: <a href="#366">ShimStr</a>,
+    line: <a href="../../libc/unix/type.c_int.html">c_int</a>,
+    func: <span class="prelude-ty">Option</span>&lt;<a href="#366">ShimStr</a>&gt;,
+    data: <span class="prelude-ty">Option</span>&lt;Cow&lt;<span class="lifetime">&#39;static</span>, <a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt;&gt;,
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html">Sync</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html">Send</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {}
+<span class="kw">unsafe impl </span><a href="https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html">Sync</a> <span class="kw">for </span><a href="#100">Error</a> {}
+<span class="kw">unsafe impl </span><a href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html">Send</a> <span class="kw">for </span><a href="#100">Error</a> {}
 
-<span class="kw">impl</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {
-    <span class="doccomment">/// Returns the first error on the OpenSSL error stack.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> {
-            <a class="ident" href="../../openssl/fn.init.html">ffi::init</a>();
+<span class="kw">impl </span><a href="#100">Error</a> {
+    <span class="doccomment">/// Returns the first error on the OpenSSL error stack.
+    </span><span class="kw">pub fn </span>get() -&gt; <span class="prelude-ty">Option</span>&lt;<a href="#100">Error</a>&gt; {
+        <span class="kw">unsafe </span>{
+            <a href="../../openssl/fn.init.html">ffi::init</a>();
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file</span> <span class="op">=</span> <span class="ident">ptr::null</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line</span> <span class="op">=</span> <span class="number">0</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">func</span> <span class="op">=</span> <span class="ident">ptr::null</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">ptr::null</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> <span class="op">=</span> <span class="number">0</span>;
-            <span class="kw">match</span> <a class="ident" href="../../src/openssl/error.rs.html#314-320">ERR_get_error_all</a>(<span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/openssl/error.rs.html#110">file</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/openssl/error.rs.html#111">line</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/openssl/error.rs.html#112">func</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/openssl/error.rs.html#113">data</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../src/openssl/error.rs.html#114">flags</a>) {
-                <span class="number">0</span> =&gt; <span class="prelude-val">None</span>,
-                <span class="ident">code</span> =&gt; {
-                    <span class="comment">// The memory referenced by data is only valid until that slot is overwritten</span>
-                    <span class="comment">// in the error stack, so we&#39;ll need to copy it off if it&#39;s dynamic</span>
-                    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw">if</span> <a class="ident" href="../../src/openssl/error.rs.html#114">flags</a> <span class="op">&amp;</span> <span class="ident">ffi::ERR_TXT_STRING</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                        <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<a class="ident" href="../../src/openssl/error.rs.html#113">data</a> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>).<span class="ident">to_bytes</span>();
-                        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a class="ident" href="../../src/openssl/error.rs.html#121">bytes</a>).<span class="ident">unwrap</span>();
-                        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw">if</span> <a class="ident" href="../../src/openssl/error.rs.html#114">flags</a> <span class="op">&amp;</span> <span class="ident">ffi::ERR_TXT_MALLOCED</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
-                            <span class="ident">Cow::Owned</span>(<a class="ident" href="../../src/openssl/error.rs.html#122">data</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>())
-                        } <span class="kw">else</span> {
-                            <span class="ident">Cow::Borrowed</span>(<a class="ident" href="../../src/openssl/error.rs.html#122">data</a>)
+            <span class="kw">let </span><span class="kw-2">mut </span>file = ptr::null();
+            <span class="kw">let </span><span class="kw-2">mut </span>line = <span class="number">0</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>func = ptr::null();
+            <span class="kw">let </span><span class="kw-2">mut </span>data = ptr::null();
+            <span class="kw">let </span><span class="kw-2">mut </span>flags = <span class="number">0</span>;
+            <span class="kw">match </span><a href="#351-357">ERR_get_error_all</a>(<span class="kw-2">&amp;mut </span><a href="#117">file</a>, <span class="kw-2">&amp;mut </span><a href="#118">line</a>, <span class="kw-2">&amp;mut </span><a href="#119">func</a>, <span class="kw-2">&amp;mut </span><a href="#120">data</a>, <span class="kw-2">&amp;mut </span><a href="#121">flags</a>) {
+                <span class="number">0 </span>=&gt; <span class="prelude-val">None</span>,
+                code =&gt; {
+                    <span class="comment">// The memory referenced by data is only valid until that slot is overwritten
+                    // in the error stack, so we&#39;ll need to copy it off if it&#39;s dynamic
+                    </span><span class="kw">let </span>data = <span class="kw">if </span>flags &amp; ffi::ERR_TXT_STRING != <span class="number">0 </span>{
+                        <span class="kw">let </span>bytes = CStr::from_ptr(<a href="#120">data</a> <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>).to_bytes();
+                        <span class="kw">let </span>data = <a href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a href="#128">bytes</a>).unwrap();
+                        <span class="attribute">#[cfg(not(boringssl))]
+                        </span><span class="kw">let </span>data = <span class="kw">if </span>flags &amp; ffi::ERR_TXT_MALLOCED != <span class="number">0 </span>{
+                            Cow::Owned(<a href="#129">data</a>.<a href="https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html">to_string</a>())
+                        } <span class="kw">else </span>{
+                            Cow::Borrowed(<a href="#129">data</a>)
                         };
-                        <span class="prelude-val">Some</span>(<a class="ident" href="../../src/openssl/error.rs.html#123">data</a>)
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
+                        <span class="attribute">#[cfg(boringssl)]
+                        </span><span class="kw">let </span>data = Cow::Borrowed(data);
+                        <span class="prelude-val">Some</span>(<a href="#131">data</a>)
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">None
+                    </span>};
+
+                    <span class="kw">let </span>file = ShimStr::new(<a href="#117">file</a>);
+
+                    <span class="kw">let </span>func = <span class="kw">if </span>func.is_null() {
+                        <span class="prelude-val">None
+                    </span>} <span class="kw">else </span>{
+                        <span class="prelude-val">Some</span>(ShimStr::new(<a href="#119">func</a>))
                     };
-                    <span class="prelude-val">Some</span>(<a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {
-                        <a class="ident" href="../../src/openssl/error.rs.html#117">code</a>,
-                        <a class="ident" href="../../src/openssl/error.rs.html#110">file</a>,
-                        <a class="ident" href="../../src/openssl/error.rs.html#111">line</a>,
-                        <a class="ident" href="../../src/openssl/error.rs.html#112">func</a>,
-                        <a class="ident" href="../../src/openssl/error.rs.html#120">data</a>,
+
+                    <span class="prelude-val">Some</span>(<a href="#100">Error</a> {
+                        <a href="#124">code</a>,
+                        <a href="#143">file</a>,
+                        <a href="#118">line</a>,
+                        <a href="#145">func</a>,
+                        <a href="#127">data</a>,
                     })
                 }
             }
         }
     }
 
-    <span class="doccomment">/// Pushes the error back onto the OpenSSL error stack.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <a class="self" href="../../src/openssl/error.rs.html#145">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#187">put_error</a>();
+    <span class="doccomment">/// Pushes the error back onto the OpenSSL error stack.
+    </span><span class="kw">pub fn </span>put(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <a class="self" href="#164">self</a>.<a href="#210">put_error</a>();
 
-        <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw">match</span> <a class="self" href="../../src/openssl/error.rs.html#145">self</a>.<span class="ident">data</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">Cow::Borrowed</span>(<span class="ident">data</span>)) =&gt; <span class="prelude-val">Some</span>((<a class="ident" href="../../src/openssl/error.rs.html#150">data</a>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>, <span class="number">0</span>)),
-                <span class="prelude-val">Some</span>(<span class="ident">Cow::Owned</span>(<span class="kw-2">ref</span> <span class="ident">data</span>)) =&gt; {
-                    <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">ffi::CRYPTO_malloc</span>(
-                        (<a class="ident" href="../../src/openssl/error.rs.html#151">data</a>.<span class="ident">len</span>() <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="kw">_</span>,
-                        <span class="macro">concat!</span>(<span class="macro">file!</span>(), <span class="string">&quot;\0&quot;</span>).<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw">_</span>,
-                        <span class="macro">line!</span>() <span class="kw">as</span> <span class="kw">_</span>,
-                    ) <span class="kw">as</span> <span class="kw-2">*mut</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>;
-                    <span class="kw">if</span> <a class="ident" href="../../src/openssl/error.rs.html#152">ptr</a>.<span class="ident">is_null</span>() {
-                        <span class="prelude-val">None</span>
-                    } <span class="kw">else</span> {
-                        <span class="ident">ptr::copy_nonoverlapping</span>(<a class="ident" href="../../src/openssl/error.rs.html#151">data</a>.<span class="ident">as_ptr</span>(), <a class="ident" href="../../src/openssl/error.rs.html#152">ptr</a> <span class="kw">as</span> <span class="kw-2">*mut</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>, <a class="ident" href="../../src/openssl/error.rs.html#151">data</a>.<span class="ident">len</span>());
-                        <span class="kw-2">*</span><a class="ident" href="../../src/openssl/error.rs.html#152">ptr</a>.<span class="ident">add</span>(<a class="ident" href="../../src/openssl/error.rs.html#151">data</a>.<span class="ident">len</span>()) <span class="op">=</span> <span class="number">0</span>;
-                        <span class="prelude-val">Some</span>((<a class="ident" href="../../src/openssl/error.rs.html#152">ptr</a>, <span class="ident">ffi::ERR_TXT_MALLOCED</span>))
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>data = <span class="kw">match </span><a class="self" href="#164">self</a>.data {
+                <span class="prelude-val">Some</span>(Cow::Borrowed(data)) =&gt; <span class="prelude-val">Some</span>((<a href="#169">data</a>.as_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>, <span class="number">0</span>)),
+                <span class="prelude-val">Some</span>(Cow::Owned(<span class="kw-2">ref </span>data)) =&gt; {
+                    <span class="kw">let </span>ptr = ffi::CRYPTO_malloc(
+                        (<a href="#170">data</a>.len() + <span class="number">1</span>) <span class="kw">as _</span>,
+                        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.concat.html">concat!</a>(<span class="macro">file!</span>(), <span class="string">&quot;\0&quot;</span>).as_ptr() <span class="kw">as _</span>,
+                        <span class="macro">line!</span>() <span class="kw">as _</span>,
+                    ) <span class="kw">as </span><span class="kw-2">*mut </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>;
+                    <span class="kw">if </span>ptr.is_null() {
+                        <span class="prelude-val">None
+                    </span>} <span class="kw">else </span>{
+                        ptr::copy_nonoverlapping(<a href="#170">data</a>.as_ptr(), <a href="#171">ptr</a> <span class="kw">as </span><span class="kw-2">*mut </span><a href="https://doc.rust-lang.org/nightly/std/primitive.u8.html">u8</a>, <a href="#170">data</a>.len());
+                        <span class="kw-2">*</span><a href="#171">ptr</a>.add(<a href="#170">data</a>.len()) = <span class="number">0</span>;
+                        <span class="prelude-val">Some</span>((<a href="#171">ptr</a>, ffi::ERR_TXT_MALLOCED))
                     }
                 }
-                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+                <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
             };
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">ptr</span>, <span class="ident">flags</span>)) <span class="op">=</span> <a class="ident" href="../../src/openssl/error.rs.html#149">data</a> {
-                <span class="ident">ffi::ERR_set_error_data</span>(<a class="ident" href="../../src/openssl/error.rs.html#167">ptr</a>, <a class="ident" href="../../src/openssl/error.rs.html#167">flags</a> <span class="op">|</span> <span class="ident">ffi::ERR_TXT_STRING</span>);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((ptr, flags)) = <a href="#168">data</a> {
+                ffi::ERR_set_error_data(<a href="#186">ptr</a>, <a href="#186">flags</a> | ffi::ERR_TXT_STRING);
             }
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl300</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">put_error</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">unsafe</span> {
-            <span class="ident">ffi::ERR_new</span>();
-            <span class="ident">ffi::ERR_set_debug</span>(<span class="self">self</span>.<span class="ident">file</span>, <span class="self">self</span>.<span class="ident">line</span>, <span class="self">self</span>.<span class="ident">func</span>);
-            <span class="ident">ffi::ERR_set_error</span>(
-                <span class="ident">ffi::ERR_GET_LIB</span>(<span class="self">self</span>.<span class="ident">code</span>),
-                <span class="ident">ffi::ERR_GET_REASON</span>(<span class="self">self</span>.<span class="ident">code</span>),
-                <span class="ident">ptr::null</span>(),
+    <span class="attribute">#[cfg(ossl300)]
+    </span><span class="kw">fn </span>put_error(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">unsafe </span>{
+            ffi::ERR_new();
+            ffi::ERR_set_debug(
+                <span class="self">self</span>.file.as_ptr(),
+                <span class="self">self</span>.line,
+                <span class="self">self</span>.func.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
+            );
+            ffi::ERR_set_error(
+                ffi::ERR_GET_LIB(<span class="self">self</span>.code),
+                ffi::ERR_GET_REASON(<span class="self">self</span>.code),
+                ptr::null(),
             );
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">ossl300</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">put_error</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">unsafe</span> {
-            <span class="ident">ffi::ERR_put_error</span>(
-                <span class="ident">ffi::ERR_GET_LIB</span>(<a class="self" href="../../src/openssl/error.rs.html#187">self</a>.<span class="ident">code</span>),
-                <span class="ident">ffi::ERR_GET_FUNC</span>(<a class="self" href="../../src/openssl/error.rs.html#187">self</a>.<span class="ident">code</span>),
-                <span class="ident">ffi::ERR_GET_REASON</span>(<a class="self" href="../../src/openssl/error.rs.html#187">self</a>.<span class="ident">code</span>),
-                <a class="self" href="../../src/openssl/error.rs.html#187">self</a>.<span class="ident">file</span>,
-                <a class="self" href="../../src/openssl/error.rs.html#187">self</a>.<span class="ident">line</span>,
+    <span class="attribute">#[cfg(not(ossl300))]
+    </span><span class="kw">fn </span>put_error(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="attribute">#[cfg(not(boringssl))]
+        </span><span class="kw">let </span>line = <a class="self" href="#210">self</a>.line;
+        <span class="attribute">#[cfg(boringssl)]
+        </span><span class="kw">let </span>line = <span class="self">self</span>.line.try_into().unwrap();
+        <span class="kw">unsafe </span>{
+            ffi::ERR_put_error(
+                ffi::ERR_GET_LIB(<a class="self" href="#210">self</a>.code),
+                ffi::ERR_GET_FUNC(<a class="self" href="#210">self</a>.code),
+                ffi::ERR_GET_REASON(<a class="self" href="#210">self</a>.code),
+                <a class="self" href="#210">self</a>.file.<a href="#373">as_ptr</a>(),
+                <a href="#212">line</a>,
             );
         }
     }
 
-    <span class="doccomment">/// Returns the raw OpenSSL error code for this error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">code</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/not_x32/type.c_ulong.html">c_ulong</a> {
-        <a class="self" href="../../src/openssl/error.rs.html#200">self</a>.<span class="ident">code</span>
+    <span class="doccomment">/// Returns the raw OpenSSL error code for this error.
+    </span><span class="kw">pub fn </span>code(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="#31">ErrType</a> {
+        <a class="self" href="#227">self</a>.code
     }
 
-    <span class="doccomment">/// Returns the name of the library reporting the error, if available.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">library</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">cstr</span> <span class="op">=</span> <span class="ident">ffi::ERR_lib_error_string</span>(<a class="self" href="../../src/openssl/error.rs.html#205">self</a>.<span class="ident">code</span>);
-            <span class="kw">if</span> <a class="ident" href="../../src/openssl/error.rs.html#207">cstr</a>.<span class="ident">is_null</span>() {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="doccomment">/// Returns the name of the library reporting the error, if available.
+    </span><span class="kw">pub fn </span>library(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt; {
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>cstr = ffi::ERR_lib_error_string(<a class="self" href="#232">self</a>.code);
+            <span class="kw">if </span>cstr.is_null() {
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<a class="ident" href="../../src/openssl/error.rs.html#207">cstr</a> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>).<span class="ident">to_bytes</span>();
-            <span class="prelude-val">Some</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a class="ident" href="../../src/openssl/error.rs.html#211">bytes</a>).<span class="ident">unwrap</span>())
+            <span class="kw">let </span>bytes = CStr::from_ptr(<a href="#234">cstr</a> <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>).to_bytes();
+            <span class="prelude-val">Some</span>(<a href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a href="#238">bytes</a>).unwrap())
         }
     }
 
-    <span class="doccomment">/// Returns the name of the function reporting the error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">function</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> {
-            <span class="kw">if</span> <a class="self" href="../../src/openssl/error.rs.html#217">self</a>.<span class="ident">func</span>.<span class="ident">is_null</span>() {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="doccomment">/// Returns the name of the function reporting the error.
+    </span><span class="kw">pub fn </span>function(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;RetStr&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+        <a class="self" href="#244">self</a>.func.as_ref().map(|s| <a href="#245">s</a>.<a href="#377">as_str</a>())
+    }
+
+    <span class="doccomment">/// Returns the reason for the error.
+    </span><span class="kw">pub fn </span>reason(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt; {
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span>cstr = ffi::ERR_reason_error_string(<a class="self" href="#249">self</a>.code);
+            <span class="kw">if </span>cstr.is_null() {
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<a class="self" href="../../src/openssl/error.rs.html#217">self</a>.<span class="ident">func</span>).<span class="ident">to_bytes</span>();
-            <span class="prelude-val">Some</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a class="ident" href="../../src/openssl/error.rs.html#222">bytes</a>).<span class="ident">unwrap</span>())
+            <span class="kw">let </span>bytes = CStr::from_ptr(<a href="#251">cstr</a> <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>).to_bytes();
+            <span class="prelude-val">Some</span>(<a href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a href="#255">bytes</a>).unwrap())
         }
     }
 
-    <span class="doccomment">/// Returns the reason for the error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reason</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a><span class="op">&gt;</span> {
-        <span class="kw">unsafe</span> {
-            <span class="kw">let</span> <span class="ident">cstr</span> <span class="op">=</span> <span class="ident">ffi::ERR_reason_error_string</span>(<a class="self" href="../../src/openssl/error.rs.html#228">self</a>.<span class="ident">code</span>);
-            <span class="kw">if</span> <a class="ident" href="../../src/openssl/error.rs.html#230">cstr</a>.<span class="ident">is_null</span>() {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
-            }
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<a class="ident" href="../../src/openssl/error.rs.html#230">cstr</a> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>).<span class="ident">to_bytes</span>();
-            <span class="prelude-val">Some</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a class="ident" href="../../src/openssl/error.rs.html#234">bytes</a>).<span class="ident">unwrap</span>())
-        }
+    <span class="doccomment">/// Returns the name of the source file which encountered the error.
+    </span><span class="kw">pub fn </span>file(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; RetStr&lt;<span class="lifetime">&#39;_</span>&gt; {
+        <a class="self" href="#261">self</a>.file.<a href="#377">as_str</a>()
     }
 
-    <span class="doccomment">/// Returns the name of the source file which encountered the error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
-        <span class="kw">unsafe</span> {
-            <span class="macro">assert!</span>(<span class="op">!</span><a class="self" href="../../src/openssl/error.rs.html#240">self</a>.<span class="ident">file</span>.<span class="ident">is_null</span>());
-            <span class="kw">let</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">CStr::from_ptr</span>(<a class="self" href="../../src/openssl/error.rs.html#240">self</a>.<span class="ident">file</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">_</span>).<span class="ident">to_bytes</span>();
-            <a class="ident" href="https://doc.rust-lang.org/nightly/core/str/converts/fn.from_utf8.html">str::from_utf8</a>(<a class="ident" href="../../src/openssl/error.rs.html#243">bytes</a>).<span class="ident">unwrap</span>()
-        }
+    <span class="doccomment">/// Returns the line in the source file which encountered the error.
+    </span><span class="kw">pub fn </span>line(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a> {
+        <a class="self" href="#266">self</a>.line <span class="kw">as </span><a href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>
     }
 
-    <span class="doccomment">/// Returns the line in the source file which encountered the error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a> {
-        <a class="self" href="../../src/openssl/error.rs.html#249">self</a>.<span class="ident">line</span> <span class="kw">as</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>
-    }
-
-    <span class="doccomment">/// Returns additional data describing the error.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::option_as_ref_deref</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a><span class="op">&gt;</span> {
-        <a class="self" href="../../src/openssl/error.rs.html#255">self</a>.<span class="ident">data</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><a class="ident" href="../../src/openssl/error.rs.html#256">s</a>)
+    <span class="doccomment">/// Returns additional data describing the error.
+    </span><span class="attribute">#[allow(clippy::option_as_ref_deref)]
+    </span><span class="kw">pub fn </span>data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>&gt; {
+        <a class="self" href="#272">self</a>.data.as_ref().map(|s| <span class="kw-2">&amp;**</span><a href="#273">s</a>)
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> <a class="ident" href="../../src/openssl/error.rs.html#261">fmt</a>.<span class="ident">debug_struct</span>(<span class="string">&quot;Error&quot;</span>);
-        <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;code&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#200">code</a>());
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">library</span>) <span class="op">=</span> <a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#205">library</a>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;library&quot;</span>, <span class="kw-2">&amp;</span><a class="ident" href="../../src/openssl/error.rs.html#264">library</a>);
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html">fmt::Debug</a> <span class="kw">for </span><a href="#100">Error</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <span class="kw">let </span><span class="kw-2">mut </span>builder = <a href="#278">fmt</a>.debug_struct(<span class="string">&quot;Error&quot;</span>);
+        <a href="#279">builder</a>.field(<span class="string">&quot;code&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="#278">self</a>.<a href="#227">code</a>());
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(library) = <a class="self" href="#278">self</a>.<a href="#232">library</a>() {
+            <a href="#279">builder</a>.field(<span class="string">&quot;library&quot;</span>, <span class="kw-2">&amp;</span><a href="#281">library</a>);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">function</span>) <span class="op">=</span> <a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#217">function</a>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;function&quot;</span>, <span class="kw-2">&amp;</span><a class="ident" href="../../src/openssl/error.rs.html#267">function</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(function) = <a class="self" href="#278">self</a>.<a href="#244">function</a>() {
+            <a href="#279">builder</a>.field(<span class="string">&quot;function&quot;</span>, <span class="kw-2">&amp;</span><a href="#284">function</a>);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reason</span>) <span class="op">=</span> <a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#228">reason</a>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;reason&quot;</span>, <span class="kw-2">&amp;</span><a class="ident" href="../../src/openssl/error.rs.html#270">reason</a>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(reason) = <a class="self" href="#278">self</a>.<a href="#249">reason</a>() {
+            <a href="#279">builder</a>.field(<span class="string">&quot;reason&quot;</span>, <span class="kw-2">&amp;</span><a href="#287">reason</a>);
         }
-        <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;file&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#240">file</a>());
-        <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;line&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#249">line</a>());
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">data</span>) <span class="op">=</span> <a class="self" href="../../src/openssl/error.rs.html#261">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#255">data</a>() {
-            <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">field</span>(<span class="string">&quot;data&quot;</span>, <span class="kw-2">&amp;</span><a class="ident" href="../../src/openssl/error.rs.html#275">data</a>);
+        <a href="#279">builder</a>.field(<span class="string">&quot;file&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="#278">self</a>.<a href="#261">file</a>());
+        <a href="#279">builder</a>.field(<span class="string">&quot;line&quot;</span>, <span class="kw-2">&amp;</span><a class="self" href="#278">self</a>.<a href="#266">line</a>());
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(data) = <a class="self" href="#278">self</a>.<a href="#272">data</a>() {
+            <a href="#279">builder</a>.field(<span class="string">&quot;data&quot;</span>, <span class="kw-2">&amp;</span><a href="#292">data</a>);
         }
-        <a class="ident" href="../../src/openssl/error.rs.html#262">builder</a>.<span class="ident">finish</span>()
+        <a href="#279">builder</a>.finish()
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
-        <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;error:{:08X}&quot;</span>, <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#200">code</a>())<span class="question-mark">?</span>;
-        <span class="kw">match</span> <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#205">library</a>() {
-            <span class="prelude-val">Some</span>(<span class="ident">l</span>) =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:{}&quot;</span>, <a class="ident" href="../../src/openssl/error.rs.html#286">l</a>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:lib({})&quot;</span>, <span class="ident">ffi::ERR_GET_LIB</span>(<a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#200">code</a>()))<span class="question-mark">?</span>,
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">fmt::Display</a> <span class="kw">for </span><a href="#100">Error</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">fmt::Result</a> {
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;error:{:08X}&quot;</span>, <span class="self">self</span>.code())<span class="question-mark">?</span>;
+        <span class="kw">match </span><a class="self" href="#300">self</a>.<a href="#232">library</a>() {
+            <span class="prelude-val">Some</span>(l) =&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:{}&quot;</span>, l)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:lib({})&quot;</span>, ffi::ERR_GET_LIB(<span class="self">self</span>.code()))<span class="question-mark">?</span>,
         }
-        <span class="kw">match</span> <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#217">function</a>() {
-            <span class="prelude-val">Some</span>(<span class="ident">f</span>) =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:{}&quot;</span>, <a class="ident" href="../../src/openssl/error.rs.html#290">f</a>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:func({})&quot;</span>, <span class="ident">ffi::ERR_GET_FUNC</span>(<a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#200">code</a>()))<span class="question-mark">?</span>,
+        <span class="kw">match </span><a class="self" href="#300">self</a>.<a href="#244">function</a>() {
+            <span class="prelude-val">Some</span>(f) =&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:{}&quot;</span>, f)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:func({})&quot;</span>, ffi::ERR_GET_FUNC(<span class="self">self</span>.code()))<span class="question-mark">?</span>,
         }
-        <span class="kw">match</span> <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#228">reason</a>() {
-            <span class="prelude-val">Some</span>(<span class="ident">r</span>) =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:{}&quot;</span>, <a class="ident" href="../../src/openssl/error.rs.html#294">r</a>)<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="macro">write!</span>(<a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>, <span class="string">&quot;:reason({})&quot;</span>, <span class="ident">ffi::ERR_GET_REASON</span>(<a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#200">code</a>()))<span class="question-mark">?</span>,
+        <span class="kw">match </span><a class="self" href="#300">self</a>.<a href="#249">reason</a>() {
+            <span class="prelude-val">Some</span>(r) =&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:{}&quot;</span>, r)<span class="question-mark">?</span>,
+            <span class="prelude-val">None </span>=&gt; <span class="macro">write!</span>(fmt, <span class="string">&quot;:reason({})&quot;</span>, ffi::ERR_GET_REASON(<span class="self">self</span>.code()))<span class="question-mark">?</span>,
         }
-        <span class="macro">write!</span>(
-            <a class="ident" href="../../src/openssl/error.rs.html#283">fmt</a>,
+        <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(
+            <a href="#300">fmt</a>,
             <span class="string">&quot;:{}:{}:{}&quot;</span>,
-            <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#240">file</a>(),
-            <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#249">line</a>(),
-            <a class="self" href="../../src/openssl/error.rs.html#283">self</a>.<a class="ident" href="../../src/openssl/error.rs.html#255">data</a>().<span class="ident">unwrap_or</span>(<span class="string">&quot;&quot;</span>)
+            <span class="self">self</span>.file(),
+            <span class="self">self</span>.line(),
+            <span class="self">self</span>.data().unwrap_or(<span class="string">&quot;&quot;</span>)
         )
     }
 }
 
-<span class="kw">impl</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/error/trait.Error.html">error::Error</a> <span class="kw">for</span> <a class="ident" href="../../src/openssl/error.rs.html#93-99">Error</a> {}
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/error/trait.Error.html">error::Error</a> <span class="kw">for </span><a href="#100">Error</a> {}
 
-<span class="macro">cfg_if!</span> {
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl300</span>)]</span> {
-        <span class="kw">use</span> <span class="ident">ffi::ERR_get_error_all</span>;
-    } <span class="kw">else</span> {
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">bad_style</span>)]</span>
-        <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">ERR_get_error_all</span>(
-            <span class="ident">file</span>: <span class="kw-2">*mut</span> <span class="kw-2">*const</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
-            <span class="ident">line</span>: <span class="kw-2">*mut</span> <a class="ident" href="../../libc/unix/type.c_int.html">c_int</a>,
-            <span class="ident">func</span>: <span class="kw-2">*mut</span> <span class="kw-2">*const</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
-            <span class="ident">data</span>: <span class="kw-2">*mut</span> <span class="kw-2">*const</span> <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
-            <span class="ident">flags</span>: <span class="kw-2">*mut</span> <a class="ident" href="../../libc/unix/type.c_int.html">c_int</a>,
-        ) -&gt; <a class="ident" href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/not_x32/type.c_ulong.html">c_ulong</a> {
-            <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">ffi::ERR_get_error_line_data</span>(<a class="ident" href="../../src/openssl/error.rs.html#315">file</a>, <a class="ident" href="../../src/openssl/error.rs.html#316">line</a>, <a class="ident" href="../../src/openssl/error.rs.html#318">data</a>, <a class="ident" href="../../src/openssl/error.rs.html#319">flags</a>);
-            <span class="kw-2">*</span><a class="ident" href="../../src/openssl/error.rs.html#317">func</a> <span class="op">=</span> <span class="ident">ffi::ERR_func_error_string</span>(<a class="ident" href="../../src/openssl/error.rs.html#321">code</a>);
-            <a class="ident" href="../../src/openssl/error.rs.html#321">code</a>
+<span class="macro">cfg_if! </span>{
+    <span class="kw">if </span><span class="attribute">#[cfg(ossl300)] </span>{
+        <span class="kw">use </span>std::ffi::{CString};
+        <span class="kw">use </span>ffi::ERR_get_error_all;
+
+        <span class="kw">type </span>RetStr&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
+
+        <span class="attribute">#[derive(Clone)]
+        </span><span class="kw">struct </span>ShimStr(CString);
+
+        <span class="kw">impl </span>ShimStr {
+            <span class="kw">unsafe fn </span>new(s: <span class="kw-2">*const </span>c_char) -&gt; <span class="self">Self </span>{
+                ShimStr(CStr::from_ptr(s).to_owned())
+            }
+
+            <span class="kw">fn </span>as_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">*const </span>c_char {
+                <span class="self">self</span>.<span class="number">0</span>.as_ptr()
+            }
+
+            <span class="kw">fn </span>as_str(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+                <span class="self">self</span>.<span class="number">0</span>.to_str().unwrap()
+            }
+        }
+    } <span class="kw">else </span>{
+        <span class="attribute">#[allow(bad_style)]
+        </span><span class="kw">unsafe extern </span><span class="string">&quot;C&quot; </span><span class="kw">fn </span>ERR_get_error_all(
+            file: <span class="kw-2">*mut *const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
+            line: <span class="kw-2">*mut </span><a href="../../libc/unix/type.c_int.html">c_int</a>,
+            func: <span class="kw-2">*mut *const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
+            data: <span class="kw-2">*mut *const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>,
+            flags: <span class="kw-2">*mut </span><a href="../../libc/unix/type.c_int.html">c_int</a>,
+        ) -&gt; <a href="#31">ErrType</a> {
+            <span class="kw">let </span>code = ffi::ERR_get_error_line_data(<a href="#352">file</a>, <a href="#353">line</a>, <a href="#355">data</a>, <a href="#356">flags</a>);
+            <span class="kw-2">*</span><a href="#354">func</a> = ffi::ERR_func_error_string(<a href="#358">code</a>);
+            <a href="#358">code</a>
+        }
+
+        <span class="kw">type </span>RetStr&lt;<span class="lifetime">&#39;a</span>&gt; = <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>;
+
+        <span class="attribute">#[derive(Clone)]
+        </span><span class="kw">struct </span>ShimStr(<span class="kw-2">*const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>);
+
+        <span class="kw">impl </span><a href="#366">ShimStr</a> {
+            <span class="kw">unsafe fn </span>new(s: <span class="kw-2">*const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a>) -&gt; <span class="self">Self </span>{
+                <a href="#366">ShimStr</a>(<a href="#369">s</a>)
+            }
+
+            <span class="kw">fn </span>as_ptr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">*const </span><a href="../../libc/unix/linux_like/linux/gnu/b64/x86_64/type.c_char.html">c_char</a> {
+                <a class="self" href="#373">self</a>.<span class="number">0
+            </span>}
+
+            <span class="kw">fn </span>as_str(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a> {
+                <span class="kw">unsafe </span>{
+                    CStr::from_ptr(<a class="self" href="#377">self</a>.<span class="number">0</span>).to_str().unwrap()
+                }
+            }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="openssl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="openssl" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

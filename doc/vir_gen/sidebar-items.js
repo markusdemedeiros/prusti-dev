@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["define_vir",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["generate_vir","Read the definitions from `defs_dir` and write the expanded code into `out_dir`."]]};

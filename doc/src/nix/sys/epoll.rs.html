@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/nix-0.24.1/src/sys/epoll.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>epoll.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../nix/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../nix/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../nix/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/nix-0.25.0/src/sys/epoll.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>epoll.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../nix/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -113,114 +106,113 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <a class="ident" href="../../../src/nix/lib.rs.html#169"><span class="kw">crate</span>::Result</a>;
-<span class="kw">use</span> <a class="ident" href="../../../src/nix/errno.rs.html#776-911"><span class="kw">crate</span>::errno::Errno</a>;
-<span class="kw">use</span> <span class="ident">libc</span>::{<a class="self" href="../../../libc/index.html">self</a>, <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>};
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">std::os::unix::io::RawFd</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/ptr/index.html">std::ptr</a>;
-<span class="kw">use</span> <a class="ident" href="https://doc.rust-lang.org/nightly/core/mem/index.html">std::mem</a>;
+</pre><pre class="rust"><code><span class="kw">use </span><a href="../lib.rs.html#167"><span class="kw">crate</span>::Result</a>;
+<span class="kw">use </span><a href="../errno.rs.html#1163"><span class="kw">crate</span>::errno::Errno</a>;
+<span class="kw">use </span>libc::{<a class="self" href="../../../libc/index.html">self</a>, <a href="../../../libc/unix/type.c_int.html">c_int</a>};
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">std::os::unix::io::RawFd</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/ptr/index.html">std::ptr</a>;
+<span class="kw">use </span><a href="https://doc.rust-lang.org/nightly/core/mem/index.html">std::mem</a>;
 
-<span class="macro">libc_bitflags!</span>(
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EpollFlags</span>: <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a> {
-        <span class="ident">EPOLLIN</span>;
-        <span class="ident">EPOLLPRI</span>;
-        <span class="ident">EPOLLOUT</span>;
-        <span class="ident">EPOLLRDNORM</span>;
-        <span class="ident">EPOLLRDBAND</span>;
-        <span class="ident">EPOLLWRNORM</span>;
-        <span class="ident">EPOLLWRBAND</span>;
-        <span class="ident">EPOLLMSG</span>;
-        <span class="ident">EPOLLERR</span>;
-        <span class="ident">EPOLLHUP</span>;
-        <span class="ident">EPOLLRDHUP</span>;
-        <span class="ident">EPOLLEXCLUSIVE</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>))]</span>
-        <span class="ident">EPOLLWAKEUP</span>;
-        <span class="ident">EPOLLONESHOT</span>;
-        <span class="ident">EPOLLET</span>;
+<a class="macro" href="../macros.rs.html#55-75">libc_bitflags!</a>(
+    <span class="kw">pub struct </span>EpollFlags: <a href="../../../libc/unix/type.c_int.html">c_int</a> {
+        EPOLLIN;
+        EPOLLPRI;
+        EPOLLOUT;
+        EPOLLRDNORM;
+        EPOLLRDBAND;
+        EPOLLWRNORM;
+        EPOLLWRBAND;
+        EPOLLMSG;
+        EPOLLERR;
+        EPOLLHUP;
+        EPOLLRDHUP;
+        EPOLLEXCLUSIVE;
+        <span class="attribute">#[cfg(not(target_arch = <span class="string">&quot;mips&quot;</span>))]
+        </span>EPOLLWAKEUP;
+        EPOLLONESHOT;
+        EPOLLET;
     }
 );
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">i32</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EpollOp</span> {
-    <span class="ident">EpollCtlAdd</span> <span class="op">=</span> <span class="ident">libc::EPOLL_CTL_ADD</span>,
-    <span class="ident">EpollCtlDel</span> <span class="op">=</span> <span class="ident">libc::EPOLL_CTL_DEL</span>,
-    <span class="ident">EpollCtlMod</span> <span class="op">=</span> <span class="ident">libc::EPOLL_CTL_MOD</span>,
+<span class="attribute">#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[repr(i32)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>EpollOp {
+    EpollCtlAdd = libc::EPOLL_CTL_ADD,
+    EpollCtlDel = libc::EPOLL_CTL_DEL,
+    EpollCtlMod = libc::EPOLL_CTL_MOD,
 }
 
-<span class="macro">libc_bitflags!</span>{
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EpollCreateFlags</span>: <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a> {
-        <span class="ident">EPOLL_CLOEXEC</span>;
+<a class="macro" href="../macros.rs.html#55-75">libc_bitflags!</a>{
+    <span class="kw">pub struct </span>EpollCreateFlags: <a href="../../../libc/unix/type.c_int.html">c_int</a> {
+        EPOLL_CLOEXEC;
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EpollEvent</span> {
-    <span class="ident">event</span>: <a class="ident" href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a>,
+<span class="attribute">#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[repr(transparent)]
+</span><span class="kw">pub struct </span>EpollEvent {
+    event: <a href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a>,
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">events</span>: <a class="ident" href="../../../src/nix/sys/epoll.rs.html#8-27">EpollFlags</a>, <span class="ident">data</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>) -&gt; <span class="self">Self</span> {
-        <a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a> { <span class="ident">event</span>: <a class="ident" href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a> { <span class="ident">events</span>: <a class="ident" href="../../../src/nix/sys/epoll.rs.html#51">events</a>.<a class="ident" href="../../../src/nix/sys/epoll.rs.html#8-27">bits</a>() <span class="kw">as</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>, <span class="ident">u64</span>: <a class="ident" href="../../../src/nix/sys/epoll.rs.html#51">data</a> } }
+<span class="kw">impl </span><a href="#46">EpollEvent</a> {
+    <span class="kw">pub fn </span>new(events: <a href="#8-27">EpollFlags</a>, data: <a href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a>) -&gt; <span class="self">Self </span>{
+        <a href="#46">EpollEvent</a> { event: <a href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a> { events: <a href="#51">events</a>.<a href="#8-27">bits</a>() <span class="kw">as </span><a href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>, u64: <a href="#51">data</a> } }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">empty</span>() -&gt; <span class="self">Self</span> {
-        <span class="kw">unsafe</span> { <span class="ident">mem::zeroed</span>::<span class="op">&lt;</span><a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a><span class="op">&gt;</span>() }
+    <span class="kw">pub fn </span>empty() -&gt; <span class="self">Self </span>{
+        <span class="kw">unsafe </span>{ mem::zeroed::&lt;<a href="#46">EpollEvent</a>&gt;() }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">events</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="../../../src/nix/sys/epoll.rs.html#8-27">EpollFlags</a> {
-        <span class="ident">EpollFlags::from_bits</span>(<a class="self" href="../../../src/nix/sys/epoll.rs.html#59">self</a>.<span class="ident">event</span>.<span class="ident">events</span> <span class="kw">as</span> <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>).<span class="ident">unwrap</span>()
+    <span class="kw">pub fn </span>events(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="#8-27">EpollFlags</a> {
+        EpollFlags::from_bits(<a class="self" href="#59">self</a>.event.events <span class="kw">as </span><a href="../../../libc/unix/type.c_int.html">c_int</a>).unwrap()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a> {
-        <a class="self" href="../../../src/nix/sys/epoll.rs.html#63">self</a>.<span class="ident">event</span>.<span class="ident">u64</span>
+    <span class="kw">pub fn </span>data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <a href="https://doc.rust-lang.org/nightly/std/primitive.u64.html">u64</a> {
+        <a class="self" href="#63">self</a>.event.u64
     }
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">epoll_create</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::epoll_create</span>(<span class="number">1024</span>) };
+<span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>epoll_create() -&gt; <span class="prelude-ty">Result</span>&lt;<a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>&gt; {
+    <span class="kw">let </span>res = <span class="kw">unsafe </span>{ libc::epoll_create(<span class="number">1024</span>) };
 
-    <span class="ident">Errno::result</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#70">res</a>)
+    Errno::result(<a href="#70">res</a>)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">epoll_create1</span>(<span class="ident">flags</span>: <a class="ident" href="../../../src/nix/sys/epoll.rs.html#38-42">EpollCreateFlags</a>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::epoll_create1</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#76">flags</a>.<a class="ident" href="../../../src/nix/sys/epoll.rs.html#38-42">bits</a>()) };
+<span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>epoll_create1(flags: <a href="#38-42">EpollCreateFlags</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>&gt; {
+    <span class="kw">let </span>res = <span class="kw">unsafe </span>{ libc::epoll_create1(<a href="#76">flags</a>.<a href="#38-42">bits</a>()) };
 
-    <span class="ident">Errno::result</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#77">res</a>)
+    Errno::result(<a href="#77">res</a>)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">epoll_ctl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">epfd</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, <span class="ident">op</span>: <a class="ident" href="../../../src/nix/sys/epoll.rs.html#32-36">EpollOp</a>, <span class="ident">fd</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, <span class="ident">event</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a><span class="op">&gt;</span><span class="op">&gt;</span>
+<span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>epoll_ctl&lt;<span class="lifetime">&#39;a</span>, T&gt;(epfd: <a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, op: <a href="#32">EpollOp</a>, fd: <a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, event: T) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;
+    <span class="kw">where </span>T: Into&lt;<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><a href="#46">EpollEvent</a>&gt;&gt;
 {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a><span class="op">&gt;</span> <span class="op">=</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">event</a>.<a class="ident" href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>();
-    <span class="kw">if</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#86">event</a>.<span class="ident">is_none</span>() <span class="op">&amp;&amp;</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">op</a> <span class="op">!</span><span class="op">=</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#34">EpollOp::EpollCtlDel</a> {
-        <span class="prelude-val">Err</span>(<a class="ident" href="../../../src/nix/errno.rs.html#799">Errno::EINVAL</a>)
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">event</span>) <span class="op">=</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#86">event</a> {
-                <span class="ident">libc::epoll_ctl</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">epfd</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">op</a> <span class="kw">as</span> <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">fd</a>, <span class="kw-2">&amp;mut</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#91">event</a>.<span class="ident">event</span>)
-            } <span class="kw">else</span> {
-                <span class="ident">libc::epoll_ctl</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">epfd</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">op</a> <span class="kw">as</span> <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#83">fd</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/core/ptr/fn.null_mut.html">ptr::null_mut</a>())
+    <span class="kw">let </span><span class="kw-2">mut </span>event: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span><a href="#46">EpollEvent</a>&gt; = <a href="#83">event</a>.<a href="https://doc.rust-lang.org/nightly/core/convert/trait.Into.html">into</a>();
+    <span class="kw">if </span>event.is_none() &amp;&amp; op != EpollOp::EpollCtlDel {
+        <span class="prelude-val">Err</span>(<a href="../errno.rs.html#1186">Errno::EINVAL</a>)
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>res = <span class="kw">unsafe </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>event) = <a href="#86">event</a> {
+                libc::epoll_ctl(<a href="#83">epfd</a>, <a href="#83">op</a> <span class="kw">as </span><a href="../../../libc/unix/type.c_int.html">c_int</a>, <a href="#83">fd</a>, <span class="kw-2">&amp;mut </span><a href="#91">event</a>.event)
+            } <span class="kw">else </span>{
+                libc::epoll_ctl(<a href="#83">epfd</a>, <a href="#83">op</a> <span class="kw">as </span><a href="../../../libc/unix/type.c_int.html">c_int</a>, <a href="#83">fd</a>, <a href="https://doc.rust-lang.org/nightly/core/ptr/fn.null_mut.html">ptr::null_mut</a>())
             }
         };
-        <span class="ident">Errno::result</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#90">res</a>).<span class="ident">map</span>(<a class="ident" href="https://doc.rust-lang.org/nightly/core/mem/fn.drop.html">drop</a>)
+        Errno::result(<a href="#90">res</a>).map(<a href="https://doc.rust-lang.org/nightly/core/mem/fn.drop.html">drop</a>)
     }
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">epoll_wait</span>(<span class="ident">epfd</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, <span class="ident">events</span>: <span class="kw-2">&amp;mut</span> [<a class="ident" href="../../../src/nix/sys/epoll.rs.html#46-48">EpollEvent</a>], <span class="ident">timeout_ms</span>: <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.isize.html">isize</a>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> {
-        <span class="ident">libc::epoll_wait</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#102">epfd</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#102">events</a>.<span class="ident">as_mut_ptr</span>() <span class="kw">as</span> <span class="kw-2">*mut</span> <a class="ident" href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#102">events</a>.<span class="ident">len</span>() <span class="kw">as</span> <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>, <a class="ident" href="../../../src/nix/sys/epoll.rs.html#102">timeout_ms</a> <span class="kw">as</span> <a class="ident" href="../../../libc/unix/type.c_int.html">c_int</a>)
+<span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>epoll_wait(epfd: <a href="https://doc.rust-lang.org/nightly/std/os/fd/raw/type.RawFd.html">RawFd</a>, events: <span class="kw-2">&amp;mut </span>[<a href="#46">EpollEvent</a>], timeout_ms: <a href="https://doc.rust-lang.org/nightly/std/primitive.isize.html">isize</a>) -&gt; <span class="prelude-ty">Result</span>&lt;<a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>&gt; {
+    <span class="kw">let </span>res = <span class="kw">unsafe </span>{
+        libc::epoll_wait(<a href="#102">epfd</a>, <a href="#102">events</a>.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><a href="../../../libc/unix/linux_like/struct.epoll_event.html">libc::epoll_event</a>, <a href="#102">events</a>.len() <span class="kw">as </span><a href="../../../libc/unix/type.c_int.html">c_int</a>, <a href="#102">timeout_ms</a> <span class="kw">as </span><a href="../../../libc/unix/type.c_int.html">c_int</a>)
     };
 
-    <span class="ident">Errno::result</span>(<a class="ident" href="../../../src/nix/sys/epoll.rs.html#103">res</a>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <a class="ident" href="../../../src/nix/sys/epoll.rs.html#107">r</a> <span class="kw">as</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)
+    Errno::result(<a href="#103">res</a>).map(|r| <a href="#107">r</a> <span class="kw">as </span><a href="https://doc.rust-lang.org/nightly/std/primitive.usize.html">usize</a>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="nix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="nix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

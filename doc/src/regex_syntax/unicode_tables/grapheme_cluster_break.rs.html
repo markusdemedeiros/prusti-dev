@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.25/src/unicode_tables/grapheme_cluster_break.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>grapheme_cluster_break.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../regex_syntax/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../regex_syntax/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../regex_syntax/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/regex-syntax-0.6.27/src/unicode_tables/grapheme_cluster_break.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>grapheme_cluster_break.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../normalize.css"><link rel="stylesheet" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../ayu.css" disabled><link rel="stylesheet" href="../../../dark.css" disabled><link rel="stylesheet" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../regex_syntax/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -1394,34 +1387,45 @@
 <span id="1387">1387</span>
 <span id="1388">1388</span>
 <span id="1389">1389</span>
-</pre><pre class="rust"><code><span class="comment">// DO NOT EDIT THIS FILE. IT WAS AUTOMATICALLY GENERATED BY:</span>
-<span class="comment">//</span>
-<span class="comment">//   ucd-generate grapheme-cluster-break ucd-13.0.0 --chars</span>
-<span class="comment">//</span>
-<span class="comment">// Unicode version: 13.0.0.</span>
-<span class="comment">//</span>
-<span class="comment">// ucd-generate 0.2.8 is available on crates.io.</span>
+<span id="1390">1390</span>
+<span id="1391">1391</span>
+<span id="1392">1392</span>
+<span id="1393">1393</span>
+<span id="1394">1394</span>
+<span id="1395">1395</span>
+<span id="1396">1396</span>
+<span id="1397">1397</span>
+<span id="1398">1398</span>
+<span id="1399">1399</span>
+<span id="1400">1400</span>
+</pre><pre class="rust"><code><span class="comment">// DO NOT EDIT THIS FILE. IT WAS AUTOMATICALLY GENERATED BY:
+//
+//   ucd-generate grapheme-cluster-break /tmp/ucd --chars
+//
+// Unicode version: 14.0.0.
+//
+// ucd-generate 0.2.11 is available on crates.io.
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BY_NAME</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)])] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-    (<span class="string">&quot;CR&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#25">CR</a>),
-    (<span class="string">&quot;Control&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#27-47">CONTROL</a>),
-    (<span class="string">&quot;Extend&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#49-395">EXTEND</a>),
-    (<span class="string">&quot;L&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#397">L</a>),
-    (<span class="string">&quot;LF&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#399">LF</a>),
-    (<span class="string">&quot;LV&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#401-801">LV</a>),
-    (<span class="string">&quot;LVT&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#803-1203">LVT</a>),
-    (<span class="string">&quot;Prepend&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1205-1219">PREPEND</a>),
-    (<span class="string">&quot;Regional_Indicator&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1221">REGIONAL_INDICATOR</a>),
-    (<span class="string">&quot;SpacingMark&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1223-1383">SPACINGMARK</a>),
-    (<span class="string">&quot;T&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1385">T</a>),
-    (<span class="string">&quot;V&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1387">V</a>),
-    (<span class="string">&quot;ZWJ&quot;</span>, <a class="ident" href="../../../src/regex_syntax/unicode_tables/grapheme_cluster_break.rs.html#1389">ZWJ</a>),
+</span><span class="kw">pub const </span>BY_NAME: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span><a href="https://doc.rust-lang.org/nightly/std/primitive.str.html">str</a>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)])] = <span class="kw-2">&amp;</span>[
+    (<span class="string">&quot;CR&quot;</span>, <a href="#25">CR</a>),
+    (<span class="string">&quot;Control&quot;</span>, <a href="#27">CONTROL</a>),
+    (<span class="string">&quot;Extend&quot;</span>, <a href="#49">EXTEND</a>),
+    (<span class="string">&quot;L&quot;</span>, <a href="#406">L</a>),
+    (<span class="string">&quot;LF&quot;</span>, <a href="#408">LF</a>),
+    (<span class="string">&quot;LV&quot;</span>, <a href="#410">LV</a>),
+    (<span class="string">&quot;LVT&quot;</span>, <a href="#812">LVT</a>),
+    (<span class="string">&quot;Prepend&quot;</span>, <a href="#1214">PREPEND</a>),
+    (<span class="string">&quot;Regional_Indicator&quot;</span>, <a href="#1231">REGIONAL_INDICATOR</a>),
+    (<span class="string">&quot;SpacingMark&quot;</span>, <a href="#1233">SPACINGMARK</a>),
+    (<span class="string">&quot;T&quot;</span>, <a href="#1396">T</a>),
+    (<span class="string">&quot;V&quot;</span>, <a href="#1398">V</a>),
+    (<span class="string">&quot;ZWJ&quot;</span>, <a href="#1400">ZWJ</a>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CR</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;\r&#39;</span>, <span class="string">&#39;\r&#39;</span>)];
+<span class="kw">pub const </span>CR: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;\r&#39;</span>, <span class="string">&#39;\r&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">CONTROL</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
-    (<span class="string">&#39;\u{0}&#39;</span>, <span class="string">&#39;\t&#39;</span>),
+<span class="kw">pub const </span>CONTROL: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
+    (<span class="string">&#39;\0&#39;</span>, <span class="string">&#39;\t&#39;</span>),
     (<span class="string">&#39;\u{b}&#39;</span>, <span class="string">&#39;\u{c}&#39;</span>),
     (<span class="string">&#39;\u{e}&#39;</span>, <span class="string">&#39;\u{1f}&#39;</span>),
     (<span class="string">&#39;\u{7f}&#39;</span>, <span class="string">&#39;\u{9f}&#39;</span>),
@@ -1442,7 +1446,7 @@
     (<span class="string">&#39;\u{e01f0}&#39;</span>, <span class="string">&#39;\u{e0fff}&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">EXTEND</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub const </span>EXTEND: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&#39;\u{300}&#39;</span>, <span class="string">&#39;\u{36f}&#39;</span>),
     (<span class="string">&#39;\u{483}&#39;</span>, <span class="string">&#39;\u{489}&#39;</span>),
     (<span class="string">&#39;\u{591}&#39;</span>, <span class="string">&#39;\u{5bd}&#39;</span>),
@@ -1467,7 +1471,8 @@
     (<span class="string">&#39;\u{825}&#39;</span>, <span class="string">&#39;\u{827}&#39;</span>),
     (<span class="string">&#39;\u{829}&#39;</span>, <span class="string">&#39;\u{82d}&#39;</span>),
     (<span class="string">&#39;\u{859}&#39;</span>, <span class="string">&#39;\u{85b}&#39;</span>),
-    (<span class="string">&#39;\u{8d3}&#39;</span>, <span class="string">&#39;\u{8e1}&#39;</span>),
+    (<span class="string">&#39;\u{898}&#39;</span>, <span class="string">&#39;\u{89f}&#39;</span>),
+    (<span class="string">&#39;\u{8ca}&#39;</span>, <span class="string">&#39;\u{8e1}&#39;</span>),
     (<span class="string">&#39;\u{8e3}&#39;</span>, <span class="string">&#39;\u{902}&#39;</span>),
     (<span class="string">&#39;\u{93a}&#39;</span>, <span class="string">&#39;\u{93a}&#39;</span>),
     (<span class="string">&#39;\u{93c}&#39;</span>, <span class="string">&#39;\u{93c}&#39;</span>),
@@ -1512,6 +1517,7 @@
     (<span class="string">&#39;\u{bd7}&#39;</span>, <span class="string">&#39;\u{bd7}&#39;</span>),
     (<span class="string">&#39;\u{c00}&#39;</span>, <span class="string">&#39;\u{c00}&#39;</span>),
     (<span class="string">&#39;\u{c04}&#39;</span>, <span class="string">&#39;\u{c04}&#39;</span>),
+    (<span class="string">&#39;\u{c3c}&#39;</span>, <span class="string">&#39;\u{c3c}&#39;</span>),
     (<span class="string">&#39;\u{c3e}&#39;</span>, <span class="string">&#39;\u{c40}&#39;</span>),
     (<span class="string">&#39;\u{c46}&#39;</span>, <span class="string">&#39;\u{c48}&#39;</span>),
     (<span class="string">&#39;\u{c4a}&#39;</span>, <span class="string">&#39;\u{c4d}&#39;</span>),
@@ -1567,7 +1573,7 @@
     (<span class="string">&#39;\u{109d}&#39;</span>, <span class="string">&#39;\u{109d}&#39;</span>),
     (<span class="string">&#39;\u{135d}&#39;</span>, <span class="string">&#39;\u{135f}&#39;</span>),
     (<span class="string">&#39;\u{1712}&#39;</span>, <span class="string">&#39;\u{1714}&#39;</span>),
-    (<span class="string">&#39;\u{1732}&#39;</span>, <span class="string">&#39;\u{1734}&#39;</span>),
+    (<span class="string">&#39;\u{1732}&#39;</span>, <span class="string">&#39;\u{1733}&#39;</span>),
     (<span class="string">&#39;\u{1752}&#39;</span>, <span class="string">&#39;\u{1753}&#39;</span>),
     (<span class="string">&#39;\u{1772}&#39;</span>, <span class="string">&#39;\u{1773}&#39;</span>),
     (<span class="string">&#39;\u{17b4}&#39;</span>, <span class="string">&#39;\u{17b5}&#39;</span>),
@@ -1576,6 +1582,7 @@
     (<span class="string">&#39;\u{17c9}&#39;</span>, <span class="string">&#39;\u{17d3}&#39;</span>),
     (<span class="string">&#39;\u{17dd}&#39;</span>, <span class="string">&#39;\u{17dd}&#39;</span>),
     (<span class="string">&#39;\u{180b}&#39;</span>, <span class="string">&#39;\u{180d}&#39;</span>),
+    (<span class="string">&#39;\u{180f}&#39;</span>, <span class="string">&#39;\u{180f}&#39;</span>),
     (<span class="string">&#39;\u{1885}&#39;</span>, <span class="string">&#39;\u{1886}&#39;</span>),
     (<span class="string">&#39;\u{18a9}&#39;</span>, <span class="string">&#39;\u{18a9}&#39;</span>),
     (<span class="string">&#39;\u{1920}&#39;</span>, <span class="string">&#39;\u{1922}&#39;</span>),
@@ -1591,7 +1598,7 @@
     (<span class="string">&#39;\u{1a65}&#39;</span>, <span class="string">&#39;\u{1a6c}&#39;</span>),
     (<span class="string">&#39;\u{1a73}&#39;</span>, <span class="string">&#39;\u{1a7c}&#39;</span>),
     (<span class="string">&#39;\u{1a7f}&#39;</span>, <span class="string">&#39;\u{1a7f}&#39;</span>),
-    (<span class="string">&#39;\u{1ab0}&#39;</span>, <span class="string">&#39;\u{1ac0}&#39;</span>),
+    (<span class="string">&#39;\u{1ab0}&#39;</span>, <span class="string">&#39;\u{1ace}&#39;</span>),
     (<span class="string">&#39;\u{1b00}&#39;</span>, <span class="string">&#39;\u{1b03}&#39;</span>),
     (<span class="string">&#39;\u{1b34}&#39;</span>, <span class="string">&#39;\u{1b3a}&#39;</span>),
     (<span class="string">&#39;\u{1b3c}&#39;</span>, <span class="string">&#39;\u{1b3c}&#39;</span>),
@@ -1613,8 +1620,7 @@
     (<span class="string">&#39;\u{1ced}&#39;</span>, <span class="string">&#39;\u{1ced}&#39;</span>),
     (<span class="string">&#39;\u{1cf4}&#39;</span>, <span class="string">&#39;\u{1cf4}&#39;</span>),
     (<span class="string">&#39;\u{1cf8}&#39;</span>, <span class="string">&#39;\u{1cf9}&#39;</span>),
-    (<span class="string">&#39;\u{1dc0}&#39;</span>, <span class="string">&#39;\u{1df9}&#39;</span>),
-    (<span class="string">&#39;\u{1dfb}&#39;</span>, <span class="string">&#39;\u{1dff}&#39;</span>),
+    (<span class="string">&#39;\u{1dc0}&#39;</span>, <span class="string">&#39;\u{1dff}&#39;</span>),
     (<span class="string">&#39;\u{200c}&#39;</span>, <span class="string">&#39;\u{200c}&#39;</span>),
     (<span class="string">&#39;\u{20d0}&#39;</span>, <span class="string">&#39;\u{20f0}&#39;</span>),
     (<span class="string">&#39;\u{2cef}&#39;</span>, <span class="string">&#39;\u{2cf1}&#39;</span>),
@@ -1673,11 +1679,15 @@
     (<span class="string">&#39;\u{10d24}&#39;</span>, <span class="string">&#39;\u{10d27}&#39;</span>),
     (<span class="string">&#39;\u{10eab}&#39;</span>, <span class="string">&#39;\u{10eac}&#39;</span>),
     (<span class="string">&#39;\u{10f46}&#39;</span>, <span class="string">&#39;\u{10f50}&#39;</span>),
+    (<span class="string">&#39;\u{10f82}&#39;</span>, <span class="string">&#39;\u{10f85}&#39;</span>),
     (<span class="string">&#39;\u{11001}&#39;</span>, <span class="string">&#39;\u{11001}&#39;</span>),
     (<span class="string">&#39;\u{11038}&#39;</span>, <span class="string">&#39;\u{11046}&#39;</span>),
+    (<span class="string">&#39;\u{11070}&#39;</span>, <span class="string">&#39;\u{11070}&#39;</span>),
+    (<span class="string">&#39;\u{11073}&#39;</span>, <span class="string">&#39;\u{11074}&#39;</span>),
     (<span class="string">&#39;\u{1107f}&#39;</span>, <span class="string">&#39;\u{11081}&#39;</span>),
     (<span class="string">&#39;\u{110b3}&#39;</span>, <span class="string">&#39;\u{110b6}&#39;</span>),
     (<span class="string">&#39;\u{110b9}&#39;</span>, <span class="string">&#39;\u{110ba}&#39;</span>),
+    (<span class="string">&#39;\u{110c2}&#39;</span>, <span class="string">&#39;\u{110c2}&#39;</span>),
     (<span class="string">&#39;\u{11100}&#39;</span>, <span class="string">&#39;\u{11102}&#39;</span>),
     (<span class="string">&#39;\u{11127}&#39;</span>, <span class="string">&#39;\u{1112b}&#39;</span>),
     (<span class="string">&#39;\u{1112d}&#39;</span>, <span class="string">&#39;\u{11134}&#39;</span>),
@@ -1763,6 +1773,8 @@
     (<span class="string">&#39;\u{16f8f}&#39;</span>, <span class="string">&#39;\u{16f92}&#39;</span>),
     (<span class="string">&#39;\u{16fe4}&#39;</span>, <span class="string">&#39;\u{16fe4}&#39;</span>),
     (<span class="string">&#39;\u{1bc9d}&#39;</span>, <span class="string">&#39;\u{1bc9e}&#39;</span>),
+    (<span class="string">&#39;\u{1cf00}&#39;</span>, <span class="string">&#39;\u{1cf2d}&#39;</span>),
+    (<span class="string">&#39;\u{1cf30}&#39;</span>, <span class="string">&#39;\u{1cf46}&#39;</span>),
     (<span class="string">&#39;\u{1d165}&#39;</span>, <span class="string">&#39;\u{1d165}&#39;</span>),
     (<span class="string">&#39;\u{1d167}&#39;</span>, <span class="string">&#39;\u{1d169}&#39;</span>),
     (<span class="string">&#39;\u{1d16e}&#39;</span>, <span class="string">&#39;\u{1d172}&#39;</span>),
@@ -1782,6 +1794,7 @@
     (<span class="string">&#39;\u{1e023}&#39;</span>, <span class="string">&#39;\u{1e024}&#39;</span>),
     (<span class="string">&#39;\u{1e026}&#39;</span>, <span class="string">&#39;\u{1e02a}&#39;</span>),
     (<span class="string">&#39;\u{1e130}&#39;</span>, <span class="string">&#39;\u{1e136}&#39;</span>),
+    (<span class="string">&#39;\u{1e2ae}&#39;</span>, <span class="string">&#39;\u{1e2ae}&#39;</span>),
     (<span class="string">&#39;\u{1e2ec}&#39;</span>, <span class="string">&#39;\u{1e2ef}&#39;</span>),
     (<span class="string">&#39;\u{1e8d0}&#39;</span>, <span class="string">&#39;\u{1e8d6}&#39;</span>),
     (<span class="string">&#39;\u{1e944}&#39;</span>, <span class="string">&#39;\u{1e94a}&#39;</span>),
@@ -1790,11 +1803,11 @@
     (<span class="string">&#39;\u{e0100}&#39;</span>, <span class="string">&#39;\u{e01ef}&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">L</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᄀ&#39;</span>, <span class="string">&#39;ᅟ&#39;</span>), (<span class="string">&#39;ꥠ&#39;</span>, <span class="string">&#39;ꥼ&#39;</span>)];
+<span class="kw">pub const </span>L: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᄀ&#39;</span>, <span class="string">&#39;ᅟ&#39;</span>), (<span class="string">&#39;ꥠ&#39;</span>, <span class="string">&#39;ꥼ&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LF</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;\n&#39;</span>, <span class="string">&#39;\n&#39;</span>)];
+<span class="kw">pub const </span>LF: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;\n&#39;</span>, <span class="string">&#39;\n&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LV</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub const </span>LV: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&#39;가&#39;</span>, <span class="string">&#39;가&#39;</span>),
     (<span class="string">&#39;개&#39;</span>, <span class="string">&#39;개&#39;</span>),
     (<span class="string">&#39;갸&#39;</span>, <span class="string">&#39;갸&#39;</span>),
@@ -2196,7 +2209,7 @@
     (<span class="string">&#39;히&#39;</span>, <span class="string">&#39;히&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LVT</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub const </span>LVT: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&#39;각&#39;</span>, <span class="string">&#39;갛&#39;</span>),
     (<span class="string">&#39;객&#39;</span>, <span class="string">&#39;갷&#39;</span>),
     (<span class="string">&#39;갹&#39;</span>, <span class="string">&#39;걓&#39;</span>),
@@ -2598,25 +2611,26 @@
     (<span class="string">&#39;힉&#39;</span>, <span class="string">&#39;힣&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PREPEND</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub const </span>PREPEND: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&#39;\u{600}&#39;</span>, <span class="string">&#39;\u{605}&#39;</span>),
     (<span class="string">&#39;\u{6dd}&#39;</span>, <span class="string">&#39;\u{6dd}&#39;</span>),
     (<span class="string">&#39;\u{70f}&#39;</span>, <span class="string">&#39;\u{70f}&#39;</span>),
+    (<span class="string">&#39;\u{890}&#39;</span>, <span class="string">&#39;\u{891}&#39;</span>),
     (<span class="string">&#39;\u{8e2}&#39;</span>, <span class="string">&#39;\u{8e2}&#39;</span>),
     (<span class="string">&#39;ൎ&#39;</span>, <span class="string">&#39;ൎ&#39;</span>),
     (<span class="string">&#39;\u{110bd}&#39;</span>, <span class="string">&#39;\u{110bd}&#39;</span>),
     (<span class="string">&#39;\u{110cd}&#39;</span>, <span class="string">&#39;\u{110cd}&#39;</span>),
     (<span class="string">&#39;𑇂&#39;</span>, <span class="string">&#39;𑇃&#39;</span>),
-    (<span class="string">&#39;\u{1193f}&#39;</span>, <span class="string">&#39;\u{1193f}&#39;</span>),
-    (<span class="string">&#39;\u{11941}&#39;</span>, <span class="string">&#39;\u{11941}&#39;</span>),
+    (<span class="string">&#39;𑤿&#39;</span>, <span class="string">&#39;𑤿&#39;</span>),
+    (<span class="string">&#39;𑥁&#39;</span>, <span class="string">&#39;𑥁&#39;</span>),
     (<span class="string">&#39;𑨺&#39;</span>, <span class="string">&#39;𑨺&#39;</span>),
     (<span class="string">&#39;𑪄&#39;</span>, <span class="string">&#39;𑪉&#39;</span>),
     (<span class="string">&#39;𑵆&#39;</span>, <span class="string">&#39;𑵆&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">REGIONAL_INDICATOR</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;🇦&#39;</span>, <span class="string">&#39;🇿&#39;</span>)];
+<span class="kw">pub const </span>REGIONAL_INDICATOR: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;🇦&#39;</span>, <span class="string">&#39;🇿&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SPACINGMARK</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[
+<span class="kw">pub const </span>SPACINGMARK: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&#39;ः&#39;</span>, <span class="string">&#39;ः&#39;</span>),
     (<span class="string">&#39;ऻ&#39;</span>, <span class="string">&#39;ऻ&#39;</span>),
     (<span class="string">&#39;ा&#39;</span>, <span class="string">&#39;ी&#39;</span>),
@@ -2664,6 +2678,8 @@
     (<span class="string">&#39;ျ&#39;</span>, <span class="string">&#39;ြ&#39;</span>),
     (<span class="string">&#39;ၖ&#39;</span>, <span class="string">&#39;ၗ&#39;</span>),
     (<span class="string">&#39;ႄ&#39;</span>, <span class="string">&#39;ႄ&#39;</span>),
+    (<span class="string">&#39;᜕&#39;</span>, <span class="string">&#39;᜕&#39;</span>),
+    (<span class="string">&#39;᜴&#39;</span>, <span class="string">&#39;᜴&#39;</span>),
     (<span class="string">&#39;ា&#39;</span>, <span class="string">&#39;ា&#39;</span>),
     (<span class="string">&#39;ើ&#39;</span>, <span class="string">&#39;ៅ&#39;</span>),
     (<span class="string">&#39;ះ&#39;</span>, <span class="string">&#39;ៈ&#39;</span>),
@@ -2720,7 +2736,7 @@
     (<span class="string">&#39;𑆂&#39;</span>, <span class="string">&#39;𑆂&#39;</span>),
     (<span class="string">&#39;𑆳&#39;</span>, <span class="string">&#39;𑆵&#39;</span>),
     (<span class="string">&#39;𑆿&#39;</span>, <span class="string">&#39;𑇀&#39;</span>),
-    (<span class="string">&#39;\u{111ce}&#39;</span>, <span class="string">&#39;\u{111ce}&#39;</span>),
+    (<span class="string">&#39;𑇎&#39;</span>, <span class="string">&#39;𑇎&#39;</span>),
     (<span class="string">&#39;𑈬&#39;</span>, <span class="string">&#39;𑈮&#39;</span>),
     (<span class="string">&#39;𑈲&#39;</span>, <span class="string">&#39;𑈳&#39;</span>),
     (<span class="string">&#39;𑈵&#39;</span>, <span class="string">&#39;𑈵&#39;</span>),
@@ -2748,15 +2764,14 @@
     (<span class="string">&#39;𑚬&#39;</span>, <span class="string">&#39;𑚬&#39;</span>),
     (<span class="string">&#39;𑚮&#39;</span>, <span class="string">&#39;𑚯&#39;</span>),
     (<span class="string">&#39;𑚶&#39;</span>, <span class="string">&#39;𑚶&#39;</span>),
-    (<span class="string">&#39;𑜠&#39;</span>, <span class="string">&#39;𑜡&#39;</span>),
     (<span class="string">&#39;𑜦&#39;</span>, <span class="string">&#39;𑜦&#39;</span>),
     (<span class="string">&#39;𑠬&#39;</span>, <span class="string">&#39;𑠮&#39;</span>),
     (<span class="string">&#39;𑠸&#39;</span>, <span class="string">&#39;𑠸&#39;</span>),
-    (<span class="string">&#39;\u{11931}&#39;</span>, <span class="string">&#39;\u{11935}&#39;</span>),
-    (<span class="string">&#39;\u{11937}&#39;</span>, <span class="string">&#39;\u{11938}&#39;</span>),
-    (<span class="string">&#39;\u{1193d}&#39;</span>, <span class="string">&#39;\u{1193d}&#39;</span>),
-    (<span class="string">&#39;\u{11940}&#39;</span>, <span class="string">&#39;\u{11940}&#39;</span>),
-    (<span class="string">&#39;\u{11942}&#39;</span>, <span class="string">&#39;\u{11942}&#39;</span>),
+    (<span class="string">&#39;𑤱&#39;</span>, <span class="string">&#39;𑤵&#39;</span>),
+    (<span class="string">&#39;𑤷&#39;</span>, <span class="string">&#39;𑤸&#39;</span>),
+    (<span class="string">&#39;𑤽&#39;</span>, <span class="string">&#39;𑤽&#39;</span>),
+    (<span class="string">&#39;𑥀&#39;</span>, <span class="string">&#39;𑥀&#39;</span>),
+    (<span class="string">&#39;𑥂&#39;</span>, <span class="string">&#39;𑥂&#39;</span>),
     (<span class="string">&#39;𑧑&#39;</span>, <span class="string">&#39;𑧓&#39;</span>),
     (<span class="string">&#39;𑧜&#39;</span>, <span class="string">&#39;𑧟&#39;</span>),
     (<span class="string">&#39;𑧤&#39;</span>, <span class="string">&#39;𑧤&#39;</span>),
@@ -2773,16 +2788,15 @@
     (<span class="string">&#39;𑶖&#39;</span>, <span class="string">&#39;𑶖&#39;</span>),
     (<span class="string">&#39;𑻵&#39;</span>, <span class="string">&#39;𑻶&#39;</span>),
     (<span class="string">&#39;𖽑&#39;</span>, <span class="string">&#39;𖾇&#39;</span>),
-    (<span class="string">&#39;\u{16ff0}&#39;</span>, <span class="string">&#39;\u{16ff1}&#39;</span>),
+    (<span class="string">&#39;𖿰&#39;</span>, <span class="string">&#39;𖿱&#39;</span>),
     (<span class="string">&#39;𝅦&#39;</span>, <span class="string">&#39;𝅦&#39;</span>),
     (<span class="string">&#39;𝅭&#39;</span>, <span class="string">&#39;𝅭&#39;</span>),
 ];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">T</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᆨ&#39;</span>, <span class="string">&#39;ᇿ&#39;</span>), (<span class="string">&#39;ퟋ&#39;</span>, <span class="string">&#39;ퟻ&#39;</span>)];
+<span class="kw">pub const </span>T: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᆨ&#39;</span>, <span class="string">&#39;ᇿ&#39;</span>), (<span class="string">&#39;ퟋ&#39;</span>, <span class="string">&#39;ퟻ&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">V</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᅠ&#39;</span>, <span class="string">&#39;ᆧ&#39;</span>), (<span class="string">&#39;ힰ&#39;</span>, <span class="string">&#39;ퟆ&#39;</span>)];
+<span class="kw">pub const </span>V: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;ᅠ&#39;</span>, <span class="string">&#39;ᆧ&#39;</span>), (<span class="string">&#39;ힰ&#39;</span>, <span class="string">&#39;ퟆ&#39;</span>)];
 
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ZWJ</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a class="ident" href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="string">&#39;\u{200d}&#39;</span>, <span class="string">&#39;\u{200d}&#39;</span>)];
+<span class="kw">pub const </span>ZWJ: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>, <a href="https://doc.rust-lang.org/nightly/std/primitive.char.html">char</a>)] = <span class="kw-2">&amp;</span>[(<span class="string">&#39;\u{200d}&#39;</span>, <span class="string">&#39;\u{200d}&#39;</span>)];
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="regex_syntax" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="regex_syntax" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>

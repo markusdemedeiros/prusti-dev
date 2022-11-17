@@ -1,11 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/action.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>action.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script src="../../../../../../crates.js"></script><script defer src="../../../../../../main.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script>
-    <noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../../../prusti_viper/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><button type="button" id="help-button" title="help">?</button><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `prusti-viper/src/encoder/high/procedures/inference/action.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>action.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../../normalize.css"><link rel="stylesheet" href="../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../../storage.js"></script><script defer src="../../../../../../source-script.js"></script><script defer src="../../../../../../source-files.js"></script><script defer src="../../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../../prusti_viper/index.html"><img class="rust-logo" src="../../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../../wheel.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -101,102 +94,191 @@
 <span id="94">94</span>
 <span id="95">95</span>
 <span id="96">96</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21"><span class="kw">super</span>::permission::PermissionKind</a>;
-<span class="kw">use</span> <span class="ident">vir_crate</span>::{<a class="ident" href="../../../../../../vir/high/index.html">high</a> <span class="kw">as</span> <span class="ident">vir_high</span>, <a class="ident" href="../../../../../../vir/middle/index.html">middle</a> <span class="kw">as</span> <span class="ident">vir_mid</span>};
+<span id="97">97</span>
+<span id="98">98</span>
+<span id="99">99</span>
+<span id="100">100</span>
+<span id="101">101</span>
+<span id="102">102</span>
+<span id="103">103</span>
+<span id="104">104</span>
+<span id="105">105</span>
+<span id="106">106</span>
+<span id="107">107</span>
+<span id="108">108</span>
+<span id="109">109</span>
+<span id="110">110</span>
+<span id="111">111</span>
+<span id="112">112</span>
+<span id="113">113</span>
+<span id="114">114</span>
+<span id="115">115</span>
+<span id="116">116</span>
+<span id="117">117</span>
+<span id="118">118</span>
+<span id="119">119</span>
+<span id="120">120</span>
+<span id="121">121</span>
+<span id="122">122</span>
+<span id="123">123</span>
+<span id="124">124</span>
+<span id="125">125</span>
+<span id="126">126</span>
+<span id="127">127</span>
+<span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
+<span id="137">137</span>
+<span id="138">138</span>
+<span id="139">139</span>
+<span id="140">140</span>
+<span id="141">141</span>
+</pre><pre class="rust"><code><span class="kw">use </span><a href="permission.rs.html#43"><span class="kw">super</span>::permission::PermissionKind</a>;
+<span class="kw">use </span>vir_crate::{
+    middle::{<span class="self"><a href="../../../../../../vir/middle/index.html">self</a> </span><span class="kw">as </span>vir_mid, <a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">BlockMarkerCondition</a>},
+    <a href="../../../../../../vir/typed/index.html">typed</a> <span class="kw">as </span>vir_typed,
+};
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">enum</span> <span class="ident">Action</span> {
-    <span class="ident">Unfold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a>),
-    <span class="ident">Fold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a>),
-    <span class="doccomment">/// Convert the specified `Owned(place)` into `MemoryBlock(place)`.</span>
-    <span class="ident">OwnedIntoMemoryBlock</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#20-23">ConversionState</a>),
-    <span class="ident">RestoreMutBorrowed</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#25-29">RestorationState</a>),
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">enum </span>Action {
+    Unfold(<a href="#38">FoldingActionState</a>),
+    Fold(<a href="#38">FoldingActionState</a>),
+    <span class="doccomment">/// Convert the specified `Owned(place)` into `MemoryBlock(place)`.
+    </span>OwnedIntoMemoryBlock(<a href="#47">ConversionState</a>),
+    RestoreMutBorrowed(<a href="#53">RestorationState</a>),
+    Unreachable(<a href="#60">UnreachableState</a>),
 }
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">struct</span> <span class="ident">FoldingActionState</span> {
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">condition</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/middle/cfg/procedure/struct.BasicBlockId.html">vir_mid::BasicBlockId</a><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// If un/folding an enum, which of its variants.</span>
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">enum_variant</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.VariantIndex.html">vir_high::ty::VariantIndex</a><span class="op">&gt;</span>,
+<span class="kw">impl </span><a href="https://doc.rust-lang.org/nightly/core/fmt/trait.Display.html">std::fmt::Display</a> <span class="kw">for </span><a href="#8">Action</a> {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <a href="https://doc.rust-lang.org/nightly/core/fmt/type.Result.html">std::fmt::Result</a> {
+        <span class="kw">match </span><span class="self"><a href="#18">self</a> </span>{
+            <a href="#9">Action::Unfold</a>(<a href="#38">FoldingActionState</a> { kind, place, .. }) =&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#18">f</a>, <span class="string">&quot;Unfold({kind:?}, {place})&quot;</span>)
+            }
+            <a href="#10">Action::Fold</a>(<a href="#38">FoldingActionState</a> { kind, place, .. }) =&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#18">f</a>, <span class="string">&quot;Fold({kind:?}, {place})&quot;</span>)
+            }
+            <a href="#12">Action::OwnedIntoMemoryBlock</a>(<a href="#47">ConversionState</a> { place, .. }) =&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#18">f</a>, <span class="string">&quot;OwnedIntoMemoryBlock({place})&quot;</span>)
+            }
+            <a href="#13">Action::RestoreMutBorrowed</a>(<a href="#53">RestorationState</a> { place, .. }) =&gt; {
+                <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#18">f</a>, <span class="string">&quot;RestoreMutBorrowed({place})&quot;</span>)
+            }
+            <a href="#14">Action::Unreachable</a>(<span class="kw">_</span>) =&gt; <a class="macro" href="https://doc.rust-lang.org/nightly/core/macro.write.html">write!</a>(<a href="#18">f</a>, <span class="string">&quot;Unreachable&quot;</span>),
+        }
+    }
 }
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">struct</span> <span class="ident">ConversionState</span> {
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">condition</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/middle/cfg/procedure/struct.BasicBlockId.html">vir_mid::BasicBlockId</a><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">struct </span>FoldingActionState {
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) kind: <a href="permission.rs.html#43">PermissionKind</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) condition: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">vir_mid::BlockMarkerCondition</a>&gt;,
+    <span class="doccomment">/// If un/folding an enum, which of its variants.
+    </span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) enum_variant: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/typed/ast/ty/struct.VariantIndex.html">vir_typed::ty::VariantIndex</a>&gt;,
 }
 
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">struct</span> <span class="ident">RestorationState</span> {
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">lifetime</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">vir_high::ty::LifetimeConst</a>,
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="ident">condition</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/middle/cfg/procedure/struct.BasicBlockId.html">vir_mid::BasicBlockId</a><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">struct </span>ConversionState {
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) condition: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">vir_mid::BlockMarkerCondition</a>&gt;,
 }
 
-<span class="kw">impl</span> <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#4-10">Action</a> {
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">set_condition</span>(<span class="self">self</span>, <span class="ident">condition</span>: <span class="kw-2">&amp;</span>[<a class="ident" href="../../../../../../vir/gen/middle/cfg/procedure/struct.BasicBlockId.html">vir_mid::BasicBlockId</a>]) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> <a class="self" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">self</a> {
-            <span class="ident"><span class="self">Self</span>::Unfold</span>(<span class="ident">state</span>) =&gt; <span class="ident"><span class="self">Self</span>::Unfold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a> {
-                <span class="ident">condition</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">condition</a>.<span class="ident">to_vec</span>()),
-                ..<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#34">state</a>
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">struct </span>RestorationState {
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) lifetime: <a href="../../../../../../vir/gen/typed/ast/ty/struct.LifetimeConst.html">vir_typed::ty::LifetimeConst</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) condition: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">vir_mid::BlockMarkerCondition</a>&gt;,
+}
+
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">struct </span>UnreachableState {
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) position: <a href="../../../../../../vir/common/position/struct.Position.html">vir_typed::Position</a>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) condition: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">vir_mid::BlockMarkerCondition</a>&gt;,
+}
+
+<span class="kw">impl </span><a href="#8">Action</a> {
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>set_condition(<span class="self">self</span>, condition: <span class="kw-2">&amp;</span><a href="../../../../../../vir/gen/middle/ast/statement/struct.BlockMarkerCondition.html">BlockMarkerCondition</a>) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span><span class="self"><a href="#66">self</a> </span>{
+            <span class="self">Self</span>::Unfold(state) =&gt; <span class="self">Self</span>::Unfold(<a href="#38">FoldingActionState</a> {
+                condition: <span class="prelude-val">Some</span>(<a href="#66">condition</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()),
+                ..<a href="#68">state</a>
             }),
-            <span class="ident"><span class="self">Self</span>::Fold</span>(<span class="ident">state</span>) =&gt; <span class="ident"><span class="self">Self</span>::Fold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a> {
-                <span class="ident">condition</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">condition</a>.<span class="ident">to_vec</span>()),
-                ..<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#38">state</a>
+            <span class="self">Self</span>::Fold(state) =&gt; <span class="self">Self</span>::Fold(<a href="#38">FoldingActionState</a> {
+                condition: <span class="prelude-val">Some</span>(<a href="#66">condition</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()),
+                ..<a href="#72">state</a>
             }),
-            <span class="ident"><span class="self">Self</span>::OwnedIntoMemoryBlock</span>(<span class="ident">state</span>) =&gt; <span class="ident"><span class="self">Self</span>::OwnedIntoMemoryBlock</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#20-23">ConversionState</a> {
-                <span class="ident">condition</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">condition</a>.<span class="ident">to_vec</span>()),
-                ..<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#42">state</a>
+            <span class="self">Self</span>::OwnedIntoMemoryBlock(state) =&gt; <span class="self">Self</span>::OwnedIntoMemoryBlock(<a href="#47">ConversionState</a> {
+                condition: <span class="prelude-val">Some</span>(<a href="#66">condition</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()),
+                ..<a href="#76">state</a>
             }),
-            <span class="ident"><span class="self">Self</span>::RestoreMutBorrowed</span>(<span class="ident">state</span>) =&gt; <span class="ident"><span class="self">Self</span>::RestoreMutBorrowed</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#25-29">RestorationState</a> {
-                <span class="ident">condition</span>: <span class="prelude-val">Some</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#32">condition</a>.<span class="ident">to_vec</span>()),
-                ..<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#46">state</a>
+            <span class="self">Self</span>::RestoreMutBorrowed(state) =&gt; <span class="self">Self</span>::RestoreMutBorrowed(<a href="#53">RestorationState</a> {
+                condition: <span class="prelude-val">Some</span>(<a href="#66">condition</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()),
+                ..<a href="#80">state</a>
+            }),
+            <span class="self">Self</span>::Unreachable(state) =&gt; <span class="self">Self</span>::Unreachable(<a href="#60">UnreachableState</a> {
+                condition: <span class="prelude-val">Some</span>(<a href="#66">condition</a>.<a href="https://doc.rust-lang.org/nightly/core/clone/trait.Clone.html">clone</a>()),
+                ..<a href="#84">state</a>
             }),
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">unfold</span>(
-        <span class="ident">kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-        <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-        <span class="ident">enum_variant</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.VariantIndex.html">vir_high::ty::VariantIndex</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Unfold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a> {
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#54">kind</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#55">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#56">enum_variant</a>,
-            <span class="ident">condition</span>: <span class="prelude-val">None</span>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>unfold(
+        kind: <a href="permission.rs.html#43">PermissionKind</a>,
+        place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+        enum_variant: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/typed/ast/ty/struct.VariantIndex.html">vir_typed::ty::VariantIndex</a>&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Unfold(<a href="#38">FoldingActionState</a> {
+            <a href="#92">kind</a>,
+            <a href="#93">place</a>,
+            <a href="#94">enum_variant</a>,
+            condition: <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">fold</span>(
-        <span class="ident">kind</span>: <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/permission.rs.html#18-21">PermissionKind</a>,
-        <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-        <span class="ident">enum_variant</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.VariantIndex.html">vir_high::ty::VariantIndex</a><span class="op">&gt;</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Fold</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#12-18">FoldingActionState</a> {
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#67">kind</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#68">place</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#69">enum_variant</a>,
-            <span class="ident">condition</span>: <span class="prelude-val">None</span>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>fold(
+        kind: <a href="permission.rs.html#43">PermissionKind</a>,
+        place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+        enum_variant: <span class="prelude-ty">Option</span>&lt;<a href="../../../../../../vir/gen/typed/ast/ty/struct.VariantIndex.html">vir_typed::ty::VariantIndex</a>&gt;,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Fold(<a href="#38">FoldingActionState</a> {
+            <a href="#105">kind</a>,
+            <a href="#106">place</a>,
+            <a href="#107">enum_variant</a>,
+            condition: <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">owned_into_memory_block</span>(<span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::OwnedIntoMemoryBlock</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#20-23">ConversionState</a> {
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#79">place</a>,
-            <span class="ident">condition</span>: <span class="prelude-val">None</span>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>owned_into_memory_block(place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::OwnedIntoMemoryBlock(<a href="#47">ConversionState</a> {
+            <a href="#117">place</a>,
+            condition: <span class="prelude-val">None</span>,
         })
     }
 
-    <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span></span>) <span class="kw">fn</span> <span class="ident">restore_mut_borrowed</span>(
-        <span class="ident">lifetime</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/ty/struct.LifetimeConst.html">vir_high::ty::LifetimeConst</a>,
-        <span class="ident">place</span>: <a class="ident" href="../../../../../../vir/gen/high/ast/expression/enum.Expression.html">vir_high::Expression</a>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::RestoreMutBorrowed</span>(<a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#25-29">RestorationState</a> {
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#87">lifetime</a>,
-            <a class="ident" href="../../../../../../src/prusti_viper/encoder/high/procedures/inference/action.rs.html#88">place</a>,
-            <span class="ident">condition</span>: <span class="prelude-val">None</span>,
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>restore_mut_borrowed(
+        lifetime: <a href="../../../../../../vir/gen/typed/ast/ty/struct.LifetimeConst.html">vir_typed::ty::LifetimeConst</a>,
+        place: <a href="../../../../../../vir/gen/typed/ast/expression/enum.Expression.html">vir_typed::Expression</a>,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::RestoreMutBorrowed(<a href="#53">RestorationState</a> {
+            <a href="#125">lifetime</a>,
+            <a href="#126">place</a>,
+            condition: <span class="prelude-val">None</span>,
+        })
+    }
+
+    <span class="kw">pub</span>(<span class="kw">in </span><span class="kw">super</span>::<span class="kw">super</span>) <span class="kw">fn </span>unreachable(position: <a href="../../../../../../vir/common/position/struct.Position.html">vir_typed::Position</a>) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Unreachable(<a href="#60">UnreachableState</a> {
+            <a href="#135">position</a>,
+            condition: <span class="prelude-val">None</span>,
         })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (42e1761c7 2022-05-15)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="prusti_viper" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (95a3a7277 2022-10-31)" ></div></body></html>
