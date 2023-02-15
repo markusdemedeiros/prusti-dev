@@ -4,5 +4,7 @@ struct K {d: u32}
 fn main() {
     let mut x: K = K {d: 0};
     let mut bx = &mut x;
-    let _ = &mut (*bx);
+    
+    let test_x = bx;
 }
+
