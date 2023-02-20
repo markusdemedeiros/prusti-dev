@@ -229,8 +229,7 @@ pub fn expand_struct_place<'tcx, P: PlaceImpl<'tcx> + std::marker::Copy>(
             ty::Adt(def, substs) => {
                 assert!(
                     def.is_struct(),
-                    "Only structs can be expanded. Got def={:?}.",
-                    def
+                    "Only structs can be expanded. Got def={def:?}."
                 );
                 let variant = def.non_enum_variant();
                 for (index, field_def) in variant.fields.iter().enumerate() {
@@ -443,9 +442,8 @@ pub fn is_copy<'tcx>(
         // the freshly-created `InferCtxt` (i.e. `tcx.infer_ctxt().enter(..)`) will cause
         // a panic, since those inference variables don't exist in the new `InferCtxt`.
         // See: https://rust-lang.zulipchat.com/#narrow/stream/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20Panic.20in.20is_copy_modulo_regions
-        let fresh_ty = infcx.freshen(ty);
         infcx
-            .type_implements_trait(copy_trait, fresh_ty, ty::List::empty(), param_env)
+            .type_implements_trait(copy_trait, [infcx.freshen(ty)], param_env)
             .must_apply_considering_regions()
     } else {
         false
@@ -483,9 +481,8 @@ pub fn get_blocked_place<'tcx>(tcx: TyCtxt<'tcx>, borrowed: Place<'tcx>) -> Plac
 pub fn happy_path_successors(terminator: &TerminatorKind) -> Vec<mir::BasicBlock> {
     match terminator {
         TerminatorKind::SwitchInt {
-            discr: _,
-            switch_ty: _,
             targets: ts,
+            ..
         } => ts.all_targets().iter().cloned().collect(),
         TerminatorKind::Resume
         | TerminatorKind::Abort
@@ -625,7 +622,7 @@ pub fn location_to_stmt_str(location: mir::Location, mir: &mir::Body) -> String 
     let bb_mir = &mir[location.block];
     if location.statement_index < bb_mir.statements.len() {
         let stmt = &bb_mir.statements[location.statement_index];
-        format!("{:?}", stmt)
+        format!("{stmt:?}")
     } else {
         // location = terminator
         let terminator = bb_mir.terminator();
