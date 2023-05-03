@@ -35,12 +35,12 @@ pub type Variable = <RustcFacts as FactTypes>::Variable;
 pub type Path = <RustcFacts as FactTypes>::Path;
 
 /// Issue of a new loan. The assocciated region should represent a borrow temporary.
-pub(crate) type LoanIssues<'tcx> = FxHashMap<PointIndex, (Region, Place<'tcx>)>;
+pub(crate) type LoanIssues<'tcx> = FxHashMap<Location, (Region, Place<'tcx>)>;
 // pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
 pub(crate) type GraphOperations<'tcx> =
     FxHashMap<Location, Vec<(SubsetBaseKind, Region, Region, Region)>>;
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
-pub(crate) type LoanKilledAt = FxHashMap<PointIndex, BTreeSet<Loan>>;
+pub(crate) type LoanKilledAt = FxHashMap<Location, BTreeSet<Loan>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
 
 /// Struct containing lookups for all the Polonius facts
@@ -123,7 +123,7 @@ impl<'tcx> FactTable<'tcx> {
             )?;
             Self::insert_loan_issue_constraint(
                 working_table,
-                *point,
+                location,
                 *issuing_origin,
                 borrowed_from_place,
             );
@@ -159,162 +159,199 @@ impl<'tcx> FactTable<'tcx> {
             });
 
         for (point, s) in subset_base_locations.into_iter() {
-            let mut set = s.clone();
-            if let Some((issuing_origin, issuing_borrowed_from_place)) = working_table
-                .loan_issues
-                .get(&point)
-                .map(|(o, p)| (*o, *p).clone())
+            // All of our subset_base facts should take place at a Mid location
+            let loc = expect_mid_location(mir.location_table.to_location(point));
+            let statement = match mir_kind_at(&mir.body, loc) {
+                mir_utils::StatementKinds::Stmt(smt) => smt,
+                mir_utils::StatementKinds::Term(_) => {
+                    unimplemented!("subset reconstruction can't handle terminators")
+                }
+            };
+            let issue = match mir
+                .input_facts
+                .loan_issued_at
+                .iter()
+                .filter(|(o, l, p)| *p == point)
+                .collect::<Vec<_>>()[..]
             {
-                // 1.1. There should be at EXACTLY ONE subset upstream of the issuing origin
-                if let &[assigning_subset @ (assigning_from_origin, assigning_origin)] = &set
-                    .iter()
-                    .filter(|(o, _)| *o == issuing_origin)
-                    .collect::<Vec<_>>()[..]
-                {
-                    // Issuing borrow assignment: the new borrow is assigned into assigning_subset.1
-                    let location = expect_mid_location(mir.location_table.to_location(point));
-                    let statement = mir_kind_at(&mir.body, location);
-                    let assigned_to_place = *get_assigned_to_place(&statement, location)?;
+                [] => None,
+                [x] => Some(x),
+                _ => unimplemented!("subset reconstruction: can't issue multiple loans at a point"),
+            };
 
-                    // fixme: get something like this to work
-                    // assert_eq!(
-                    //     working_table
-                    //         .origins
-                    //         .get_origin(OriginLHS::Place(issuing_borrowed_from_place)),
-                    //     Some(*assigned_from_origin)
-                    // );
+            // Case 1: Loan issue of owned data
+            //  - loan_issued_at fact
+            //  - exactly two subset_base facts
+            //  - at an assignment statement
 
-                    Self::insert_structural_edge(
-                        working_table,
-                        point,
-                        issuing_origin,
-                        *assigning_origin,
-                        SubsetBaseKind::LoanIssue,
-                    );
-                    Self::check_or_construct_origin(
-                        working_table,
-                        &mir.body,
-                        OriginLHS::Place(assigned_to_place.into()),
-                        *assigning_origin,
-                    )?;
+            // Case 2: Reborrow
+            //  - loan_issued_at fact
+            //  - exactly three subset_base facts
+            //  - at an assignment statement
 
-                    // Self::insert_packing_constraint(
-                    //     working_table,
-                    //     point,
-                    //     *assigning_origin,
-                    //     OriginLHS::Place(assigned_to_place.into()),
-                    // );
-                    set.remove(&assigning_subset.clone());
-                } else {
-                    panic!("impossible: issued borrow without corresponding assignment");
-                }
+            // Case 3: Move
+            //  - only one
+            //  - at an assignment statement
 
-                // 1.2. There should be AT MOST ONE reborrowed origin
-                if let &[reborrowing_subset @ (reborrowing_origin, _)] = &set
-                    .iter()
-                    .filter(|(_, o)| *o == issuing_origin)
-                    .collect::<Vec<_>>()[..]
-                {
-                    let location = expect_mid_location(mir.location_table.to_location(point));
-                    let statement = mir_kind_at(&mir.body, location);
-                    let borrowed_from_place: OriginLHS<'tcx> =
-                        OriginLHS::Place((*get_borrowed_from_place(&statement, location)?).into());
-
-                    // If the reborrowed-from place is None, it doesn't mean that it's a borrow of owned data!
-                    // We might just be constructing the fact table out of order
-                    Self::check_or_construct_origin(
-                        working_table,
-                        &mir.body,
-                        borrowed_from_place.clone(),
-                        *reborrowing_origin,
-                    )?;
-
-                    // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                    // Self::insert_packing_constraint(
-                    //     working_table,
-                    //     point,
-                    //     *reborrowing_origin,
-                    //     borrowed_from_place,
-                    // );
-
-                    Self::insert_structural_edge(
-                        working_table,
-                        point,
-                        issuing_origin,
-                        *reborrowing_origin,
-                        SubsetBaseKind::Reborrow,
-                    );
-
-                    // Reborrow repacking should be handled by the loan analysis
-                    set.remove(&reborrowing_subset.clone());
-                }
-            } else {
-                // 2. All other relations should be assignments not between issuing origins
-                //      If there is exactly one subset AND The mir is an assignment
-                // 2.1 There should be at most ONE other relation, the assignment.
-                //          Both origins should either be new, or cohere with the known origins.
-
-                let location = expect_mid_location(mir.location_table.to_location(point));
-                let statement = mir_kind_at(&mir.body, location);
-                let t_to: AnalysisResult<mir_utils::Place> =
-                    get_assigned_to_place(&statement, location);
-                let t_from: AnalysisResult<mir_utils::Place> =
-                    get_moved_from_place(&statement, location);
-                if let (Ok(assigned_to_place), Ok(assigned_from_place)) = (t_to, t_from) {
-                    if let &[assigning_subset @ (assigned_from_origin, assigned_to_origin)] =
-                        &set.iter().collect::<Vec<_>>()[..]
-                    {
-                        let to_place: OriginLHS<'tcx> =
-                            OriginLHS::Place((*assigned_to_place).into());
-                        let from_place: OriginLHS<'tcx> =
-                            OriginLHS::Place((*assigned_from_place).into());
-
-                        Self::check_or_construct_origin(
-                            working_table,
-                            &mir.body,
-                            from_place.clone(),
-                            *assigned_from_origin,
-                        )?;
-                        Self::check_or_construct_origin(
-                            working_table,
-                            &mir.body,
-                            to_place.clone(),
-                            *assigned_to_origin,
-                        )?;
-
-                        // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                        // Self::insert_packing_constraint(
-                        //     working_table,
-                        //     point,
-                        //     *assigned_to_origin,
-                        //     to_place,
-                        // );
-
-                        // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                        // Self::insert_packing_constraint(
-                        //     working_table,
-                        //     point,
-                        //     *assigned_from_origin,
-                        //     from_place,
-                        // );
-                        Self::insert_structural_edge(
-                            working_table,
-                            point,
-                            *assigned_from_origin,
-                            *assigned_to_origin,
-                            SubsetBaseKind::Move,
-                        );
-                        set.remove(&assigning_subset.clone());
-                    } else {
-                        panic!("unhandled case in inference algorithm");
-                    }
-                }
-            }
-
-            if set.len() > 0 {
-                panic!("Inference algoirithm terminated early");
-            }
+            println!(
+                "subset reconstruction unhandled case at {:#?}\n{:#?}\n{:#?}\n",
+                s, statement, issue
+            );
         }
+
+        //     let mut set = s.clone();
+        //     if let Some((issuing_origin, issuing_borrowed_from_place)) = working_table
+        //         .loan_issues
+        //         .get(&
+        //         .map(|(o, p)| (*o, *p).clone())
+        //     {
+        //         // 1.1. There should be at EXACTLY ONE subset upstream of the issuing origin
+        //         if let &[assigning_subset @ (assigning_from_origin, assigning_origin)] = &set
+        //             .iter()
+        //             .filter(|(o, _)| *o == issuing_origin)
+        //             .collect::<Vec<_>>()[..]
+        //         {
+        //             // Issuing borrow assignment: the new borrow is assigned into assigning_subset.1
+        //             let location = expect_mid_location(mir.location_table.to_location(point));
+        //             let statement = mir_kind_at(&mir.body, location);
+        //             let assigned_to_place = *get_assigned_to_place(&statement, location)?;
+
+        //             // fixme: get something like this to work
+        //             // assert_eq!(
+        //             //     working_table
+        //             //         .origins
+        //             //         .get_origin(OriginLHS::Place(issuing_borrowed_from_place)),
+        //             //     Some(*assigned_from_origin)
+        //             // );
+
+        //             Self::insert_structural_edge(
+        //                 working_table,
+        //                 point,
+        //                 issuing_origin,
+        //                 *assigning_origin,
+        //                 SubsetBaseKind::LoanIssue,
+        //             );
+        //             Self::check_or_construct_origin(
+        //                 working_table,
+        //                 &mir.body,
+        //                 OriginLHS::Place(assigned_to_place.into()),
+        //                 *assigning_origin,
+        //             )?;
+
+        //             // Self::insert_packing_constraint(
+        //             //     working_table,
+        //             //     point,
+        //             //     *assigning_origin,
+        //             //     OriginLHS::Place(assigned_to_place.into()),
+        //             // );
+        //             set.remove(&assigning_subset.clone());
+        //         } else {
+        //             panic!("impossible: issued borrow without corresponding assignment");
+        //         }
+
+        //         // 1.2. There should be AT MOST ONE reborrowed origin
+        //         if let &[reborrowing_subset @ (reborrowing_origin, _)] = &set
+        //             .iter()
+        //             .filter(|(_, o)| *o == issuing_origin)
+        //             .collect::<Vec<_>>()[..]
+        //         {
+        //             let location = expect_mid_location(mir.location_table.to_location(point));
+        //             let statement = mir_kind_at(&mir.body, location);
+        //             let borrowed_from_place: OriginLHS<'tcx> =
+        //                 OriginLHS::Place((*get_borrowed_from_place(&statement, location)?).into());
+
+        //             // If the reborrowed-from place is None, it doesn't mean that it's a borrow of owned data!
+        //             // We might just be constructing the fact table out of order
+        //             Self::check_or_construct_origin(
+        //                 working_table,
+        //                 &mir.body,
+        //                 borrowed_from_place.clone(),
+        //                 *reborrowing_origin,
+        //             )?;
+
+        //             // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
+        //             // Self::insert_packing_constraint(
+        //             //     working_table,
+        //             //     point,
+        //             //     *reborrowing_origin,
+        //             //     borrowed_from_place,
+        //             // );
+
+        //             Self::insert_structural_edge(
+        //                 working_table,
+        //                 point,
+        //                 issuing_origin,
+        //                 *reborrowing_origin,
+        //                 SubsetBaseKind::Reborrow,
+        //             );
+
+        //             // Reborrow repacking should be handled by the loan analysis
+        //             set.remove(&reborrowing_subset.clone());
+        //         }
+        //     } else {
+        //         // 2. All other relations should be assignments not between issuing origins
+        //         //      If there is exactly one subset AND The mir is an assignment
+        //         // 2.1 There should be at most ONE other relation, the assignment.
+        //         //          Both origins should either be new, or cohere with the known origins.
+
+        //         let location = expect_mid_location(mir.location_table.to_location(point));
+        //         let statement = mir_kind_at(&mir.body, location);
+        //         let t_to: AnalysisResult<mir_utils::Place> =
+        //             get_assigned_to_place(&statement, location);
+        //         let t_from: AnalysisResult<mir_utils::Place> =
+        //             get_moved_from_place(&statement, location);
+        //         if let (Ok(assigned_to_place), Ok(assigned_from_place)) = (t_to, t_from) {
+        //             if let &[assigning_subset @ (assigned_from_origin, assigned_to_origin)] =
+        //                 &set.iter().collect::<Vec<_>>()[..]
+        //             {
+        //                 let to_place: OriginLHS<'tcx> =
+        //                     OriginLHS::Place((*assigned_to_place).into());
+        //                 let from_place: OriginLHS<'tcx> =
+        //                     OriginLHS::Place((*assigned_from_place).into());
+
+        //                 Self::check_or_construct_origin(
+        //                     working_table,
+        //                     &mir.body,
+        //                     from_place.clone(),
+        //                     *assigned_from_origin,
+        //                 )?;
+        //                 Self::check_or_construct_origin(
+        //                     working_table,
+        //                     &mir.body,
+        //                     to_place.clone(),
+        //                     *assigned_to_origin,
+        //                 )?;
+
+        //                 // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
+        //                 // Self::insert_packing_constraint(
+        //                 //     working_table,
+        //                 //     point,
+        //                 //     *assigned_to_origin,
+        //                 //     to_place,
+        //                 // );
+
+        //                 // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
+        //                 // Self::insert_packing_constraint(
+        //                 //     working_table,
+        //                 //     point,
+        //                 //     *assigned_from_origin,
+        //                 //     from_place,
+        //                 // );
+
+        //                 todo!("move: kill the moved-from place");
+        //                 todo!("move: push a move edge");
+
+        //                 set.remove(&assigning_subset.clone());
+        //             } else {
+        //                 panic!("unhandled case in inference algorithm");
+        //             }
+        //         }
+        //     }
+
+        //     if set.len() > 0 {
+        //         panic!("Inference algoirithm terminated early");
+        //     }
+        // }
         Ok(())
     }
 
@@ -345,7 +382,9 @@ impl<'tcx> FactTable<'tcx> {
         mir: &'mir BodyWithBorrowckFacts<'tcx>,
         working_table: &'a mut Self,
     ) {
+        // Assert that the loan is killed at a Mid only.
         for (l, p) in mir.input_facts.loan_killed_at.iter() {
+            let location = expect_mid_location(mir.location_table.to_location(*p));
             todo!("insert a kill statement to the graph operations here");
             // let loan_set = working_table.loan_killed_at.entry(*p).or_default();
             // loan_set.insert(l.to_owned());
@@ -413,7 +452,7 @@ impl<'tcx> FactTable<'tcx> {
     /// Add a loan_issue constraint to the table
     fn insert_loan_issue_constraint(
         working_table: &mut Self,
-        point: PointIndex,
+        point: Location,
         origin: Region,
         borrowed_from_place: Place<'tcx>,
     ) {
@@ -422,7 +461,7 @@ impl<'tcx> FactTable<'tcx> {
             .insert(point, (origin, borrowed_from_place));
     }
 
-    /// Constrain an origin to be repacked in to include (not equal) a set of permissions at a point
+    // Constrain an origin to be repacked in to include (not equal) a set of permissions at a point
     // fn insert_packing_constraint(
     //     working_table: &mut Self,
     //     point: PointIndex,
@@ -432,20 +471,6 @@ impl<'tcx> FactTable<'tcx> {
     //     let constraints = working_table.origin_packing_at.entry(point).or_default();
     //     constraints.push((origin, packing));
     // }
-
-    /// Add a subset constraint between origins, which has been explained
-    fn insert_structural_edge(
-        working_table: &mut Self,
-        // point should be Location I think.
-        point: PointIndex,
-        origin_from: Region,
-        origin_to: Region,
-        kind: SubsetBaseKind,
-    ) {
-        todo!("Push an appropriate edge (with PCS semantics and such) here");
-        // let constraint_set = working_table.structural_edge.entry(point).or_default();
-        // constraint_set.push((kind, origin_from, origin_to));
-    }
 }
 
 impl<'tcx> std::fmt::Debug for FactTable<'tcx> {
