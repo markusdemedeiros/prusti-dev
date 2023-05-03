@@ -4,19 +4,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use super::facts::FactTable;
+// use super::facts::FactTable;
 use crate::{
     abstract_interpretation::{AnalysisResult, FixpointEngine},
     PointwiseState,
 };
 
-use crate::domains::coupling::CouplingState;
+// use crate::domains::coupling::CouplingState;
 use prusti_rustc_interface::{
     borrowck::BodyWithBorrowckFacts,
     middle::{mir, ty::TyCtxt},
     span::def_id::DefId,
 };
 
+/*
 pub struct CouplingAnalysis<'facts, 'mir: 'facts, 'tcx: 'mir> {
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
@@ -100,3 +101,4 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
     //  - Free PCS trace
     //  - Reborrowing DAG trace
 }
+ */

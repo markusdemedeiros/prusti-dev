@@ -6,8 +6,12 @@
 use analysis::{
     abstract_interpretation::FixpointEngine,
     domains::{
-        run_coupling_tests, CouplingAnalysis, DefinitelyAccessibleAnalysis,
-        DefinitelyInitializedAnalysis, FactTable, FramingAnalysis, MaybeBorrowedAnalysis,
+        run_coupling_tests,
+        DefinitelyAccessibleAnalysis, // CouplingAnalysis,
+        DefinitelyInitializedAnalysis,
+        // FactTable,
+        FramingAnalysis,
+        MaybeBorrowedAnalysis,
         ReachingDefsAnalysis,
     },
 };
@@ -275,35 +279,35 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                         }
 
                         println!("[driver]    Starting coupling analysis");
-                        let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
-                        let result = CouplingAnalysis::new(
-                            tcx,
-                            local_def_id.to_def_id(),
-                            &fact_table,
-                            &body_with_facts,
-                        )
-                        .run_fwd_analysis();
-                        match result {
-                            Ok(state) => {
-                                println!("[driver]    Coupling analysis complete. State:");
-                                println!("[driver]    {:#?}", state);
-                                println!("[polonius] {:#?}", body_with_facts.input_facts);
-                                println!("[polonius] {:#?}", body_with_facts.output_facts);
-                                report_with_writer(
-                                    "coupling_trace",
-                                    format!(
-                                        "{}.graph.dot",
-                                        "latest" // fixme: extract function names
-                                    ),
-                                    |writer| {
-                                        state.to_graphviz(writer).unwrap();
-                                    },
-                                );
+                        // let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
+                        // let result = CouplingAnalysis::new(
+                        //     tcx,
+                        //     local_def_id.to_def_id(),
+                        //     &fact_table,
+                        //     &body_with_facts,
+                        // )
+                        // .run_fwd_analysis();
+                        // match result {
+                        //     Ok(state) => {
+                        //         println!("[driver]    Coupling analysis complete. State:");
+                        //         println!("[driver]    {:#?}", state);
+                        //         println!("[polonius] {:#?}", body_with_facts.input_facts);
+                        //         println!("[polonius] {:#?}", body_with_facts.output_facts);
+                        //         report_with_writer(
+                        //             "coupling_trace",
+                        //             format!(
+                        //                 "{}.graph.dot",
+                        //                 "latest" // fixme: extract function names
+                        //             ),
+                        //             |writer| {
+                        //                 state.to_graphviz(writer).unwrap();
+                        //             },
+                        //         );
 
-                                // todo!("log the state into appropriate graphviz files");
-                            }
-                            Err(e) => eprintln!("{}", e.to_pretty_str(body)),
-                        }
+                        //         // todo!("log the state into appropriate graphviz files");
+                        //     }
+                        //     Err(e) => eprintln!("{}", e.to_pretty_str(body)),
+                        // }
                     }
                     _ => panic!("Unknown domain argument: {abstract_domain}"),
                 }

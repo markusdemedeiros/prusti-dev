@@ -24,10 +24,7 @@ use std::{
     fmt,
 };
 
-use super::{
-    btree_replace,
-    facts::{FactTable, OriginLHS},
-};
+use super::btree_replace;
 
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
@@ -89,6 +86,7 @@ impl<'tcx> CDGNode<'tcx> {
     }
 }
 
+/*
 impl<'tcx> Into<CDGNode<'tcx>> for OriginLHS<'tcx> {
     /// Turn an OriginLHS into a CDGNode by creating a new untagged node
     fn into(self) -> CDGNode<'tcx> {
@@ -1149,3 +1147,4 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
         unreachable!("widening is not possible in this model")
     }
 }
+ */

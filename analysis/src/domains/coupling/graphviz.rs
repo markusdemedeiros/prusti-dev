@@ -21,9 +21,9 @@ use prusti_rustc_interface::{
 };
 use std::io;
 
-use super::{CouplingOrigins, CouplingState, OriginMap};
+// use super::{CouplingOrigins, CouplingState, OriginMap};
 use crate::mir_utils::Place;
-
+/*
 impl<'facts, 'mir: 'facts, 'tcx: 'mir>
     PointwiseState<'mir, 'tcx, CouplingState<'facts, 'mir, 'tcx>>
 {
@@ -517,3 +517,4 @@ fn escape_graphviz(a: String) -> String {
         .replace(" ", "")
         .replace("\n", "")
 }
+ */

@@ -36,12 +36,13 @@ pub type Path = <RustcFacts as FactTypes>::Path;
 
 /// Issue of a new loan. The assocciated region should represent a borrow temporary.
 pub(crate) type LoanIssues<'tcx> = FxHashMap<PointIndex, (Region, Place<'tcx>)>;
-pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
-pub(crate) type StructuralEdge = FxHashMap<PointIndex, Vec<(SubsetBaseKind, Region, Region)>>;
+// pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
+// pub(crate) type StructuralEdge = FxHashMap<PointIndex, Vec<(SubsetBaseKind, Region, Region)>>;
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
 pub(crate) type LoanKilledAt = FxHashMap<PointIndex, BTreeSet<Loan>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
 
+/*
 /// Struct containing lookups for all the Polonius facts
 pub struct FactTable<'tcx> {
     pub(crate) tcx: TyCtxt<'tcx>,
@@ -540,3 +541,4 @@ pub(crate) enum SubsetBaseKind {
     LoanIssue,
     Move,
 }
+ */
