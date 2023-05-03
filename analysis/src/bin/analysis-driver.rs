@@ -9,7 +9,7 @@ use analysis::{
         run_coupling_tests,
         DefinitelyAccessibleAnalysis, // CouplingAnalysis,
         DefinitelyInitializedAnalysis,
-        // FactTable,
+        FactTable,
         FramingAnalysis,
         MaybeBorrowedAnalysis,
         ReachingDefsAnalysis,
@@ -279,7 +279,7 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                         }
 
                         println!("[driver]    Starting coupling analysis");
-                        // let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
+                        let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
                         // let result = CouplingAnalysis::new(
                         //     tcx,
                         //     local_def_id.to_def_id(),

@@ -37,12 +37,12 @@ pub type Path = <RustcFacts as FactTypes>::Path;
 /// Issue of a new loan. The assocciated region should represent a borrow temporary.
 pub(crate) type LoanIssues<'tcx> = FxHashMap<PointIndex, (Region, Place<'tcx>)>;
 // pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
-// pub(crate) type StructuralEdge = FxHashMap<PointIndex, Vec<(SubsetBaseKind, Region, Region)>>;
+pub(crate) type GraphOperations<'tcx> =
+    FxHashMap<Location, Vec<(SubsetBaseKind, Region, Region, Region)>>;
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
 pub(crate) type LoanKilledAt = FxHashMap<PointIndex, BTreeSet<Loan>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
 
-/*
 /// Struct containing lookups for all the Polonius facts
 pub struct FactTable<'tcx> {
     pub(crate) tcx: TyCtxt<'tcx>,
@@ -53,15 +53,13 @@ pub struct FactTable<'tcx> {
     /// Interpretation of regions in terms of places and temporaries
     pub(crate) origins: OriginPlaces<'tcx>,
 
-    /// Some points requre the LHS of an origin to be repacked to include a specific place
-    pub(crate) origin_packing_at: OriginPacking<'tcx>,
-
     /// Edges to add at each point, with interpretation
-    pub(crate) structural_edge: StructuralEdge,
+    pub(crate) graph_operations: GraphOperations<'tcx>,
 
     /// Analouges of polonius facts
     pub(crate) origin_contains_loan_at: OriginContainsLoanAt,
-    pub(crate) loan_killed_at: LoanKilledAt,
+
+    // pub(crate) loan_killed_at: LoanKilledAt,
     pub(crate) subsets_at: SubsetsAt,
 }
 
@@ -75,10 +73,8 @@ impl<'tcx> FactTable<'tcx> {
                 map: Default::default(),
                 tcx,
             },
-            origin_packing_at: Default::default(),
-            structural_edge: Default::default(),
             origin_contains_loan_at: Default::default(),
-            loan_killed_at: Default::default(),
+            graph_operations: Default::default(),
             subsets_at: Default::default(),
         }
     }
@@ -202,12 +198,12 @@ impl<'tcx> FactTable<'tcx> {
                         *assigning_origin,
                     )?;
 
-                    Self::insert_packing_constraint(
-                        working_table,
-                        point,
-                        *assigning_origin,
-                        OriginLHS::Place(assigned_to_place.into()),
-                    );
+                    // Self::insert_packing_constraint(
+                    //     working_table,
+                    //     point,
+                    //     *assigning_origin,
+                    //     OriginLHS::Place(assigned_to_place.into()),
+                    // );
                     set.remove(&assigning_subset.clone());
                 } else {
                     panic!("impossible: issued borrow without corresponding assignment");
@@ -234,12 +230,12 @@ impl<'tcx> FactTable<'tcx> {
                     )?;
 
                     // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                    Self::insert_packing_constraint(
-                        working_table,
-                        point,
-                        *reborrowing_origin,
-                        borrowed_from_place,
-                    );
+                    // Self::insert_packing_constraint(
+                    //     working_table,
+                    //     point,
+                    //     *reborrowing_origin,
+                    //     borrowed_from_place,
+                    // );
 
                     Self::insert_structural_edge(
                         working_table,
@@ -257,7 +253,6 @@ impl<'tcx> FactTable<'tcx> {
                 //      If there is exactly one subset AND The mir is an assignment
                 // 2.1 There should be at most ONE other relation, the assignment.
                 //          Both origins should either be new, or cohere with the known origins.
-                // Also add kills due to assignments here
 
                 let location = expect_mid_location(mir.location_table.to_location(point));
                 let statement = mir_kind_at(&mir.body, location);
@@ -287,21 +282,21 @@ impl<'tcx> FactTable<'tcx> {
                             *assigned_to_origin,
                         )?;
 
-                        // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                        Self::insert_packing_constraint(
-                            working_table,
-                            point,
-                            *assigned_to_origin,
-                            to_place,
-                        );
+                        // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
+                        // Self::insert_packing_constraint(
+                        //     working_table,
+                        //     point,
+                        //     *assigned_to_origin,
+                        //     to_place,
+                        // );
 
-                        // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
-                        Self::insert_packing_constraint(
-                            working_table,
-                            point,
-                            *assigned_from_origin,
-                            from_place,
-                        );
+                        // // fixme: Self::insert_origin_lhs_constraint(working_table, mir, origin, packing.clone());
+                        // Self::insert_packing_constraint(
+                        //     working_table,
+                        //     point,
+                        //     *assigned_from_origin,
+                        //     from_place,
+                        // );
                         Self::insert_structural_edge(
                             working_table,
                             point,
@@ -351,8 +346,9 @@ impl<'tcx> FactTable<'tcx> {
         working_table: &'a mut Self,
     ) {
         for (l, p) in mir.input_facts.loan_killed_at.iter() {
-            let loan_set = working_table.loan_killed_at.entry(*p).or_default();
-            loan_set.insert(l.to_owned());
+            todo!("insert a kill statement to the graph operations here");
+            // let loan_set = working_table.loan_killed_at.entry(*p).or_default();
+            // loan_set.insert(l.to_owned());
         }
     }
 
@@ -401,18 +397,18 @@ impl<'tcx> FactTable<'tcx> {
 
     /// Get the subsets associated with a move at each point
     /// Model: For each (from, to) subset, from is is a subset of to, and to is killed.
-    pub fn get_move_origins_at(&self, location: &PointIndex) -> Vec<(Region, Region)> {
-        match self.structural_edge.get(location) {
-            Some(v) => v
-                .iter()
-                .filter(|(kind, _, _)| {
-                    (*kind == SubsetBaseKind::Move) || (*kind == SubsetBaseKind::LoanIssue)
-                })
-                .map(|(_, from, to)| (*from, *to))
-                .collect::<_>(),
-            None => Vec::default(),
-        }
-    }
+    // pub fn get_move_origins_at(&self, location: &PointIndex) -> Vec<(Region, Region)> {
+    //     match self.structural_edge.get(location) {
+    //         Some(v) => v
+    //             .iter()
+    //             .filter(|(kind, _, _)| {
+    //                 (*kind == SubsetBaseKind::Move) || (*kind == SubsetBaseKind::LoanIssue)
+    //             })
+    //             .map(|(_, from, to)| (*from, *to))
+    //             .collect::<_>(),
+    //         None => Vec::default(),
+    //     }
+    // }
 
     /// Add a loan_issue constraint to the table
     fn insert_loan_issue_constraint(
@@ -427,26 +423,28 @@ impl<'tcx> FactTable<'tcx> {
     }
 
     /// Constrain an origin to be repacked in to include (not equal) a set of permissions at a point
-    fn insert_packing_constraint(
-        working_table: &mut Self,
-        point: PointIndex,
-        origin: Region,
-        packing: OriginLHS<'tcx>,
-    ) {
-        let constraints = working_table.origin_packing_at.entry(point).or_default();
-        constraints.push((origin, packing));
-    }
+    // fn insert_packing_constraint(
+    //     working_table: &mut Self,
+    //     point: PointIndex,
+    //     origin: Region,
+    //     packing: OriginLHS<'tcx>,
+    // ) {
+    //     let constraints = working_table.origin_packing_at.entry(point).or_default();
+    //     constraints.push((origin, packing));
+    // }
 
     /// Add a subset constraint between origins, which has been explained
     fn insert_structural_edge(
         working_table: &mut Self,
+        // point should be Location I think.
         point: PointIndex,
         origin_from: Region,
         origin_to: Region,
         kind: SubsetBaseKind,
     ) {
-        let constraint_set = working_table.structural_edge.entry(point).or_default();
-        constraint_set.push((kind, origin_from, origin_to));
+        todo!("Push an appropriate edge (with PCS semantics and such) here");
+        // let constraint_set = working_table.structural_edge.entry(point).or_default();
+        // constraint_set.push((kind, origin_from, origin_to));
     }
 }
 
@@ -455,10 +453,10 @@ impl<'tcx> std::fmt::Debug for FactTable<'tcx> {
         f.debug_struct("FactTable")
             .field("loan_issues", &self.loan_issues)
             .field("origins", &self.origins)
-            .field("origin_packing_at", &self.origin_packing_at)
-            .field("structural_edge", &self.structural_edge)
+            // .field("origin_packing_at", &self.origin_packing_at)
+            // .field("structural_edge", &self.structural_edge)
             .field("origin_contains_loan_at", &self.origin_contains_loan_at)
-            .field("loan_killed_at", &self.loan_killed_at)
+            // .field("loan_killed_at", &self.loan_killed_at)
             .field("subsets_at", &self.subsets_at)
             .finish()
     }
@@ -541,4 +539,3 @@ pub(crate) enum SubsetBaseKind {
     LoanIssue,
     Move,
 }
- */
