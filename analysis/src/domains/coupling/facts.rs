@@ -38,7 +38,6 @@ pub(crate) type LoanIssues<'tcx> = FxHashMap<Location, (Region, Place<'tcx>)>;
 // pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
 pub(crate) type GraphOperations<'tcx> = FxHashMap<Location, Vec<IntroStatement<'tcx>>>;
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
-pub(crate) type LoanKilledAt = FxHashMap<Location, BTreeSet<Loan>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
 
 /// Struct containing lookups for all the Polonius facts
@@ -51,13 +50,16 @@ pub struct FactTable<'tcx> {
     /// Interpretation of regions in terms of places and temporaries
     pub(crate) origins: OriginPlaces<'tcx>,
 
-    /// Edges to add at each point, with interpretation
+    /// Steps the graph needs to take at each point.
+    /// We assume that we can repack the PCS (incl. adding graph edges) _before_ doing all
+    /// the graph ops. We also assume that the Hoare triple for the statement will encompass
+    /// the change in nodes in the graph.
+    /// If either of these are untrue, I think we'll need to move to something like MicroMir here
+    /// in order to properly interleave these effects.
     pub(crate) graph_operations: GraphOperations<'tcx>,
 
     /// Analouges of polonius facts
     pub(crate) origin_contains_loan_at: OriginContainsLoanAt,
-
-    // pub(crate) loan_killed_at: LoanKilledAt,
     pub(crate) subsets_at: SubsetsAt,
 }
 
@@ -331,11 +333,10 @@ impl<'tcx> FactTable<'tcx> {
                 ),
             }
         }
-
         Ok(())
     }
 
-    /// Promote Polonius facts: Workaround for memory safety
+    /// Lift Polonius facts
     fn collect_origin_contains_loan_at<'a, 'mir>(
         mir: &'mir BodyWithBorrowckFacts<'tcx>,
         working_table: &'a mut Self,
@@ -347,7 +348,7 @@ impl<'tcx> FactTable<'tcx> {
         }
     }
 
-    /// Promote Polonius facts: Workaround for memory safety
+    /// Lift Polonius facts
     fn collect_subsets_at<'a, 'mir>(
         mir: &'mir BodyWithBorrowckFacts<'tcx>,
         working_table: &'a mut Self,
@@ -357,7 +358,7 @@ impl<'tcx> FactTable<'tcx> {
         }
     }
 
-    /// Promote Polonius facts: Workaround for memory safety
+    /// Turn all loan_killed_at facts into actual kills in the semantics.
     fn collect_loan_killed_at<'a, 'mir>(
         mir: &'mir BodyWithBorrowckFacts<'tcx>,
         working_table: &'a mut Self,
@@ -365,9 +366,8 @@ impl<'tcx> FactTable<'tcx> {
         // Assert that the loan is killed at a Mid only.
         for (l, p) in mir.input_facts.loan_killed_at.iter() {
             let location = expect_mid_location(mir.location_table.to_location(*p));
-            todo!("insert a kill statement to the graph operations here");
-            // let loan_set = working_table.loan_killed_at.entry(*p).or_default();
-            // loan_set.insert(l.to_owned());
+            let cur_op = working_table.graph_operations.entry(location).or_default();
+            cur_op.push(IntroStatement::Kill(OriginLHS::Loan(*l)));
         }
     }
 
