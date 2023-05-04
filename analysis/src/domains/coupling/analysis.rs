@@ -7,6 +7,7 @@
 // use super::facts::FactTable;
 use crate::{
     abstract_interpretation::{AnalysisResult, FixpointEngine},
+    domains::{CouplingState, FactTable},
     PointwiseState,
 };
 
@@ -17,7 +18,6 @@ use prusti_rustc_interface::{
     span::def_id::DefId,
 };
 
-/*
 pub struct CouplingAnalysis<'facts, 'mir: 'facts, 'tcx: 'mir> {
     tcx: TyCtxt<'tcx>,
     def_id: DefId,
@@ -101,4 +101,3 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
     //  - Free PCS trace
     //  - Reborrowing DAG trace
 }
- */

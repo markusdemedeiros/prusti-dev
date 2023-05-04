@@ -37,6 +37,8 @@ pub type Path = <RustcFacts as FactTypes>::Path;
 pub(crate) type LoanIssues<'tcx> = FxHashMap<Location, (Region, Place<'tcx>)>;
 // pub(crate) type OriginPacking<'tcx> = FxHashMap<PointIndex, Vec<(Region, OriginLHS<'tcx>)>>;
 pub(crate) type GraphOperations<'tcx> = FxHashMap<Location, Vec<IntroStatement<'tcx>>>;
+pub(crate) type DeltaLeaves<'tcx> =
+    FxHashMap<Location, (Vec<OriginLHS<'tcx>>, Vec<OriginLHS<'tcx>>)>; // fixme: this should be capabilities
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
 
@@ -58,6 +60,14 @@ pub struct FactTable<'tcx> {
     /// in order to properly interleave these effects.
     pub(crate) graph_operations: GraphOperations<'tcx>,
 
+    /// Hoare triple associated with the change in leaves
+    /// We precompute this, right now we use it to ensure we have everything packed in the right state.
+    /// In the real version, this should be a dynamic check that
+    ///  delta_leaves <: delta_pcs
+    /// As in, all the capabilities consumed by the graph are also consumed by the statement
+    /// and likewise with all capabilities released.
+    pub(crate) delta_leaves: DeltaLeaves<'tcx>,
+
     /// Analouges of polonius facts
     pub(crate) origin_contains_loan_at: OriginContainsLoanAt,
     pub(crate) subsets_at: SubsetsAt,
@@ -74,6 +84,7 @@ impl<'tcx> FactTable<'tcx> {
                 tcx,
             },
             origin_contains_loan_at: Default::default(),
+            delta_leaves: Default::default(),
             graph_operations: Default::default(),
             subsets_at: Default::default(),
         }
@@ -227,6 +238,19 @@ impl<'tcx> FactTable<'tcx> {
                         OriginLHS::Loan(*bw_index),
                         PlaceImpl::from_mir_place(*asgn_to_place),
                     ));
+
+                    // Associated Hoare triple
+                    working_table.delta_leaves.insert(
+                        loc,
+                        (
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*brw_from_place))]
+                                .into_iter()
+                                .collect(),
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*asgn_to_place))]
+                                .into_iter()
+                                .collect(),
+                        ),
+                    );
                 }
 
                 // Case 2: Reborrow
@@ -262,13 +286,14 @@ impl<'tcx> FactTable<'tcx> {
                         OriginLHS::Loan(*bw_index),
                         *issuing_origin,
                     )?;
-                    // update the working table's origins: reborrowed-from place
-                    Self::check_or_construct_origin(
-                        working_table,
-                        &mir.body,
-                        OriginLHS::Place((*rb_from_place).into()),
-                        *rb_from_origin,
-                    )?;
+                    // // update the working table's origins: reborrowed-from place
+                    // Actually we don't want to do this... because we might reborrow from a subplace
+                    // Self::check_or_construct_origin(
+                    //     working_table,
+                    //     &mir.body,
+                    //     OriginLHS::Place((*rb_from_place).into()),
+                    //     *rb_from_origin,
+                    // )?;
 
                     // Impose the semantics for reborrows
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
@@ -281,6 +306,19 @@ impl<'tcx> FactTable<'tcx> {
                         OriginLHS::Loan(*bw_index),
                         PlaceImpl::from_mir_place(*asgn_to_place),
                     ));
+
+                    // Associated Hoare triple
+                    working_table.delta_leaves.insert(
+                        loc,
+                        (
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*rb_from_place))]
+                                .into_iter()
+                                .collect(),
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*asgn_to_place))]
+                                .into_iter()
+                                .collect(),
+                        ),
+                    );
                 }
 
                 // Case 3: Move
@@ -302,13 +340,14 @@ impl<'tcx> FactTable<'tcx> {
                         OriginLHS::Place((*mv_to_place).into()),
                         *mv_to_origin,
                     )?;
-                    // update the working table's origins: moved-from place
-                    Self::check_or_construct_origin(
-                        working_table,
-                        &mir.body,
-                        OriginLHS::Place((*mv_from_place).into()),
-                        *mv_from_origin,
-                    )?;
+                    // // update the working table's origins: moved-from place
+                    // Actually we don't want to do this... because we might move from a subplace
+                    // Self::check_or_construct_origin(
+                    //     working_table,
+                    //     &mir.body,
+                    //     OriginLHS::Place((*mv_from_place).into()),
+                    //     *mv_from_origin,
+                    // )?;
 
                     // Impose the semantics for moves
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
@@ -322,6 +361,19 @@ impl<'tcx> FactTable<'tcx> {
                     cur_op.push(IntroStatement::Kill(OriginLHS::Place(
                         PlaceImpl::from_mir_place(*mv_from_place),
                     )));
+
+                    // Associated Hoare triple
+                    working_table.delta_leaves.insert(
+                        loc,
+                        (
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*mv_from_place))]
+                                .into_iter()
+                                .collect(),
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(*mv_to_place))]
+                                .into_iter()
+                                .collect(),
+                        ),
+                    );
                 }
 
                 // Otherwise, not sure how to interpret the origins.
@@ -522,7 +574,7 @@ impl<'tcx> std::fmt::Debug for OriginPlaces<'tcx> {
 ///     Every origin is either:
 ///         - A temporary value associated with a loan
 ///         - A maximally packed (canonical) place
-#[derive(PartialEq, Eq, Clone)]
+#[derive(PartialEq, Eq, Clone, PartialOrd, Ord)]
 pub enum OriginLHS<'tcx> {
     Place(Place<'tcx>),
     Loan(Loan),
