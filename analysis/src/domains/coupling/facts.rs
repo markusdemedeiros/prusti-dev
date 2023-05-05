@@ -101,7 +101,6 @@ impl<'tcx> FactTable<'tcx> {
         let mut working_table = Self::default_from_tcx(tcx);
         Self::compute_loan_issues(mir, &mut working_table)?;
         Self::characterize_subset_base(&mut working_table, mir)?;
-        println!("Characterized: {:?}", working_table.origins);
         Self::collect_loan_killed_at(mir, &mut working_table);
         Self::collect_origin_contains_loan_at(mir, &mut working_table);
         Self::collect_subsets_at(mir, &mut working_table);
@@ -558,9 +557,9 @@ impl<'tcx> std::fmt::Debug for FactTable<'tcx> {
             .field("origins", &self.origins)
             // .field("origin_packing_at", &self.origin_packing_at)
             // .field("structural_edge", &self.structural_edge)
-            .field("origin_contains_loan_at", &self.origin_contains_loan_at)
+            // .field("origin_contains_loan_at", &self.origin_contains_loan_at)
             // .field("loan_killed_at", &self.loan_killed_at)
-            .field("subsets_at", &self.subsets_at)
+            // .field("subsets_at", &self.subsets_at)
             .finish()
     }
 }

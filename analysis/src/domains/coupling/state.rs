@@ -10,6 +10,7 @@ use crate::{
     abstract_interpretation::{AbstractState, AnalysisResult},
     mir_utils::{self, expand, expand_struct_place, is_prefix, Place},
 };
+use itertools::Itertools;
 use prusti_rustc_interface::{
     borrowck::{consumers::RustcFacts, BodyWithBorrowckFacts},
     middle::{mir, mir::Location, ty::TyCtxt},
@@ -36,7 +37,7 @@ pub type Path = <RustcFacts as FactTypes>::Path;
 /// Index into arena-allocated coupled borrows.
 pub type CoupledBorrowIndex = usize;
 
-#[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord, Debug)]
+#[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 pub struct Tagged<Data, Tag> {
     pub data: Data,
     pub tag: Option<Tag>,
@@ -52,6 +53,22 @@ impl<Data, Tag> Tagged<Data, Tag> {
 
     fn untagged(data: Data) -> Self {
         Self { data, tag: None }
+    }
+
+    fn tagged(data: Data, tag: Tag) -> Self {
+        Self {
+            data,
+            tag: Some(tag),
+        }
+    }
+}
+
+impl<Data: fmt::Debug, Tag: fmt::Debug> fmt::Debug for Tagged<Data, Tag> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.tag {
+            Some(t) => write!(f, "{:?}@{:?}", self.data, t),
+            None => write!(f, "{:?}", self.data),
+        }
     }
 }
 
@@ -123,7 +140,7 @@ impl<'tcx> fmt::Debug for CDGNode<'tcx> {
 /// The smallest amount of metadata needed to calculate the coupling graph
 #[derive(Clone, PartialEq, Eq)]
 pub enum SignatureKind {
-    Shared(Region),
+    Subgraph(Tagged<Region, Location>),
     Coupled(CoupledBorrowIndex),
     Owned,
 }
@@ -177,8 +194,13 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{:?} --* {:?}: ",
+            "{:?} -{}-* {:?}",
             self.leaves.iter().collect::<Vec<_>>(),
+            match &self.kind {
+                SignatureKind::Subgraph(o) => format!("shared {:?}", o),
+                SignatureKind::Coupled(x) => format!("coupled {:?}", x),
+                SignatureKind::Owned => format!("owned"),
+            },
             self.roots.iter().collect::<Vec<_>>()
         )?;
         Ok(())
@@ -187,7 +209,7 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
 
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct OriginMap<'tcx> {
-    map: BTreeMap<Region, OriginSignature<'tcx>>,
+    map: BTreeMap<Tagged<Region, Location>, OriginSignature<'tcx>>,
     // leaves: BTreeSet<OriginLHS<'tcx>>,
 }
 
@@ -205,9 +227,56 @@ impl<'tcx> OriginMap<'tcx> {
         self.map.is_empty()
     }
 
-    // pub fn leaves(&self) -> &BTreeSet<OriginLHS<'tcx>> {
-    //     &self.leaves
-    // }
+    // Add a new borrow root to the tree
+    pub fn new_borrow(&mut self, bw_from_place: Place<'tcx>, bw_ix: Loan, bw_origin: &Region) {
+        assert!(self.map.get(&Tagged::untagged(*bw_origin)).is_none());
+        let sig = OriginSignature {
+            leaves: [CDGNode::Borrow(Tagged::untagged(bw_ix))].into(),
+            roots: [CDGNode::Place(Tagged::untagged(bw_from_place))].into(),
+            kind: SignatureKind::Owned,
+        };
+        self.map.insert(Tagged::untagged(*bw_origin), sig);
+    }
+
+    // Add a new
+    pub fn new_shared_subgraph(
+        &mut self,
+        subgraph_node: CDGNode<'tcx>,
+        subgraph_origin: &Region,
+        supgraph_node: CDGNode<'tcx>,
+        supgraph_origin: &Region,
+    ) {
+        // For connectivity
+        assert!(self.map.get(&Tagged::untagged(*supgraph_origin)).is_none());
+        assert!(self.map.get(&Tagged::untagged(*subgraph_origin)).is_some());
+        assert!(self
+            .map
+            .get(&Tagged::untagged(*subgraph_origin))
+            .unwrap()
+            .leaves
+            .contains(&subgraph_node));
+
+        let sig = OriginSignature {
+            leaves: [supgraph_node].into(),
+            roots: [subgraph_node].into(),
+            kind: SignatureKind::Subgraph(Tagged::untagged(*subgraph_origin)),
+        };
+        self.map.insert(Tagged::untagged(*supgraph_origin), sig);
+    }
+
+    pub fn tag_origins(&mut self, location: &Location, origin: Region) {
+        if let Some(sig) = self.map.remove(&Tagged::untagged(origin)) {
+            self.map.insert(Tagged::tagged(origin, *location), sig);
+        }
+
+        for (_, sig) in self.map.iter_mut() {
+            if let SignatureKind::Subgraph(sbg) = &(sig.kind) {
+                if *sbg == Tagged::untagged(origin) {
+                    sig.kind = SignatureKind::Subgraph(Tagged::tagged(origin, *location));
+                }
+            }
+        }
+    }
 }
 
 /*
@@ -322,7 +391,10 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         // (recording the necessary changes in leaves as consume and expire statements)
         self.apply_origins(&location)?;
 
-        println!("[debug@{:?}] {:?}", location, self.coupling_graph);
+        println!(
+            "[debug@{:?}]\n{:?}\n",
+            location, self.coupling_graph.origins
+        );
 
         // get the preconditions for the change in nodes at the location
         let (pre_leaves, _) = match self.fact_table.delta_leaves.get(&location) {
@@ -342,15 +414,12 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     // fixme: For now we're just going to assume we never get contradictory packing requirements, and won't check that.
     fn ensure_contains_leaves_for(&mut self, to_ensure: &Vec<OriginLHS<'tcx>>) {
         for req in to_ensure.iter() {
-            // It's panicking here, for some reason. Is it possible that this is none?
-            println!("req is {:#?}", req);
             let matching_origin = self
                 .fact_table
                 .origins
                 .get_origin(&self.mir.body, req.clone());
-            println!("mo is {:#?}", matching_origin);
             if matching_origin == None {
-                // hack. This is for borrows of owned data.
+                // stupid hack. This is for borrows of owned data.
                 continue;
             }
             let matching_origin = matching_origin.unwrap();
@@ -358,7 +427,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                 .coupling_graph
                 .origins
                 .map
-                .get(&matching_origin)
+                .get(&Tagged::untagged(matching_origin))
                 .unwrap()
                 .leaves
                 .clone();
@@ -369,14 +438,54 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         }
     }
 
+    // As long as we don't need intermediate repacks between these operations (or they are
+    // written down beforehand) we can always assume that the appropriate nodes are in
+    // the graph(s).
     fn apply_rewrite(&mut self, location: &Location) {
         for x in self.fact_table.graph_operations.get(location).iter() {
             for s in x.iter() {
                 match s {
-                    IntroStatement::Kill(_) => todo!(),
-                    IntroStatement::Assign(_, _) => todo!(),
-                    IntroStatement::Reborrow(_, _, _) => todo!(),
-                    IntroStatement::Borrow(_, _) => todo!(),
+                    IntroStatement::Kill(node) => todo!(),
+                    IntroStatement::Assign(asgn_from_node, asgn_to_node) => {
+                        let asgn_from_origin = self
+                            .fact_table
+                            .origins
+                            .get_origin(&self.mir.body, (*asgn_from_node).clone())
+                            .unwrap();
+                        let asgn_to_origin = self
+                            .fact_table
+                            .origins
+                            .get_origin(&self.mir.body, OriginLHS::Place(*asgn_to_node))
+                            .unwrap();
+                        if asgn_from_origin == asgn_to_origin {
+                            // This should rewrite the LHS of a place.
+                            // I'm not sure if it ever comes up, though...
+                            //    x=&mut x?
+                            //    x.f=&mut x?
+                            //    Maybe something w/ coupling?
+                            unimplemented!("assignment to self places not implemented yet");
+                        } else {
+                            self.coupling_graph.origins.new_shared_subgraph(
+                                (*asgn_from_node).clone().into(),
+                                &asgn_from_origin,
+                                CDGNode::Place(Tagged::untagged(*asgn_to_node)),
+                                &asgn_to_origin,
+                            );
+                        }
+                    }
+                    IntroStatement::Reborrow(rb_from_place, bw_ix, rb_from_origin) => todo!(),
+                    IntroStatement::Borrow(bw_from_place, bw_ix) => {
+                        let bw_into_origin = self
+                            .fact_table
+                            .origins
+                            .get_origin(&self.mir.body, OriginLHS::Loan(*bw_ix))
+                            .unwrap();
+                        self.coupling_graph.origins.new_borrow(
+                            *bw_from_place,
+                            *bw_ix,
+                            &bw_into_origin,
+                        );
+                    }
                 }
             }
         }
@@ -385,10 +494,59 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     /// Expire non-live origins, and add new live origins
     fn apply_origins(&mut self, location: &Location) -> AnalysisResult<()> {
         // Get the set of origins at a point from the origin_contains_loan_at fact
-        match self.fact_table.origin_expires_before.get(location) {
-            Some(ogs) => panic!("The origins that expire at this point are: {:#?}", ogs),
-            None => Ok(()),
+        if let Some(mut ogs) = self.fact_table.origin_expires_before.get(location).clone() {
+            let mut done = ogs.is_empty();
+            while !done {
+                // 1. We need an order in which to expiure these origins. This didn't matter in the last
+                // formulation of the coupling graph, but it does in this one.
+                // We assert that the coupling graph is tree-structured, and that tree leaves expire first
+                //    (the exceptions to this rule become coupled)
+
+                // An origin x is a tree-leaf when no other branch is SharedSubgraph(x)?
+                // fixme: do coupled edges abstract over ALL origins below them? If not, change this match.
+                match self
+                    .coupling_graph
+                    .origins
+                    .map
+                    .keys()
+                    // Find all tree-leaves
+                    .filter(|x| {
+                        self.coupling_graph
+                            .origins
+                            .map
+                            .iter()
+                            .all(|(_, sig)| match &sig.kind {
+                                SignatureKind::Subgraph(y) => y != *x,
+                                SignatureKind::Coupled(_) => true,
+                                SignatureKind::Owned => true,
+                            })
+                    })
+                    // We are allowed to expire the tree-leaves that are tagged OR are in OGS.
+                    .filter(|x| x.tag.is_some() || ogs.contains(&x.data))
+                    .next()
+                {
+                    Some(tree_leaf) => {
+                        println!("Found tree leaf: {:?}", tree_leaf);
+                        panic!();
+                        done = ogs.is_empty();
+                    }
+                    None => {
+                        // The rest of ogs are internal, so get tagged.
+                        // fixme: Do we also need to tag the LHS of that origin? Probably doens't matter.
+                        for x in ogs.into_iter() {
+                            self.coupling_graph.origins.tag_origins(location, *x);
+                        }
+                        done = true;
+                    }
+                }
+            }
+
+            // 2. In order, we need to consume all of the unkilled leaves and kill them at the leaf (only).
+
+            // 3. We expire the edges. If the edge is not a coupoled edge, we always regain capabiliy.
+            // Coupled edges only regain capavility when all coupled edges are expiured.
         }
+        Ok(())
         // let origin_set = match self.fact_table.origin_contains_loan_at.get(location) {
         //     Some(ocla_set) => ocla_set.keys().cloned().collect::<BTreeSet<_>>(),
         //     None => BTreeSet::default(),
