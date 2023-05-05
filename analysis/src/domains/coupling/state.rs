@@ -265,23 +265,6 @@ impl<'tcx> OriginMap<'tcx> {
     pub fn tag_node(&mut self, location: &Location, node: &CDGNode<'tcx>) {
         for (_, sig) in self.map.iter_mut() {
             sig.tag(location, node);
-            // for kill_leaf in sig.leaves.iter().filter(|x| x.should_tag(node)).cloned() {
-            //     sig.leaves.remove(&kill_leaf);
-            //     kill_leaf.tag();
-            //     sig.leaves.insert(kill_leaf);
-            // }
-            // todo!();
-            // let to_kill_roots = Vec::new();
-            // for t in sig.leaves.cloned() {
-            //     match &t {
-            //         CDGNode::Borrow(lx) => {
-            //             unimplemented!("kill borrows");
-            //         }
-            //         CDGNode::Place(_) => {
-            //             unimplemented!("kill places");
-            //         }
-            //     }
-            // }
         }
     }
 }
@@ -399,7 +382,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
 
             // I'm also going to leave actual unpacking completely unimplemented (lol).
             // Check that the corresponding CDGNode associate to req is contained in the matching_leaves.
-            assert!(matching_leaves.contains(&Into::<CDGNode<'tcx>>::into(req.clone())));
+            if !matching_leaves.contains(&Into::<CDGNode<'tcx>>::into(req.clone())) {
+                println!("need to repack! matching_leaves:");
+                println!("{:?}", matching_leaves);
+                println!("req: {:?}", req);
+            }
         }
     }
 
@@ -496,8 +483,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                 {
                     Some(tree_leaf) => {
                         println!("Found tree leaf: {:?}", tree_leaf);
-                        panic!();
+                        // todo: emit consume and expire statements for that edge.
+                        // Coupled edges don't get expired until all couped edges do... but they can get removed!
+                        // remove from ogs.
                         done = ogs.is_empty();
+                        panic!();
                     }
                     None => {
                         // The rest of ogs are internal, so get tagged.
@@ -509,88 +499,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                     }
                 }
             }
-
-            // 2. In order, we need to consume all of the unkilled leaves and kill them at the leaf (only).
-
-            // 3. We expire the edges. If the edge is not a coupoled edge, we always regain capabiliy.
-            // Coupled edges only regain capavility when all coupled edges are expiured.
-        }
-        Ok(())
-        // let origin_set = match self.fact_table.origin_contains_loan_at.get(location) {
-        //     Some(ocla_set) => ocla_set.keys().cloned().collect::<BTreeSet<_>>(),
-        //     None => BTreeSet::default(),
-        // };
-
-        // for origin_map in self.coupling_graph.origins.map.iter_mut() {
-        //     // (expiries) Remove all origins which are not in that set
-        //     //  todo: calculate and log the FPCS effects at this point
-        //     origin_map.retain(|k, _| origin_set.contains(k));
-
-        //     // (issues) Include empty origins for each new origin
-        //     for origin in origin_set.iter() {
-        //         origin_map.entry(*origin).or_default();
-        //     }
-
-        //     // Sanity check
-        //     assert_eq!(
-        //         origin_map.keys().cloned().collect::<BTreeSet<_>>(),
-        //         origin_set
-        //     );
-        // }
-    }
-}
-
-/*
-    fn apply_loan_moves(&mut self, location: &PointIndex) -> AnalysisResult<()> {
-        for (from, to) in self.fact_table.get_move_origins_at(location) {
-            // Kill every place in the to-origins's cannonical LHS (fixme: is this right? I want to kill the assigned-to place)
-            if let OriginLHS::Place(mir_place) = self.fact_table.origins.map.get(&to).unwrap() {
-                let node_to_kill = CDGNode::Place(Tagged::untagged(*mir_place));
-                self.coupling_graph
-                    .origins
-                    .kill_node(location, &node_to_kill)?;
-            };
-
-            let mut nodes_to_kill: Vec<_> = Default::default();
-            for origin_map in self.coupling_graph.origins.origins.iter_mut() {
-                // Kill every place that is a prefix of this set:
-                let from_origin_current_lhs = origin_map.get(&from).unwrap().leaves.clone();
-                for origin_lhs in from_origin_current_lhs.iter() {
-                    if let node @ CDGNode::Place(_) = origin_lhs {
-                        // Kill origin_lhs in all places in the graph
-                        nodes_to_kill.push(node.clone());
-                    }
-                }
-            }
-
-            for node in nodes_to_kill.into_iter() {
-                self.coupling_graph.origins.kill_node(location, &node)?;
-            }
-
-            for origin_map in self.coupling_graph.origins.origins.iter_mut() {
-                // Get the to-origin's LHS (this is already repacked to be the LHS of the assignment)
-                let to_origin_assigning_lhs: BTreeSet<CDGNode<'tcx>> =
-                    BTreeSet::from([(*self.fact_table.origins.map.get(&to).unwrap())
-                        .clone()
-                        .into()]);
-
-                // Get the from-origin's new LHS (these should be killed, now)
-                let from_origin_current_lhs = origin_map.get(&from).unwrap().leaves.clone();
-
-                // Add an edge from the to-origins's assigning LHS (a set of untagged places) to the LHS of the from-origin (a set of tagged places)
-                origin_map
-                    .get_mut(&to)
-                    .unwrap()
-                    .insert_edge(CDGEdge::move_edge(
-                        to_origin_assigning_lhs,
-                        from_origin_current_lhs,
-                    ));
-            }
         }
         Ok(())
     }
 }
- */
+
 impl<'facts, 'mir: 'facts, 'tcx: 'mir> Serialize for CouplingState<'facts, 'mir, 'tcx> {
     fn serialize<Se: Serializer>(&self, serializer: Se) -> Result<Se::Ok, Se::Error> {
         let mut s = serializer.serialize_struct("[coupling state]", 1)?;
@@ -635,6 +548,14 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
     // Invariant: bottom join X is X
     fn join(&mut self, other: &Self) {
+        // Check for the trivial cases (join to bottom)
+        if other.coupling_graph.origins.map.is_empty() {
+            return;
+        } else if self.coupling_graph.origins.map.is_empty() {
+            self.coupling_graph = other.coupling_graph.clone();
+            return;
+        }
+
         todo!("implement joins");
 
         /*
