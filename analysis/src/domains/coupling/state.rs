@@ -78,13 +78,13 @@ impl<Data: fmt::Debug, Tag: fmt::Debug> fmt::Debug for Tagged<Data, Tag> {
 ///     - A Borrow: a Loan, tagged by a point
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum CDGNode<'tcx> {
-    Place(Tagged<Place<'tcx>, PointIndex>),
-    Borrow(Tagged<Loan, PointIndex>),
+    Place(Tagged<Place<'tcx>, Location>),
+    Borrow(Tagged<Loan, Location>),
 }
 
 impl<'tcx> CDGNode<'tcx> {
     /// Tags a node at a point, if it isn't already untagged
-    pub fn kill(mut self, l: &PointIndex) -> Self {
+    pub fn kill(mut self, l: &Location) -> Self {
         match &mut self {
             CDGNode::Place(p) => p.tag(*l),
             CDGNode::Borrow(b) => b.tag(*l),
@@ -95,7 +95,7 @@ impl<'tcx> CDGNode<'tcx> {
     /// Determine if a kill should tag the current place:
     ///     - A borrow should be tagged only if it is untagged, and equal to to_kill
     ///     - A place should be tagged only if it is untagged, and to_kill is its prefix
-    fn should_tag(&self, to_kill: &CDGNode<'tcx>) -> bool {
+    pub fn should_tag(&self, to_kill: &CDGNode<'tcx>) -> bool {
         match (self, to_kill) {
             (CDGNode::Place(p_self), CDGNode::Place(p_kill)) => {
                 p_self.tag.is_none() && p_kill.tag.is_none() && is_prefix(p_self.data, p_kill.data)
@@ -119,20 +119,8 @@ impl<'tcx> Into<CDGNode<'tcx>> for OriginLHS<'tcx> {
 impl<'tcx> fmt::Debug for CDGNode<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            CDGNode::Place(tp) => {
-                if let Some(tag) = tp.tag {
-                    write!(f, "{:?}@{:?}", tp.data, tag.index())
-                } else {
-                    write!(f, "{:?}", tp.data)
-                }
-            }
-            CDGNode::Borrow(tb) => {
-                if let Some(tag) = tb.tag {
-                    write!(f, "{:?}@{:?}", tb.data, tag.index())
-                } else {
-                    write!(f, "{:?}", tb.data)
-                }
-            }
+            CDGNode::Place(tp) => write!(f, "{:?}", tp),
+            CDGNode::Borrow(tb) => write!(f, "{:?}", tb),
         }
     }
 }
@@ -167,11 +155,7 @@ impl<'tcx> OriginSignature<'tcx> {
     }
 
     /// Tags all untagged places which have to_tag as a prefix in a set of nodes
-    fn tag_in_set(
-        set: &mut BTreeSet<CDGNode<'tcx>>,
-        location: &PointIndex,
-        to_tag: &CDGNode<'tcx>,
-    ) {
+    fn tag_in_set(set: &mut BTreeSet<CDGNode<'tcx>>, location: &Location, to_tag: &CDGNode<'tcx>) {
         let mut to_replace: Vec<CDGNode<'tcx>> = vec![];
         for node in set.iter() {
             if node.should_tag(to_tag) {
@@ -184,7 +168,7 @@ impl<'tcx> OriginSignature<'tcx> {
     }
 
     /// Tags all untagged places which have to_tag as a prefix
-    pub fn tag(&mut self, location: &PointIndex, to_tag: &CDGNode<'tcx>) {
+    pub fn tag(&mut self, location: &Location, to_tag: &CDGNode<'tcx>) {
         Self::tag_in_set(&mut self.roots, location, to_tag);
         Self::tag_in_set(&mut self.leaves, location, to_tag);
     }
@@ -277,49 +261,30 @@ impl<'tcx> OriginMap<'tcx> {
             }
         }
     }
-}
 
-/*
-    /// Kill a node in all graphs at a location
-    fn kill_node(&mut self, location: &PointIndex, node: &CDGNode<'tcx>) -> AnalysisResult<()> {
-        for cdg_origin_map in self.origins.iter_mut() {
-            for cdg_origin in cdg_origin_map.values_mut() {
-                cdg_origin.tag(location, node);
-            }
+    pub fn tag_node(&mut self, location: &Location, node: &CDGNode<'tcx>) {
+        for (_, sig) in self.map.iter_mut() {
+            sig.tag(location, node);
+            // for kill_leaf in sig.leaves.iter().filter(|x| x.should_tag(node)).cloned() {
+            //     sig.leaves.remove(&kill_leaf);
+            //     kill_leaf.tag();
+            //     sig.leaves.insert(kill_leaf);
+            // }
+            // todo!();
+            // let to_kill_roots = Vec::new();
+            // for t in sig.leaves.cloned() {
+            //     match &t {
+            //         CDGNode::Borrow(lx) => {
+            //             unimplemented!("kill borrows");
+            //         }
+            //         CDGNode::Place(_) => {
+            //             unimplemented!("kill places");
+            //         }
+            //     }
+            // }
         }
-        Ok(())
-    }
-
-    /// Check that two CouplingOrigins have the same LHS's for each origin they both have
-    fn cohere_lhs(&mut self, other: &CouplingOrigins<'tcx>) {
-        // Join the two by appending the origins together
-
-        // Now we must ensure the two sets of origin mappings cohere, that is they
-        //  have the same LHS for each non-empty origin.
-        // fixme: right now we just panic if they are incoherent, but in reality we should
-        // probably fix them by repacking.
-
-        // naive hack solution: iterate over all tuples
-        for origin_map in self.origins.iter() {
-            for (origin, cdgo) in origin_map.iter() {
-                for other_origin_map in self.origins.iter() {
-                    if let Some(other_cdgo) = other_origin_map.get(origin) {
-                        assert_eq!(cdgo.leaves, other_cdgo.leaves);
-                    }
-                }
-            }
-        }
-    }
-
-    /// Kill all leaves that are the LHS of a region
-    pub fn kill_leaves(&mut self, origin: &Region, location: &PointIndex) -> AnalysisResult<()> {
-        for leaf in self.get_leaves(origin) {
-            self.kill_node(location, &leaf)?;
-        }
-        Ok(())
     }
 }
-*/
 
 // A coupling graph
 #[derive(Clone, Default, PartialEq, Eq, Debug)]
@@ -445,7 +410,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         for x in self.fact_table.graph_operations.get(location).iter() {
             for s in x.iter() {
                 match s {
-                    IntroStatement::Kill(node) => todo!(),
+                    IntroStatement::Kill(node) => {
+                        self.coupling_graph
+                            .origins
+                            .tag_node(location, &((*node).clone().into()));
+                    }
                     IntroStatement::Assign(asgn_from_node, asgn_to_node) => {
                         let asgn_from_origin = self
                             .fact_table
