@@ -143,6 +143,11 @@ impl<'tcx> Place<'tcx> {
     /// Removes the outermost projection from a place, if the following is allowed:
     ///     { self } pack(self) { strip(self) }
     pub(crate) fn strip(&self, tcx: TyCtxt<'tcx>) -> Option<Self> {
+        // (hack) don't allow packing a deref up, for shallow/deep capabilities
+        if let Some(ProjectionElem::Deref) = self.outermost_projection() {
+            return None;
+        }
+
         self.siblings().and_then(|siblings| {
             if siblings.len() == 1 && siblings.contains(self) {
                 let mut projection = self.projection.to_vec();

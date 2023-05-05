@@ -219,11 +219,14 @@ impl<'tcx> FactTable<'tcx> {
                     // -  a loan issue into issuing_origin
                     Some((issuing1, bw_index, _)),
                 ) if issuing_origin == issuing1 => {
+                    // In the CDG, we assign to the deref of a place (not the place itself)
+                    let asgn_to_place = working_table.tcx.mk_place_deref(*asgn_to_place);
+
                     // update the working table's origins: assigned to place
                     Self::check_or_construct_origin(
                         working_table,
                         &mir.body,
-                        OriginLHS::Place((*asgn_to_place).into()),
+                        OriginLHS::Place(asgn_to_place.into()),
                         *asgn_to_origin,
                     )?;
                     // update the working table's origins: loan issue
@@ -242,7 +245,7 @@ impl<'tcx> FactTable<'tcx> {
                     ));
                     cur_op.push(IntroStatement::Assign(
                         OriginLHS::Loan(*bw_index),
-                        PlaceImpl::from_mir_place(*asgn_to_place),
+                        PlaceImpl::from_mir_place(asgn_to_place),
                     ));
 
                     // Associated Hoare triple
@@ -252,7 +255,7 @@ impl<'tcx> FactTable<'tcx> {
                             [OriginLHS::Place(PlaceImpl::from_mir_place(*brw_from_place))]
                                 .into_iter()
                                 .collect(),
-                            [OriginLHS::Place(PlaceImpl::from_mir_place(*asgn_to_place))]
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(asgn_to_place))]
                                 .into_iter()
                                 .collect(),
                         ),
@@ -278,11 +281,15 @@ impl<'tcx> FactTable<'tcx> {
                     // -  a loan issue into issuing_origin
                     Some((issuing2, bw_index, _)),
                 ) if issuing_origin == issuing1 && issuing_origin == issuing2 => {
+                    // In the CDG, we assign to the deref of a place (not the place itself)
+                    let asgn_to_place = working_table.tcx.mk_place_deref(*asgn_to_place);
+                    let rb_from_place = working_table.tcx.mk_place_deref(*rb_from_place);
+
                     // update the working table's origins: assigned-to place
                     Self::check_or_construct_origin(
                         working_table,
                         &mir.body,
-                        OriginLHS::Place((*asgn_to_place).into()),
+                        OriginLHS::Place(asgn_to_place.into()),
                         *asgn_to_origin,
                     )?;
                     // update the working table's origins: loan issue
@@ -304,23 +311,23 @@ impl<'tcx> FactTable<'tcx> {
                     // Impose the semantics for reborrows
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
                     cur_op.push(IntroStatement::Reborrow(
-                        PlaceImpl::from_mir_place(*rb_from_place),
+                        PlaceImpl::from_mir_place(rb_from_place),
                         *bw_index,
                         *rb_from_origin,
                     ));
                     cur_op.push(IntroStatement::Assign(
                         OriginLHS::Loan(*bw_index),
-                        PlaceImpl::from_mir_place(*asgn_to_place),
+                        PlaceImpl::from_mir_place(asgn_to_place),
                     ));
 
                     // Associated Hoare triple
                     working_table.delta_leaves.insert(
                         loc,
                         (
-                            [OriginLHS::Place(PlaceImpl::from_mir_place(*rb_from_place))]
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(rb_from_place))]
                                 .into_iter()
                                 .collect(),
-                            [OriginLHS::Place(PlaceImpl::from_mir_place(*asgn_to_place))]
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(asgn_to_place))]
                                 .into_iter()
                                 .collect(),
                         ),
@@ -339,11 +346,15 @@ impl<'tcx> FactTable<'tcx> {
                     )),
                     None,
                 ) => {
+                    // In the CDG, we assign to the deref of a place (not the place itself)
+                    let mv_from_place = working_table.tcx.mk_place_deref(*mv_from_place);
+                    let mv_to_place = working_table.tcx.mk_place_deref(*mv_to_place);
+
                     // update the working table's origins: assigned-to place
                     Self::check_or_construct_origin(
                         working_table,
                         &mir.body,
-                        OriginLHS::Place((*mv_to_place).into()),
+                        OriginLHS::Place(mv_to_place.into()),
                         *mv_to_origin,
                     )?;
                     // // update the working table's origins: moved-from place
@@ -358,24 +369,24 @@ impl<'tcx> FactTable<'tcx> {
                     // Impose the semantics for moves
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
                     cur_op.push(IntroStatement::Assign(
-                        OriginLHS::Place(PlaceImpl::from_mir_place(*mv_from_place)),
-                        PlaceImpl::from_mir_place(*mv_to_place),
+                        OriginLHS::Place(PlaceImpl::from_mir_place(mv_from_place)),
+                        PlaceImpl::from_mir_place(mv_to_place),
                     ));
                     // fixme: what happens when we assign to the same place??? Is that ever legal MIR?
                     // To fix this, we need to refactor these semantics to use (tagged) capabilities instead of Places.
                     // That way we can kill first, and then assign mv_to_place to be the newly killed place instead.
                     cur_op.push(IntroStatement::Kill(OriginLHS::Place(
-                        PlaceImpl::from_mir_place(*mv_from_place),
+                        PlaceImpl::from_mir_place(mv_from_place),
                     )));
 
                     // Associated Hoare triple
                     working_table.delta_leaves.insert(
                         loc,
                         (
-                            [OriginLHS::Place(PlaceImpl::from_mir_place(*mv_from_place))]
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(mv_from_place))]
                                 .into_iter()
                                 .collect(),
-                            [OriginLHS::Place(PlaceImpl::from_mir_place(*mv_to_place))]
+                            [OriginLHS::Place(PlaceImpl::from_mir_place(mv_to_place))]
                                 .into_iter()
                                 .collect(),
                         ),
