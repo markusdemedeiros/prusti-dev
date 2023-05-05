@@ -316,6 +316,12 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
 
     /// The main interpretation of Polonius facts
     fn cdg_step(&mut self, location: Location) -> AnalysisResult<()> {
+        // expire any origins which expired after any predecessor
+        // we assume if an origin expures at the end of ONE predecessor, it expures at the end of ALL of them.
+        // keep in mind, this could be a no-op!
+        // (recording the necessary changes in leaves as consume and expire statements)
+        self.apply_origins(&location)?;
+
         println!("[debug@{:?}] {:?}", location, self.coupling_graph);
 
         // get the preconditions for the change in nodes at the location
@@ -330,21 +336,24 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         // apply the rewrite steps to the coupling graph
         self.apply_rewrite(&location);
 
-        // look ahead to see the expiring origins & expire them
-        // (recording the necessary changes in leaves as consume and expire statements)
-        self.apply_origins(&location);
-
         Ok(())
     }
 
     // fixme: For now we're just going to assume we never get contradictory packing requirements, and won't check that.
     fn ensure_contains_leaves_for(&mut self, to_ensure: &Vec<OriginLHS<'tcx>>) {
         for req in to_ensure.iter() {
+            // It's panicking here, for some reason. Is it possible that this is none?
+            println!("req is {:#?}", req);
             let matching_origin = self
                 .fact_table
                 .origins
-                .get_origin(&self.mir.body, req.clone())
-                .unwrap();
+                .get_origin(&self.mir.body, req.clone());
+            println!("mo is {:#?}", matching_origin);
+            if matching_origin == None {
+                // hack. This is for borrows of owned data.
+                continue;
+            }
+            let matching_origin = matching_origin.unwrap();
             let matching_leaves = self
                 .coupling_graph
                 .origins
@@ -376,7 +385,10 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     /// Expire non-live origins, and add new live origins
     fn apply_origins(&mut self, location: &Location) -> AnalysisResult<()> {
         // Get the set of origins at a point from the origin_contains_loan_at fact
-        todo!("apply origins");
+        match self.fact_table.origin_expires_before.get(location) {
+            Some(ogs) => panic!("The origins that expire at this point are: {:#?}", ogs),
+            None => Ok(()),
+        }
         // let origin_set = match self.fact_table.origin_contains_loan_at.get(location) {
         //     Some(ocla_set) => ocla_set.keys().cloned().collect::<BTreeSet<_>>(),
         //     None => BTreeSet::default(),
@@ -398,7 +410,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         //         origin_set
         //     );
         // }
-        Ok(())
     }
 }
 

@@ -480,10 +480,7 @@ pub fn get_blocked_place<'tcx>(tcx: TyCtxt<'tcx>, borrowed: Place<'tcx>) -> Plac
 #[allow(unused)]
 pub fn happy_path_successors(terminator: &TerminatorKind) -> Vec<mir::BasicBlock> {
     match terminator {
-        TerminatorKind::SwitchInt {
-            targets: ts,
-            ..
-        } => ts.all_targets().iter().cloned().collect(),
+        TerminatorKind::SwitchInt { targets: ts, .. } => ts.all_targets().iter().cloned().collect(),
         TerminatorKind::Resume
         | TerminatorKind::Abort
         | TerminatorKind::Return
@@ -544,8 +541,16 @@ pub(crate) enum StatementKinds<'mir, 'tcx: 'mir> {
 // Panics when a location is not a start location
 pub(crate) fn expect_mid_location(location: RichLocation) -> mir::Location {
     match location {
-        RichLocation::Start(_) => panic!("expected a start location"),
+        RichLocation::Start(_) => panic!("expected a mid location"),
         RichLocation::Mid(l) => return l,
+    };
+}
+
+// Panics when a location is not a start location
+pub(crate) fn expect_start_location(location: RichLocation) -> mir::Location {
+    match location {
+        RichLocation::Start(l) => return l,
+        RichLocation::Mid(_) => panic!("expected a start location"),
     };
 }
 

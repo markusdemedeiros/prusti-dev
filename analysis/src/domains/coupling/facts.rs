@@ -6,8 +6,9 @@
 use crate::{
     abstract_interpretation::AnalysisResult,
     mir_utils::{
-        self, expect_mid_location, get_assigned_to_place, get_borrowed_from_place,
-        get_moved_from_place, get_storage_dead, maximally_pack, mir_kind_at, Place, PlaceImpl,
+        self, expect_mid_location, expect_start_location, get_assigned_to_place,
+        get_borrowed_from_place, get_moved_from_place, get_storage_dead, maximally_pack,
+        mir_kind_at, Place, PlaceImpl,
     },
     AnalysisError,
 };
@@ -41,6 +42,7 @@ pub(crate) type DeltaLeaves<'tcx> =
     FxHashMap<Location, (Vec<OriginLHS<'tcx>>, Vec<OriginLHS<'tcx>>)>; // fixme: this should be capabilities
 pub(crate) type OriginContainsLoanAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Loan>>>;
 pub(crate) type SubsetsAt = FxHashMap<PointIndex, BTreeMap<Region, BTreeSet<Region>>>;
+pub(crate) type OriginExpiresAt = FxHashMap<Location, BTreeSet<Region>>;
 
 /// Struct containing lookups for all the Polonius facts
 pub struct FactTable<'tcx> {
@@ -68,6 +70,9 @@ pub struct FactTable<'tcx> {
     /// and likewise with all capabilities released.
     pub(crate) delta_leaves: DeltaLeaves<'tcx>,
 
+    /// Points where origins go from live to not live0
+    pub(crate) origin_expires_before: OriginExpiresAt,
+
     /// Analouges of polonius facts
     pub(crate) origin_contains_loan_at: OriginContainsLoanAt,
     pub(crate) subsets_at: SubsetsAt,
@@ -85,6 +90,7 @@ impl<'tcx> FactTable<'tcx> {
             },
             origin_contains_loan_at: Default::default(),
             delta_leaves: Default::default(),
+            origin_expires_before: Default::default(),
             graph_operations: Default::default(),
             subsets_at: Default::default(),
         }
@@ -99,6 +105,7 @@ impl<'tcx> FactTable<'tcx> {
         Self::collect_loan_killed_at(mir, &mut working_table);
         Self::collect_origin_contains_loan_at(mir, &mut working_table);
         Self::collect_subsets_at(mir, &mut working_table);
+        Self::collect_origin_expiries(mir, &mut working_table);
         println!("[fact table]  {:#?}", working_table);
         return Ok(working_table);
     }
@@ -397,6 +404,45 @@ impl<'tcx> FactTable<'tcx> {
             working_table
                 .origin_contains_loan_at
                 .insert(*k, (*v).to_owned());
+        }
+    }
+
+    /// For all points, if an origin is in the origin_contains_loan_at fact at that point and not at the next,
+    /// it expires. Do we use origin_live_on_entry maybe?
+    /// Whatever I'm doing ocla for now.
+    fn collect_origin_expiries<'a, 'mir>(
+        mir: &'mir BodyWithBorrowckFacts<'tcx>,
+        working_table: &'a mut Self,
+    ) {
+        for (loc_ix, ocla_map) in mir.output_facts.origin_contains_loan_at.iter() {
+            if let RichLocation::Start(_) = mir.location_table.to_location(*loc_ix) {
+                continue;
+            }
+
+            // fixme: really idiotic way to do this. Precompute the successors-- there's probably a MIR helper for this.
+            for (_, next_loc_ix) in mir.input_facts.cfg_edge.iter().filter(|(x, _)| x == loc_ix) {
+                let next_loc = expect_start_location(mir.location_table.to_location(*next_loc_ix));
+                let origin_expiry_entry = working_table
+                    .origin_expires_before
+                    .entry(next_loc)
+                    .or_default();
+                let next_live_origins = match mir
+                    .output_facts
+                    .origin_contains_loan_at
+                    .get(next_loc_ix)
+                    .map(|x| x.keys().collect::<Vec<_>>())
+                {
+                    Some(z) => z,
+                    None => Vec::default(),
+                };
+                for origin in ocla_map.keys() {
+                    // Check to see if origin is in next_live_origins or not.
+                    // If it dies, mark that at the start of the next statement
+                    if !next_live_origins.contains(&origin) {
+                        origin_expiry_entry.insert(origin.clone());
+                    }
+                }
+            }
         }
     }
 
