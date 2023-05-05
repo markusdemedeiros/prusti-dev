@@ -283,7 +283,7 @@ impl<'tcx> FactTable<'tcx> {
                 ) if issuing_origin == issuing1 && issuing_origin == issuing2 => {
                     // In the CDG, we assign to the deref of a place (not the place itself)
                     let asgn_to_place = working_table.tcx.mk_place_deref(*asgn_to_place);
-                    let rb_from_place = working_table.tcx.mk_place_deref(*rb_from_place);
+                    let rb_from_place = *rb_from_place;
 
                     // update the working table's origins: assigned-to place
                     Self::check_or_construct_origin(

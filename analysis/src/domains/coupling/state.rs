@@ -233,6 +233,7 @@ impl<'tcx> OriginMap<'tcx> {
         // For connectivity
         assert!(self.map.get(&Tagged::untagged(*supgraph_origin)).is_none());
         assert!(self.map.get(&Tagged::untagged(*subgraph_origin)).is_some());
+        println!("testing graph\n{:?}\n{:?}", self.map, subgraph_node);
         assert!(self
             .map
             .get(&Tagged::untagged(*subgraph_origin))
@@ -429,7 +430,27 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             );
                         }
                     }
-                    IntroStatement::Reborrow(rb_from_place, bw_ix, rb_from_origin) => todo!(),
+                    IntroStatement::Reborrow(rb_from_place, bw_ix, rb_from_origin) => {
+                        let rb_into_origin = self
+                            .fact_table
+                            .origins
+                            .get_origin(&self.mir.body, OriginLHS::Loan(*bw_ix))
+                            .unwrap();
+                        assert!(self
+                            .coupling_graph
+                            .origins
+                            .map
+                            .get(&Tagged::untagged(rb_into_origin))
+                            .is_none());
+                        // Rewrite the graph to internally repack it here, if that's needed
+
+                        self.coupling_graph.origins.new_shared_subgraph(
+                            CDGNode::Place(Tagged::untagged(*rb_from_place)),
+                            rb_from_origin,
+                            CDGNode::Borrow(Tagged::untagged(*bw_ix)),
+                            &rb_into_origin,
+                        );
+                    }
                     IntroStatement::Borrow(bw_from_place, bw_ix) => {
                         let bw_into_origin = self
                             .fact_table
