@@ -98,6 +98,7 @@ impl<'tcx> FactTable<'tcx> {
 
     /// New populated fact table
     pub fn new(mir: &BodyWithBorrowckFacts<'tcx>, tcx: TyCtxt<'tcx>) -> AnalysisResult<Self> {
+        println!("{:#?}", mir.body);
         let mut working_table = Self::default_from_tcx(tcx);
         Self::compute_loan_issues(mir, &mut working_table)?;
         Self::characterize_subset_base(&mut working_table, mir)?;
@@ -368,16 +369,14 @@ impl<'tcx> FactTable<'tcx> {
 
                     // Impose the semantics for moves
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
+                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(
+                        PlaceImpl::from_mir_place(mv_to_place),
+                    )));
+
                     cur_op.push(IntroStatement::Assign(
                         OriginLHS::Place(PlaceImpl::from_mir_place(mv_from_place)),
                         PlaceImpl::from_mir_place(mv_to_place),
                     ));
-                    // fixme: what happens when we assign to the same place??? Is that ever legal MIR?
-                    // To fix this, we need to refactor these semantics to use (tagged) capabilities instead of Places.
-                    // That way we can kill first, and then assign mv_to_place to be the newly killed place instead.
-                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(
-                        PlaceImpl::from_mir_place(mv_from_place),
-                    )));
 
                     // Associated Hoare triple
                     working_table.delta_leaves.insert(
@@ -566,11 +565,9 @@ impl<'tcx> std::fmt::Debug for FactTable<'tcx> {
         f.debug_struct("FactTable")
             .field("loan_issues", &self.loan_issues)
             .field("origins", &self.origins)
-            // .field("origin_packing_at", &self.origin_packing_at)
-            // .field("structural_edge", &self.structural_edge)
-            // .field("origin_contains_loan_at", &self.origin_contains_loan_at)
-            // .field("loan_killed_at", &self.loan_killed_at)
-            // .field("subsets_at", &self.subsets_at)
+            .field("graph_ops", &self.graph_operations)
+            .field("delta_leaves", &self.delta_leaves)
+            .field("origin_expires_before", &self.origin_expires_before)
             .finish()
     }
 }
@@ -647,6 +644,7 @@ impl<'tcx> std::fmt::Debug for OriginLHS<'tcx> {
 
 // Fixme: these should be capabilities, not places!
 // For exclusive borrows, this doesn't matter since every place has the same capability, though.
+#[derive(Debug)]
 pub(crate) enum IntroStatement<'tcx> {
     // Kill all nodes of a certain kind in the graph
     Kill(OriginLHS<'tcx>),

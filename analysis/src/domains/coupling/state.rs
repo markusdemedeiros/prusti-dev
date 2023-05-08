@@ -13,7 +13,11 @@ use crate::{
 use itertools::Itertools;
 use prusti_rustc_interface::{
     borrowck::{consumers::RustcFacts, BodyWithBorrowckFacts},
-    middle::{mir, mir::Location, ty::TyCtxt},
+    middle::{
+        mir,
+        mir::{BasicBlock, Location},
+        ty::TyCtxt,
+    },
     polonius_engine::FactTypes,
 };
 use serde::{
@@ -35,7 +39,9 @@ pub type Variable = <RustcFacts as FactTypes>::Variable;
 pub type Path = <RustcFacts as FactTypes>::Path;
 
 /// Index into arena-allocated coupled borrows.
-pub type CoupledBorrowIndex = usize;
+/// Coupled borrows are uniquely identified by the join that defined them.
+/// bbfrom1 bbfrom2 bbto
+pub type CoupledBorrowIndex = (BasicBlock, BasicBlock, BasicBlock);
 
 #[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 pub struct Tagged<Data, Tag> {
@@ -60,6 +66,10 @@ impl<Data, Tag> Tagged<Data, Tag> {
             data,
             tag: Some(tag),
         }
+    }
+
+    pub fn is_tagged(&self) -> bool {
+        self.tag.is_some()
     }
 }
 
@@ -102,6 +112,13 @@ impl<'tcx> CDGNode<'tcx> {
             }
             (l0 @ CDGNode::Borrow(_), l1 @ CDGNode::Borrow(_)) => l0 == l1,
             _ => false,
+        }
+    }
+
+    pub fn is_tagged(&self) -> bool {
+        match self {
+            CDGNode::Place(x) => x.is_tagged(),
+            CDGNode::Borrow(x) => x.is_tagged(),
         }
     }
 }
@@ -233,7 +250,6 @@ impl<'tcx> OriginMap<'tcx> {
         // For connectivity
         assert!(self.map.get(&Tagged::untagged(*supgraph_origin)).is_none());
         assert!(self.map.get(&Tagged::untagged(*subgraph_origin)).is_some());
-        println!("testing graph\n{:?}\n{:?}", self.map, subgraph_node);
         assert!(self
             .map
             .get(&Tagged::untagged(*subgraph_origin))
@@ -268,6 +284,142 @@ impl<'tcx> OriginMap<'tcx> {
             sig.tag(location, node);
         }
     }
+
+    // Get the LHS of all live origins
+    pub fn get_live_lhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+        let mut ret = BTreeSet::new();
+        for (o, sig) in self.map.iter() {
+            if !o.is_tagged() {
+                for l in sig.leaves.iter() {
+                    ret.insert(l.clone());
+                }
+            }
+        }
+        return ret;
+    }
+
+    // Get the LHS of all origins
+    pub fn get_all_lhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+        let mut ret = BTreeSet::new();
+        for (o, sig) in self.map.iter() {
+            for l in sig.leaves.iter() {
+                ret.insert(l.clone());
+            }
+        }
+        return ret;
+    }
+
+    pub fn get_all_rhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+        let mut ret = BTreeSet::new();
+        for (o, sig) in self.map.iter() {
+            for l in sig.roots.iter() {
+                ret.insert(l.clone());
+            }
+        }
+        return ret;
+    }
+
+    // Get the roots of the tree
+    // Assumes the tree is correctly connected (eg. in the correct packing state)
+    // Hoenstly both this and leaves should be precomputed since they rarely change
+    // so don't need to always be recomputed
+    pub fn get_roots(&self) -> BTreeSet<CDGNode<'tcx>> {
+        let mut ret = BTreeSet::new();
+        let lr = self.get_all_lhs();
+        for (o, sig) in self.map.iter() {
+            for r in sig.roots.iter() {
+                if !lr.contains(r) {
+                    ret.insert(r.clone());
+                }
+            }
+        }
+        return ret;
+    }
+
+    pub fn get_leaves(&self) -> BTreeSet<CDGNode<'tcx>> {
+        let mut ret = BTreeSet::new();
+        let rr = self.get_all_rhs();
+        for (o, sig) in self.map.iter() {
+            for r in sig.leaves.iter() {
+                if !rr.contains(r) {
+                    ret.insert(r.clone());
+                }
+            }
+        }
+        return ret;
+    }
+
+    // if root is a root, there should be exactly one edge in the coupling graph that directly blocks it.
+    fn get_direct_parent(
+        &self,
+        root: &CDGNode<'tcx>,
+    ) -> (Tagged<Region, Location>, OriginSignature<'tcx>) {
+        match self
+            .map
+            .iter()
+            .filter(|(_, sig)| sig.roots.contains(root))
+            .collect::<Vec<_>>()[..]
+        {
+            [(k, v)] => (k.clone(), v.clone()),
+            _ => unreachable!("excess parents"),
+        }
+    }
+
+    // Get a list of origins to expire in order to end up at a root
+    // Returns
+    //  - a list of origins to expire
+    //  - the leaves of that set of origins
+    //  - the roots of that set of origins, which is a superset of the ``root``
+    pub fn get_parent(
+        &self,
+        roots: BTreeSet<CDGNode<'tcx>>,
+    ) -> (
+        Vec<Tagged<Region, Location>>,
+        BTreeSet<CDGNode<'tcx>>,
+        BTreeSet<CDGNode<'tcx>>,
+    ) {
+        let mut ret_origins: Vec<_> = Vec::new();
+        let mut ret_roots: BTreeSet<CDGNode<'tcx>> = roots.clone();
+        let mut ret_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::new();
+
+        let graph_leaves = self.get_leaves();
+
+        let mut roots_todo = roots.clone();
+        // Traverse the graph until working_roots are all
+        //  - not in roots
+        //  - is a leaf; or is untagged.
+        loop {
+            // Move out all of the done nodes
+            for node in roots_todo.iter() {
+                if !roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()) {
+                    ret_leaves.insert(node.clone());
+                }
+            }
+            roots_todo.retain(|node| {
+                !(!roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()))
+            });
+
+            // Check to see if we're done
+            if roots_todo.is_empty() {
+                break;
+            }
+
+            // If we're not done, get the edge's direct parent.
+            let (tagged_region, sig) = self.get_direct_parent(&roots_todo.pop_first().unwrap());
+            // For all the roots of this edge, either remove a goal (if it can) or add it to the global effect
+            for r in sig.roots.iter().filter(|n| !roots_todo.contains(n)) {
+                ret_roots.insert(r.clone());
+            }
+            roots_todo.retain(|n| !sig.roots.contains(n));
+
+            // Add all new goals for this edge
+            roots_todo = roots_todo.union(&sig.leaves).cloned().collect();
+
+            // Record this expiry.
+            ret_origins.push(tagged_region);
+        }
+        return (ret_origins, ret_roots, ret_leaves);
+    }
 }
 
 // A coupling graph
@@ -278,7 +430,9 @@ pub struct CDG<'tcx> {
     pub origin_contains_loan_at_invariant: bool,
 }
 
-impl<'tcx> CDG<'tcx> {}
+impl<'tcx> CDG<'tcx> {
+    // pub fn get_roots(&self) -> BTreeSet<
+}
 
 /// CouplingState consists of
 ///     - A CouplingGraph, representing the current
@@ -286,6 +440,8 @@ impl<'tcx> CDG<'tcx> {}
 #[derive(Clone)]
 pub struct CouplingState<'facts, 'mir: 'facts, 'tcx: 'mir> {
     pub coupling_graph: CDG<'tcx>,
+    // Coupled borrows are unqiuely identified by the join that produced them.
+    pub couples: BTreeMap<CoupledBorrowIndex, usize>,
     // also include: annotations at this location:
     // Also include: invariant checks?
     pub(crate) mir: &'mir BodyWithBorrowckFacts<'tcx>,
@@ -299,6 +455,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     ) -> Self {
         Self {
             coupling_graph: Default::default(),
+            couples: Default::default(),
             fact_table,
             mir,
         }
@@ -310,6 +467,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     ) -> Self {
         Self {
             coupling_graph: Default::default(),
+            couples: Default::default(),
             fact_table,
             mir,
         }
@@ -568,6 +726,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
     }
 
     // Invariant: bottom join X is X
+    // fixme: is it possible to join in several different ways?
+    //  eg. (bb1 join bb2) join bb3   vs    bb1 join (bb2 join bb3)?
+    // If so, we might no reach a fixed point with how we're recording data here, since
+    // the coupling state will not be equal between these two paths (for the def'n of
+    // equality currently implemented, anyways).
     fn join(&mut self, other: &Self) {
         // Check for the trivial cases (join to bottom)
         if other.coupling_graph.origins.map.is_empty() {
@@ -577,227 +740,64 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             return;
         }
 
+        let mut working_graph: OriginMap = Default::default();
+
+        println!("JOIN 1: {:?}\n", self.coupling_graph);
+        println!("JOIN 2: {:?}\n", other.coupling_graph);
+
+        // Make the LHS of the origins coherent (kill leaves that are in one branch but not the other)
+        let lhs = self.coupling_graph.origins.get_live_lhs();
+        if lhs != other.coupling_graph.origins.get_live_lhs() {
+            unimplemented!("kill dead lhs in live origins");
+        }
+
+        let roots = self.coupling_graph.origins.get_roots();
+        if roots != other.coupling_graph.origins.get_roots() {
+            unreachable!("internal error. roots must be the same between branches.");
+        }
+        let leaves = self.coupling_graph.origins.get_leaves();
+        if leaves != other.coupling_graph.origins.get_leaves() {
+            println!("{:?}", leaves);
+            println!("{:?}", other.coupling_graph.origins.get_leaves());
+            unreachable!("internal error. leaves must be the same between branches by this step");
+        }
+
+        println!("roots are: {:?} ", roots);
+        println!("leaves are: {:?} ", leaves);
+
+        let mut goals = roots.clone();
+
+        while goals.len() > 0 {
+            let r = goals.pop_first().unwrap();
+            let vs = self.coupling_graph.origins.get_parent([r.clone()].into());
+            let vo = other.coupling_graph.origins.get_parent([r.clone()].into());
+            println!("{:?}: {:?} // {:?}", r, vs, vo);
+            if vs == vo {
+                // Both graphs do the same kinds of capability exchanges. If their edges are identical, move them.
+                // If their edges are not identical, add a coupled edge for this exchange.
+                println!("match! moving the origins {:?} to the complete graph", vs.0);
+                for o in vs.0.iter() {
+                    working_graph.map.insert(
+                        o.clone(),
+                        self.coupling_graph.origins.map.get(o).unwrap().clone(),
+                    );
+                }
+                for completed_goal in vs.1.iter() {
+                    goals.remove(completed_goal);
+                }
+                for new_goal in vs.2.into_iter() {
+                    goals.insert(new_goal);
+                }
+                println!("new goals: {:?}", goals);
+            } else {
+                todo!("no match. coupling needed.");
+            }
+        }
+
+        // let mut dp_list = roots.into_iter().collect::<Vec<_>>();
+        // dp_list.append(&mut lhs.into_iter().collect::<Vec<_>>());
+
         todo!("implement joins");
-
-        /*
-              if !self.to_kill.is_empty() || !other.to_kill.is_empty() {
-                  unreachable!("(fixable) model assumes terminators do not kill places on exit");
-              }
-              println!("[join 1] {:?}", self.coupling_graph);
-              println!("[join 2] {:?}", other.coupling_graph);
-
-              self.coupling_graph
-                  .origins
-                  .cohere_lhs(&other.coupling_graph.origins);
-
-              println!("[join coherent 1] {:?}", self.coupling_graph);
-              println!("[join coherent 2] {:?}", other.coupling_graph);
-
-              if self.coupling_graph != other.coupling_graph {
-                  if other.coupling_graph.origins.origins.is_empty() {
-                      // Nothing to do
-                  } else if self.coupling_graph.origins.origins.is_empty() {
-                      self.coupling_graph
-                          .origins
-                          .origins
-                          .append(&mut other.coupling_graph.origins.origins.clone());
-                  } else {
-                      // fixme: this assumes no nested coupling (yet).
-
-                      // Look for (and couple) no-equal origins which have the same signature
-                      // good god... you need a origin lookup API at the coupling graph level
-                      let mut reborrows: BTreeSet<Region> = Default::default();
-                      for group in self.coupling_graph.origins.origins.iter() {
-                          for (region, cdgo) in group.iter() {
-                              for group1 in other.coupling_graph.origins.origins.iter() {
-                                  for (region1, cdgo1) in group1.iter() {
-                                      if (region == region1)
-                                          && (cdgo.leaves == cdgo1.leaves)
-                                          && (cdgo.roots == cdgo1.roots)
-                                          && (cdgo != cdgo1)
-                                      {
-                                          reborrows.insert(*region);
-                                      }
-                                  }
-                              }
-                          }
-                      }
-                      // fixme: ambiguous decision when groups differ
-                      for region in reborrows.into_iter() {
-                          // fixme: this should do a root-first traversal for common structure
-                          // fixme: it should also refer to the subsets at the point to decide which to simplify first. For example,
-                          //      #1 : _3 -> _2 -> _1
-                          //      #2 : _2 -> _1
-                          //      #1 : _3 -> ... -> _3@p -> _2 -> _1
-                          //      #2 : _2 -> _1
-                          //  should not simplify #1 all together like
-                          //      #1 : _3 --* _1
-                          //  instead, since their downstream graphs are equal, we should get
-                          //      #1 : _3 --* _2 -> _1
-                          //      #2 : _2 -> _1
-
-                          // Also, in the process of simplifying a edge of the form _3 -> ... -> _3@?
-                          // we know that the last killed _3 is old(3). Can we unpick equality assertions from this?
-                          if (self.coupling_graph.origins.origins.len() != 1)
-                              || (other.coupling_graph.origins.origins.len() != 1)
-                          {
-                              unimplemented!("deferred joins of reborrows");
-                          }
-
-                          let other_cdgo = self.coupling_graph.origins.origins[0]
-                              .get_mut(&region)
-                              .unwrap()
-                              .to_owned();
-                          let self_cdgo = self.coupling_graph.origins.origins[0]
-                              .get_mut(&region)
-                              .unwrap();
-
-                          if self_cdgo.remove_if_subset(&other_cdgo) {
-                              // if self_cdgo can be decomposed as [current_self_cdgo] --> [other_cdgo]
-                              // set the borrow to be the other_cdgo
-                              // use difference to infer other aspects of the invariant
-
-                              // get the loans contained in other_cdgo
-                              let mut loans: BTreeSet<Loan> = Default::default();
-                              for e in other_cdgo.edges.iter() {
-                                  for l in e.lhs.iter() {
-                                      if let CDGNode::Borrow(bw) = l {
-                                          if bw.tag == None {
-                                              loans.insert(bw.data);
-                                          }
-                                      }
-                                  }
-                              }
-
-                              *self_cdgo = CDGOrigin::new_coupling(
-                                  other_cdgo.leaves.clone(),
-                                  other_cdgo.roots.clone(),
-                                  loans,
-                              );
-                          } else {
-                              unimplemented!("reborrow that isn't structural subset");
-                          }
-                      }
-
-                      // fixme: this assume the RHS are not in different packing states?
-
-                      // Couple origins which are possibly aliases
-                      //  Note that the origins are coherent so their LHS are equal
-                      //  - Partition origins by their RHS, in both sides.
-                      //  - If a RHS has only one origin, check that they are equal (or panic)
-                      //  - If a RHS has more than one origin, couple the LHS/RHS's of all the origins together.
-
-                      let mut couples: BTreeMap<BTreeSet<CDGNode<'tcx>>, BTreeSet<Region>> =
-                          Default::default();
-
-                      for group in self.coupling_graph.origins.origins.iter() {
-                          for (region, cdgo) in group.iter() {
-                              (couples.entry(cdgo.roots.clone()).or_default()).insert(*region);
-                          }
-                      }
-                      for group in other.coupling_graph.origins.origins.iter() {
-                          for (region, cdgo) in group.iter() {
-                              (couples.entry(cdgo.roots.clone()).or_default()).insert(*region);
-                          }
-                      }
-
-                      println!("[coupling map I] {:?}", couples);
-
-                      let mut coupled_edges: BTreeMap<BTreeSet<Region>, BTreeSet<CDGNode>> =
-                          Default::default();
-                      for (nodes, regions) in couples.into_iter() {
-                          if let Some(node_set) = coupled_edges.get_mut(&regions) {
-                              // Insert all nodes into node_set
-                              for node in nodes.into_iter() {
-                                  node_set.insert(node);
-                              }
-                          } else {
-                              coupled_edges.insert(regions, nodes);
-                          }
-                      }
-
-                      println!("[coupling map II] {:?}", coupled_edges);
-
-                      let mut new_coupling_edges: BTreeMap<Region, CDGEdge<'tcx>> = Default::default();
-
-                      // Remove all singly coupled data and construct new coupling edges
-                      for (regions, rhs) in coupled_edges.into_iter() {
-                          if regions.len() == 1 {
-                              continue;
-                          }
-
-                          // Set of loans contained in any region of regions in any graph of self or other
-                          let mut region_contains_loans: BTreeSet<Loan> = Default::default();
-
-                          // fixme: do this in a less stupid way
-
-                          for r in regions.iter() {
-                              // For each region r in the set of coupled regions...
-                              for group in self
-                                  .coupling_graph
-                                  .origins
-                                  .origins
-                                  .iter()
-                                  .chain(other.coupling_graph.origins.origins.iter())
-                              {
-                                  // ... for each group in the two branches...
-                                  for e in group.get(r).unwrap().edges.iter() {
-                                      // ... for each loan in the LHS of an edge in the graph for r in the group...
-                                      for loan in e
-                                          .lhs
-                                          .iter()
-                                          .filter_map(|n| match n {
-                                              CDGNode::Place(_) => None,
-                                              CDGNode::Borrow(l) => {
-                                                  if l.tag.is_none() {
-                                                      Some(l.data.clone())
-                                                  } else {
-                                                      None
-                                                  }
-                                              }
-                                          })
-                                          .collect::<Vec<_>>()
-                                      {
-                                          // ... add that loan to the set.
-                                          region_contains_loans.insert(loan);
-                                      }
-                                  }
-                              }
-                          }
-
-                          // // LHS of the edge is the union of all coupled edges
-                          // let mut lhs: BTreeSet<CDGNode<'tcx>> = Default::default();
-                          // for r in regions.iter() {
-                          //     for n in self.coupling_graph.origins.origins[0]
-                          //         .get(r)
-                          //         .unwrap()
-                          //         .leaves
-                          //         .iter()
-                          //     {
-                          //         lhs.insert((*n).clone());
-                          //     }
-                          // }
-
-                          // For each group in Self,
-                          for r in regions.iter() {
-                              for group in self.coupling_graph.origins.origins.iter_mut() {
-                                  let lhs: BTreeSet<CDGNode<'tcx>> = group.get(r).unwrap().leaves.clone();
-                                  group.insert(
-                                      *r,
-                                      CDGOrigin::new_coupling(
-                                          lhs.clone(),
-                                          rhs.clone(),
-                                          region_contains_loans.clone(),
-                                      ),
-                                  );
-                              }
-                          }
-                      }
-
-                      println!("[coupling complete] {:?}", self.coupling_graph);
-                  }
-              }
-        */
     }
 
     fn widen(&mut self, _: &Self) {
