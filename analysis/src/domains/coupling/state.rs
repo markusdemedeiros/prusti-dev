@@ -378,6 +378,7 @@ impl<'tcx> OriginMap<'tcx> {
         BTreeSet<CDGNode<'tcx>>,
         BTreeSet<CDGNode<'tcx>>,
     ) {
+        println!("\n--- enter get parent for {:?}", roots);
         let mut ret_origins: Vec<_> = Vec::new();
         let mut ret_roots: BTreeSet<CDGNode<'tcx>> = roots.clone();
         let mut ret_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::new();
@@ -389,6 +390,7 @@ impl<'tcx> OriginMap<'tcx> {
         //  - not in roots
         //  - is a leaf; or is untagged.
         loop {
+            println!("(loop) goals are {:?}", roots_todo);
             // Move out all of the done nodes
             for node in roots_todo.iter() {
                 if !roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()) {
@@ -398,6 +400,8 @@ impl<'tcx> OriginMap<'tcx> {
             roots_todo.retain(|node| {
                 !(!roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()))
             });
+
+            println!("(loop) remove done ~> {:?}", roots_todo);
 
             // Check to see if we're done
             if roots_todo.is_empty() {
@@ -418,6 +422,10 @@ impl<'tcx> OriginMap<'tcx> {
             // Record this expiry.
             ret_origins.push(tagged_region);
         }
+        println!(
+            "--- exit get parent with {:?}\n",
+            (&ret_origins, &ret_roots, &ret_leaves)
+        );
         return (ret_origins, ret_roots, ret_leaves);
     }
 }

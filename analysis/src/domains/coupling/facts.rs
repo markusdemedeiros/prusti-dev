@@ -98,11 +98,12 @@ impl<'tcx> FactTable<'tcx> {
 
     /// New populated fact table
     pub fn new(mir: &BodyWithBorrowckFacts<'tcx>, tcx: TyCtxt<'tcx>) -> AnalysisResult<Self> {
-        println!("{:#?}", mir.body);
+        println!("{:#?}", mir.body.basic_blocks);
         let mut working_table = Self::default_from_tcx(tcx);
         Self::compute_loan_issues(mir, &mut working_table)?;
-        Self::characterize_subset_base(&mut working_table, mir)?;
+        Self::insert_storage_dead_kills(mir, &mut working_table);
         Self::collect_loan_killed_at(mir, &mut working_table);
+        Self::characterize_subset_base(&mut working_table, mir)?;
         Self::collect_origin_contains_loan_at(mir, &mut working_table);
         Self::collect_subsets_at(mir, &mut working_table);
         Self::collect_origin_expiries(mir, &mut working_table);
@@ -470,11 +471,30 @@ impl<'tcx> FactTable<'tcx> {
         mir: &'mir BodyWithBorrowckFacts<'tcx>,
         working_table: &'a mut Self,
     ) {
+        // println!("loan_killed_at: {:?}", mir.input_facts.loan_killed_at);
         // Assert that the loan is killed at a Mid only.
         for (l, p) in mir.input_facts.loan_killed_at.iter() {
             let location = expect_mid_location(mir.location_table.to_location(*p));
             let cur_op = working_table.graph_operations.entry(location).or_default();
             cur_op.push(IntroStatement::Kill(OriginLHS::Loan(*l)));
+        }
+    }
+
+    fn insert_storage_dead_kills<'a, 'mir>(
+        mir: &'mir BodyWithBorrowckFacts<'tcx>,
+        working_table: &'a mut Self,
+    ) {
+        for (block, bb_data) in mir.body.basic_blocks.iter_enumerated() {
+            for (statement_index, stmt) in bb_data.statements.iter().enumerate() {
+                let location = Location {
+                    block,
+                    statement_index,
+                };
+                if let StatementKind::StorageDead(l) = stmt.kind {
+                    let cur_op = working_table.graph_operations.entry(location).or_default();
+                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(l.into())));
+                }
+            }
         }
     }
 
