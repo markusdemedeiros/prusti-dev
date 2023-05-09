@@ -378,7 +378,6 @@ impl<'tcx> OriginMap<'tcx> {
         BTreeSet<CDGNode<'tcx>>,
         BTreeSet<CDGNode<'tcx>>,
     ) {
-        println!("\n--- enter get parent for {:?}", roots);
         let mut ret_origins: Vec<_> = Vec::new();
         let mut ret_roots: BTreeSet<CDGNode<'tcx>> = roots.clone();
         let mut ret_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::new();
@@ -390,7 +389,6 @@ impl<'tcx> OriginMap<'tcx> {
         //  - not in roots
         //  - is a leaf; or is untagged.
         loop {
-            println!("(loop) goals are {:?}", roots_todo);
             // Move out all of the done nodes
             for node in roots_todo.iter() {
                 if !roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()) {
@@ -401,17 +399,20 @@ impl<'tcx> OriginMap<'tcx> {
                 !(!roots.contains(node) && (graph_leaves.contains(node) || !node.is_tagged()))
             });
 
-            println!("(loop) remove done ~> {:?}", roots_todo);
-
             // Check to see if we're done
             if roots_todo.is_empty() {
                 break;
             }
 
             // If we're not done, get the edge's direct parent.
-            let (tagged_region, sig) = self.get_direct_parent(&roots_todo.pop_first().unwrap());
+            let goal_working = roots_todo.pop_first().unwrap();
+            let (tagged_region, sig) = self.get_direct_parent(&goal_working);
             // For all the roots of this edge, either remove a goal (if it can) or add it to the global effect
-            for r in sig.roots.iter().filter(|n| !roots_todo.contains(n)) {
+            for r in sig
+                .roots
+                .iter()
+                .filter(|n| !roots_todo.contains(n) && **n != goal_working)
+            {
                 ret_roots.insert(r.clone());
             }
             roots_todo.retain(|n| !sig.roots.contains(n));
@@ -421,11 +422,12 @@ impl<'tcx> OriginMap<'tcx> {
 
             // Record this expiry.
             ret_origins.push(tagged_region);
+
+            // remove all roots of this edge from the total effect
+            for l in sig.roots.iter() {
+                ret_leaves.remove(l);
+            }
         }
-        println!(
-            "--- exit get parent with {:?}\n",
-            (&ret_origins, &ret_roots, &ret_leaves)
-        );
         return (ret_origins, ret_roots, ret_leaves);
     }
 }
@@ -775,12 +777,32 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
         let mut goals = roots.clone();
 
-        while goals.len() > 0 {
-            let r = goals.pop_first().unwrap();
-            let vs = self.coupling_graph.origins.get_parent([r.clone()].into());
-            let vo = other.coupling_graph.origins.get_parent([r.clone()].into());
-            println!("{:?}: {:?} // {:?}", r, vs, vo);
-            if vs == vo {
+        loop {
+            // filter out any goals which are totally done.
+            goals.retain(|n| !leaves.contains(n) && !n.is_tagged());
+
+            if goals.len() == 0 {
+                break;
+            }
+
+            println!("goals: {:?}", goals);
+            // fixme: There is no reason on earth to recompute this entire thing at every loop iteration
+            let mut goal_parents = BTreeMap::new();
+            for g in goals.iter().cloned() {
+                goal_parents.insert(
+                    g.clone(),
+                    (
+                        self.coupling_graph.origins.get_parent([g.clone()].into()),
+                        other.coupling_graph.origins.get_parent([g.clone()].into()),
+                    ),
+                );
+            }
+
+            // If any of these match, they necessarily contain the same edges (right?)
+            if let Some((r, (vs, vo))) = goal_parents.iter().filter(|(_, (vs, vo))| vs == vo).next()
+            {
+                println!("{:?}: {:?} // {:?}", r, vs, vo);
+
                 // Both graphs do the same kinds of capability exchanges. If their edges are identical, move them.
                 // If their edges are not identical, add a coupled edge for this exchange.
                 println!("match! moving the origins {:?} to the complete graph", vs.0);
@@ -793,19 +815,86 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 for completed_goal in vs.1.iter() {
                     goals.remove(completed_goal);
                 }
-                for new_goal in vs.2.into_iter() {
+                for new_goal in vs.2.iter().cloned() {
                     goals.insert(new_goal);
                 }
                 println!("new goals: {:?}", goals);
             } else {
-                todo!("no match. coupling needed.");
+                // No match.
+                // Create a partition of (input/ouput)
+                println!("no match\ngoals: {:?}", goal_parents);
+
+                // Partition the set of goals using goal parents:
+                // Elements in teh partition must be satuated wrt expiring edges
+
+                // goals_preimage: map from goal to a set of resources that we can expire to get it back
+                let mut goals_preimage: BTreeMap<CDGNode<'tcx>, BTreeSet<CDGNode<'tcx>>> =
+                    BTreeMap::default();
+
+                for (_, (vs, vo)) in goal_parents.iter() {
+                    for goal in vs.1.iter() {
+                        let pre_entry = goals_preimage.entry(goal.clone()).or_default();
+                        for consume in vs.2.iter() {
+                            pre_entry.insert(consume.clone());
+                        }
+                    }
+                    for goal in vo.1.iter() {
+                        let pre_entry = goals_preimage.entry(goal.clone()).or_default();
+                        for consume in vo.2.iter() {
+                            pre_entry.insert(consume.clone());
+                        }
+                    }
+                }
+
+                println!("pre {:?}", goals_preimage);
+
+                // Pick one to couple.
+                let coupled_leaves = goals_preimage.pop_first().unwrap().1;
+
+                println!("consume {:?}", coupled_leaves);
+
+                // collect all edges and goals that this consumption gives us back
+                let mut expires_from_self = Vec::default();
+                let mut expires_from_other = Vec::default();
+                let mut coupled_root_self = BTreeSet::default();
+                let mut coupled_root_other = BTreeSet::default();
+                for (_, ((vs_origins, vs_goals, vs_leaves), (vo_origins, vo_goals, vo_leaves))) in
+                    goal_parents.iter_mut()
+                {
+                    if vs_leaves.is_subset(&coupled_leaves) {
+                        vs_origins.reverse();
+                        expires_from_self.append(vs_origins);
+                        for rs in vs_goals.iter() {
+                            coupled_root_self.insert(rs.clone());
+                        }
+                    }
+                    if vo_leaves.is_subset(&coupled_leaves) {
+                        vo_origins.reverse();
+                        expires_from_other.append(vo_origins);
+                        for rs in vo_goals.iter() {
+                            coupled_root_other.insert(rs.clone());
+                        }
+                    }
+                }
+
+                assert!(coupled_root_self == coupled_root_other);
+
+                println!("coupling:");
+                println!("{:?} ", coupled_leaves);
+                println!("{:?} // {:?}", expires_from_self, expires_from_other);
+                println!("{:?} // {:?}", coupled_root_self, coupled_root_other);
+
+                // Update the set of goals
+                for g in coupled_root_self.iter() {
+                    goals.remove(g);
+                }
+                for g in coupled_leaves.iter() {
+                    goals.insert(g.clone());
+                }
             }
         }
 
-        // let mut dp_list = roots.into_iter().collect::<Vec<_>>();
-        // dp_list.append(&mut lhs.into_iter().collect::<Vec<_>>());
-
-        todo!("implement joins");
+        todo!("implement joins exited its loop");
     }
 
     fn widen(&mut self, _: &Self) {
