@@ -149,9 +149,13 @@ pub enum SignatureKind {
     // The lowest nodes in the graph are never coupled, so coupled edges are always
     // above some other region.
     // Field 0: The location we are joining into.
-    // Field 1: Which origins this coupled edge abstracts over, depending on where it came from.
-    // Field 2: Edge this coupled edge is a parent to
-    Coupled(BasicBlock, BTreeMap<BasicBlock, Vec<Region>>, Vec<Region>),
+    // Field 1: The locations we are joining from
+    // Field 2: The set of edges this coupled edge is a parent to
+    Coupled(
+        BasicBlock,
+        BTreeSet<BasicBlock>,
+        BTreeSet<Tagged<Region, Location>>,
+    ),
     Owned,
 }
 
@@ -200,11 +204,12 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "{:?} -{}-* {:?}",
+            "{:?} -[{}]-* {:?}",
             self.leaves.iter().collect::<Vec<_>>(),
             match &self.kind {
-                SignatureKind::Subgraph(o) => format!("shared {:?}", o),
-                SignatureKind::Coupled(_, _, _) => format!("coupled ..."),
+                SignatureKind::Subgraph(o) => format!("branch {:?}", o),
+                SignatureKind::Coupled(bb_to, bbs_from, parent_to) =>
+                    format!("couple {:?}~>{:?}; {:?}", bbs_from, bb_to, parent_to),
                 SignatureKind::Owned => format!("owned"),
             },
             self.roots.iter().collect::<Vec<_>>()
@@ -466,6 +471,12 @@ pub struct CouplingState<'facts, 'mir: 'facts, 'tcx: 'mir> {
     // Location this state applies to (possibly in-between basic blocks)
     pub loc: StateLocation,
 
+    /// Coupling commands:
+    ///  indexed by to-bb, from-bb, and the coupled edge to create (identified by the set it blocks)
+    ///  the RB DAG must abstract over the specified origins
+    pub coupling_commands:
+        BTreeMap<(BasicBlock, BasicBlock, BTreeSet<CDGNode<'tcx>>), Vec<Tagged<Region, Location>>>,
+
     // also include: annotations at this location:
     // Also include: invariant checks?
     pub(crate) mir: &'mir BodyWithBorrowckFacts<'tcx>,
@@ -480,6 +491,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         Self {
             coupling_graph: Default::default(),
             loc: StateLocation::BeforeProgram,
+            coupling_commands: BTreeMap::new(),
             fact_table,
             mir,
         }
@@ -492,6 +504,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         Self {
             coupling_graph: Default::default(),
             loc: StateLocation::BeforeProgram,
+            coupling_commands: BTreeMap::new(),
             fact_table,
             mir,
         }
@@ -742,7 +755,9 @@ impl fmt::Debug for CouplingState<'_, '_, '_> {
 
 impl<'facts, 'mir: 'facts, 'tcx: 'mir> PartialEq for CouplingState<'facts, 'mir, 'tcx> {
     fn eq(&self, other: &Self) -> bool {
-        self.coupling_graph == other.coupling_graph && self.loc == other.loc
+        self.coupling_graph == other.coupling_graph
+            && self.loc == other.loc
+            && self.coupling_commands == other.coupling_commands
     }
 }
 
@@ -930,12 +945,14 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 // - which origins get a coupled edge? This should be recorded from earlier but I recalculate here.
                 let origins_that_get_a_copy = expires_from_self
                     .iter()
+                    .cloned()
                     .filter(|x| !x.is_tagged())
                     .collect::<BTreeSet<_>>();
                 assert!(
                     origins_that_get_a_copy
                         == expires_from_other
                             .iter()
+                            .cloned()
                             .filter(|x| !x.is_tagged())
                             .collect::<BTreeSet<_>>()
                 );
@@ -946,11 +963,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     .into_iter()
                     .map(|o| {
                         (
-                            o,
+                            o.clone(),
                             self.coupling_graph
                                 .origins
                                 .map
-                                .get(o)
+                                .get(&o)
                                 .unwrap()
                                 .leaves
                                 .clone(),
@@ -976,8 +993,29 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
                 //  - Issue commands to expire these coupled edges.
                 //  "at the join (bb1, bb2), to create the coupled borrow with roots {...},  if coming from bb1, use annotations from the following origins in order: [...]"
+                self.coupling_commands
+                    .insert((to_s, from_s, coupled_root_self.clone()), expires_from_self);
+                self.coupling_commands.insert(
+                    (to_s, from_o, coupled_root_self.clone()),
+                    expires_from_other,
+                );
 
-                panic!();
+                // Add the edges to the new graph
+                for (o, lhs) in origins_that_get_a_copy.into_iter() {
+                    println!("inserting into {:?}", o);
+                    let sig = OriginSignature {
+                        leaves: lhs,
+                        roots: coupled_root_self.clone(),
+                        kind: SignatureKind::Coupled(
+                            to_s,
+                            [from_s, from_o].into(),
+                            above_origins.clone(),
+                        ),
+                    };
+                    working_graph.map.insert(o.clone(), sig);
+                }
+                println!("done inserting, graph is\n{:#?}", working_graph);
+
                 // Update the set of goals
                 for g in coupled_root_self.iter() {
                     goals.remove(g);
@@ -989,7 +1027,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
         }
         println!("final graph:\n{:?}", working_graph);
 
-        todo!("implement joins exited its loop");
+        self.coupling_graph.origins = working_graph;
     }
 
     fn widen(&mut self, _: &Self) {
