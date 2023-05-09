@@ -360,18 +360,21 @@ impl<'tcx> OriginMap<'tcx> {
     }
 
     // if root is a root, there should be exactly one edge in the coupling graph that directly blocks it.
+    // fixme: this needs to ger refactored to return many possible parents! (a coupled parent)
     fn get_direct_parent(
         &self,
         root: &CDGNode<'tcx>,
     ) -> (Tagged<Region, Location>, OriginSignature<'tcx>) {
-        match self
+        let possible_parents = self
             .map
             .iter()
             .filter(|(_, sig)| sig.roots.contains(root))
-            .collect::<Vec<_>>()[..]
-        {
-            [(k, v)] => (k.clone(), v.clone()),
-            _ => unreachable!("excess parents"),
+            .collect::<Vec<_>>();
+
+        if let [(k, v)] = possible_parents[..] {
+            return (k.clone(), v.clone());
+        } else {
+            panic!("excess parents: {:?}", possible_parents);
         }
     }
 
@@ -902,8 +905,12 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 );
             }
 
-            // If any of these match, they necessarily contain the same edges (right?)
-            if let Some((r, (vs, vo))) = goal_parents.iter().filter(|(_, (vs, vo))| vs == vo).next()
+            // fixme: look for origins that
+            //    - meet the goal
+            //    - are the same in both
+            //    - are the _only_ edge that meets the goal
+
+            if let Some((r, (vs, vo))) = goal_parents.iter().filter(|(_, (vs, vo))| vs == vo /* fixme: here we also need it not to be coupled, probably. */).next()
             {
                 println!("{:?}: {:?} // {:?}", r, vs, vo);
 
@@ -956,6 +963,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 let coupled_leaves = goals_preimage.pop_first().unwrap().1;
 
                 println!("consume {:?}", coupled_leaves);
+
+                // fixme: here, we should check to see if it's already a coupled edge.
 
                 // collect all edges and goals that this consumption gives us back
                 let mut expires_from_self = Vec::default();
