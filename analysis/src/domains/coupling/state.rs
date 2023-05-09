@@ -462,6 +462,16 @@ pub enum StateLocation {
     InsideBB(BasicBlock),
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum ElimCommand<'tcx> {
+    // Take a place from the free PCS (and kill it in the graph)
+    Consume(CDGNode<'tcx>),
+    // apply all annotations associated to a region, except possibly coupled edges
+    // if there are other coupled still live. Regains a set of nodes in the
+    // free PCS
+    Expire(Tagged<Region, Location>, BTreeSet<CDGNode<'tcx>>),
+}
+
 /// CouplingState consists of
 ///     - A CouplingGraph, representing the current
 ///     - References to the context mir and fact_table
@@ -476,6 +486,8 @@ pub struct CouplingState<'facts, 'mir: 'facts, 'tcx: 'mir> {
     ///  the RB DAG must abstract over the specified origins
     pub coupling_commands:
         BTreeMap<(BasicBlock, BasicBlock, BTreeSet<CDGNode<'tcx>>), Vec<Tagged<Region, Location>>>,
+
+    pub elim_commands: Vec<ElimCommand<'tcx>>,
 
     // also include: annotations at this location:
     // Also include: invariant checks?
@@ -492,6 +504,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
             coupling_graph: Default::default(),
             loc: StateLocation::BeforeProgram,
             coupling_commands: BTreeMap::new(),
+            elim_commands: Vec::new(),
             fact_table,
             mir,
         }
@@ -505,6 +518,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
             coupling_graph: Default::default(),
             loc: StateLocation::BeforeProgram,
             coupling_commands: BTreeMap::new(),
+            elim_commands: Vec::new(),
             fact_table,
             mir,
         }
@@ -514,7 +528,10 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         location: Location,
     ) -> AnalysisResult<Vec<(mir::BasicBlock, Self)>> {
         let mut new_state = self.clone();
+        new_state.coupling_commands = Default::default();
+        new_state.elim_commands = Default::default();
         new_state.cdg_step(location)?;
+
         let joining_from = location.block;
         let terminator = self.mir.body[location.block].terminator();
         Ok(terminator
@@ -529,6 +546,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     }
 
     pub(crate) fn apply_statement_effect(&mut self, location: Location) -> AnalysisResult<()> {
+        self.coupling_commands = Default::default();
+        self.elim_commands = Default::default();
         self.loc = StateLocation::InsideBB(location.block);
         self.cdg_step(location)
     }
@@ -696,26 +715,72 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             .iter()
                             .all(|(_, sig)| match &sig.kind {
                                 SignatureKind::Subgraph(y) => y != *x,
-                                SignatureKind::Coupled(_, _, _) => true,
+                                SignatureKind::Coupled(_, _, children) => !children.contains(x),
                                 SignatureKind::Owned => true,
                             })
                     })
                     // We are allowed to expire the tree-leaves that are tagged OR are in OGS.
                     .filter(|x| x.tag.is_some() || ogs.contains(&x.data))
+                    .cloned()
                     .next()
                 {
                     Some(tree_leaf) => {
-                        println!("Found tree leaf: {:?}", tree_leaf);
-                        // todo: emit consume and expire statements for that edge.
+                        println!("expiring the origin: {:?}", tree_leaf);
+                        // fixme: emit consume and expire statements for that edge here.
                         // Coupled edges don't get expired until all couped edges do... but they can get removed!
                         // remove from ogs.
+                        let leaf_sig = self.coupling_graph.origins.map.remove(&tree_leaf).unwrap();
+                        for l in leaf_sig.leaves.iter() {
+                            if !l.is_tagged() {
+                                self.elim_commands.push(ElimCommand::Consume(l.clone()))
+                            }
+                        }
+                        match &leaf_sig.kind {
+                            SignatureKind::Subgraph(_) | SignatureKind::Owned => {
+                                self.elim_commands.push(ElimCommand::Expire(
+                                    tree_leaf.clone(),
+                                    leaf_sig.roots.clone(),
+                                ))
+                            }
+                            SignatureKind::Coupled(leaf_froms, leaf_to, _) => {
+                                // Push the expiry of the coupled edge. Only regain capability if it's the last
+                                // coupled edge.
+                                match self
+                                    .coupling_graph
+                                    .origins
+                                    .map
+                                    .values()
+                                    .filter(|sig| match &sig.kind {
+                                        SignatureKind::Coupled(froms, to, _) => {
+                                            froms == leaf_froms
+                                                && to == leaf_to
+                                                && leaf_sig.roots == sig.roots
+                                        }
+                                        _ => false,
+                                    })
+                                    .next()
+                                {
+                                    Some(_) => {
+                                        // Expiry should not get anything back while other couple is live
+                                        self.elim_commands.push(ElimCommand::Expire(
+                                            tree_leaf.clone(),
+                                            BTreeSet::new(),
+                                        ))
+                                    }
+                                    None => self.elim_commands.push(ElimCommand::Expire(
+                                        tree_leaf.clone(),
+                                        leaf_sig.roots,
+                                    )),
+                                }
+                            }
+                        }
                         done = ogs.is_empty();
-                        panic!();
                     }
                     None => {
                         // The rest of ogs are internal, so get tagged.
                         // fixme: Do we also need to tag the LHS of that origin? Probably doens't matter.
                         for x in ogs.into_iter() {
+                            println!("tagging the internal origin: {:?}", ogs);
                             self.coupling_graph.origins.tag_origins(location, *x);
                         }
                         done = true;
