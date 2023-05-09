@@ -146,7 +146,12 @@ impl<'tcx> fmt::Debug for CDGNode<'tcx> {
 #[derive(Clone, PartialEq, Eq)]
 pub enum SignatureKind {
     Subgraph(Tagged<Region, Location>),
-    Coupled(CoupledBorrowIndex),
+    // The lowest nodes in the graph are never coupled, so coupled edges are always
+    // above some other region.
+    // Field 0: The location we are joining into.
+    // Field 1: Which origins this coupled edge abstracts over, depending on where it came from.
+    // Field 2: Edge this coupled edge is a parent to
+    Coupled(BasicBlock, BTreeMap<BasicBlock, Vec<Region>>, Vec<Region>),
     Owned,
 }
 
@@ -199,7 +204,7 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
             self.leaves.iter().collect::<Vec<_>>(),
             match &self.kind {
                 SignatureKind::Subgraph(o) => format!("shared {:?}", o),
-                SignatureKind::Coupled(x) => format!("coupled {:?}", x),
+                SignatureKind::Coupled(_, _, _) => format!("coupled ..."),
                 SignatureKind::Owned => format!("owned"),
             },
             self.roots.iter().collect::<Vec<_>>()
@@ -444,14 +449,23 @@ impl<'tcx> CDG<'tcx> {
     // pub fn get_roots(&self) -> BTreeSet<
 }
 
+/// Extra data to add to a state to make joins location-depdent.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum StateLocation {
+    BeforeProgram,
+    Joining(BasicBlock, BasicBlock),
+    InsideBB(BasicBlock),
+}
+
 /// CouplingState consists of
 ///     - A CouplingGraph, representing the current
 ///     - References to the context mir and fact_table
 #[derive(Clone)]
 pub struct CouplingState<'facts, 'mir: 'facts, 'tcx: 'mir> {
     pub coupling_graph: CDG<'tcx>,
-    // Coupled borrows are unqiuely identified by the join that produced them.
-    pub couples: BTreeMap<CoupledBorrowIndex, usize>,
+    // Location this state applies to (possibly in-between basic blocks)
+    pub loc: StateLocation,
+
     // also include: annotations at this location:
     // Also include: invariant checks?
     pub(crate) mir: &'mir BodyWithBorrowckFacts<'tcx>,
@@ -465,7 +479,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     ) -> Self {
         Self {
             coupling_graph: Default::default(),
-            couples: Default::default(),
+            loc: StateLocation::BeforeProgram,
             fact_table,
             mir,
         }
@@ -477,7 +491,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     ) -> Self {
         Self {
             coupling_graph: Default::default(),
-            couples: Default::default(),
+            loc: StateLocation::BeforeProgram,
             fact_table,
             mir,
         }
@@ -488,15 +502,21 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     ) -> AnalysisResult<Vec<(mir::BasicBlock, Self)>> {
         let mut new_state = self.clone();
         new_state.cdg_step(location)?;
+        let joining_from = location.block;
         let terminator = self.mir.body[location.block].terminator();
         Ok(terminator
             .successors()
             .into_iter()
-            .map(|bb| (bb, new_state.clone()))
+            .map(|bb| {
+                let mut ns = new_state.clone();
+                ns.loc = StateLocation::Joining(joining_from, bb);
+                (bb, ns)
+            })
             .collect())
     }
 
     pub(crate) fn apply_statement_effect(&mut self, location: Location) -> AnalysisResult<()> {
+        self.loc = StateLocation::InsideBB(location.block);
         self.cdg_step(location)
     }
 
@@ -508,6 +528,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         // (recording the necessary changes in leaves as consume and expire statements)
         self.apply_origins(&location)?;
 
+        println!("(loc: {:?})", self.loc);
         println!(
             "[debug@{:?}]\n{:?}\n",
             location, self.coupling_graph.origins
@@ -662,7 +683,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             .iter()
                             .all(|(_, sig)| match &sig.kind {
                                 SignatureKind::Subgraph(y) => y != *x,
-                                SignatureKind::Coupled(_) => true,
+                                SignatureKind::Coupled(_, _, _) => true,
                                 SignatureKind::Owned => true,
                             })
                     })
@@ -695,7 +716,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
 
 impl<'facts, 'mir: 'facts, 'tcx: 'mir> Serialize for CouplingState<'facts, 'mir, 'tcx> {
     fn serialize<Se: Serializer>(&self, serializer: Se) -> Result<Se::Ok, Se::Error> {
-        let mut s = serializer.serialize_struct("[coupling state]", 1)?;
+        let mut s = serializer.serialize_struct("[coupling state]", 2)?;
         s.serialize_field("[cdg]", &self.coupling_graph)?;
         s.end()
     }
@@ -714,17 +735,14 @@ impl<'tcx> Serialize for CDG<'tcx> {
 
 impl fmt::Debug for CouplingState<'_, '_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "[coupling state] {}",
-            serde_json::to_string_pretty(&self).unwrap()
-        )
+        writeln!(f, "[cdg] {:#?}", self.coupling_graph)?;
+        writeln!(f, "[loc] {:#?}", self.loc)
     }
 }
 
 impl<'facts, 'mir: 'facts, 'tcx: 'mir> PartialEq for CouplingState<'facts, 'mir, 'tcx> {
     fn eq(&self, other: &Self) -> bool {
-        self.coupling_graph == other.coupling_graph
+        self.coupling_graph == other.coupling_graph && self.loc == other.loc
     }
 }
 
@@ -732,7 +750,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> Eq for CouplingState<'facts, 'mir, 'tcx> 
 
 impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, 'mir, 'tcx> {
     fn is_bottom(&self) -> bool {
-        self.coupling_graph.origins.map.is_empty()
+        self.coupling_graph.origins.map.is_empty() && self.loc == StateLocation::BeforeProgram
     }
 
     // Invariant: bottom join X is X
@@ -742,17 +760,23 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
     // the coupling state will not be equal between these two paths (for the def'n of
     // equality currently implemented, anyways).
     fn join(&mut self, other: &Self) {
-        // Check for the trivial cases (join to bottom)
-        if other.coupling_graph.origins.map.is_empty() {
+        // println!("--- enter join ---------------------");
+        // println!("self: {:?}", self);
+        // println!("other: {:?}", other);
+        if other.is_bottom() {
             return;
-        } else if self.coupling_graph.origins.map.is_empty() {
-            self.coupling_graph = other.coupling_graph.clone();
+        }
+        if self.is_bottom() {
+            *self = (*other).clone();
             return;
         }
 
         let mut working_graph: OriginMap = Default::default();
 
+        println!("(JOIN 1 loc: {:?})", self.loc);
         println!("JOIN 1: {:?}\n", self.coupling_graph);
+
+        println!("(JOIN 2 loc: {:?})", other.loc);
         println!("JOIN 2: {:?}\n", other.coupling_graph);
 
         // Make the LHS of the origins coherent (kill leaves that are in one branch but not the other)
@@ -884,6 +908,76 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 println!("{:?} // {:?}", expires_from_self, expires_from_other);
                 println!("{:?} // {:?}", coupled_root_self, coupled_root_other);
 
+                // insert the edge into the new graph
+                // - what edges is it above?
+                let mut above_origins = BTreeSet::new();
+                for g in coupled_root_self.iter() {
+                    match working_graph
+                        .map
+                        .iter()
+                        .filter(|(k, sig)| sig.leaves.contains(g))
+                        .collect::<Vec<_>>()[..]
+                    {
+                        [] => unreachable!("coupled edges must always be above another edge"),
+                        [g_origin] => above_origins.insert(g_origin.0.clone()),
+                        _ => {
+                            unimplemented!("unsure how to model ambiguous blocks. revisit me. ")
+                        }
+                    };
+                }
+                println!("above origins {:?}", above_origins);
+
+                // - which origins get a coupled edge? This should be recorded from earlier but I recalculate here.
+                let origins_that_get_a_copy = expires_from_self
+                    .iter()
+                    .filter(|x| !x.is_tagged())
+                    .collect::<BTreeSet<_>>();
+                assert!(
+                    origins_that_get_a_copy
+                        == expires_from_other
+                            .iter()
+                            .filter(|x| !x.is_tagged())
+                            .collect::<BTreeSet<_>>()
+                );
+
+                // Add the current LHS to the origins_that_get_a_copy list.
+                // This should be done earlier.
+                let origins_that_get_a_copy = origins_that_get_a_copy
+                    .into_iter()
+                    .map(|o| {
+                        (
+                            o,
+                            self.coupling_graph
+                                .origins
+                                .map
+                                .get(o)
+                                .unwrap()
+                                .leaves
+                                .clone(),
+                        )
+                    })
+                    .collect::<BTreeSet<_>>();
+                println!("origins that get a copy: {:?}", origins_that_get_a_copy);
+
+                // - which edges to expire under which bb?
+                // - which bb are we coming from?
+                //    - add latest_bb to the state
+                let ((from_s, to_s), (from_o, to_o)) = match (self.loc.clone(), other.loc.clone()) {
+                    (StateLocation::Joining(x, y), StateLocation::Joining(w, z)) => {
+                        ((x, y), (w, z))
+                    }
+                    // To implement this, I need to reimplement join to be associative. IE, for coupled edges
+                    // to get coupled again. It also should be commutative, to ensure we terminate.
+                    (x, y) => unimplemented!("unimplemented join kind: {:?}", (x, y)),
+                };
+                println!("from {:?}", (from_s, from_o));
+                println!("to {:?}", (to_s, to_o));
+                assert!(to_s == to_o);
+
+                //  - Issue commands to expire these coupled edges.
+                //  "at the join (bb1, bb2), to create the coupled borrow with roots {...},  if coming from bb1, use annotations from the following origins in order: [...]"
+
+                panic!();
                 // Update the set of goals
                 for g in coupled_root_self.iter() {
                     goals.remove(g);
@@ -893,6 +987,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 }
             }
         }
+        println!("final graph:\n{:?}", working_graph);
 
         todo!("implement joins exited its loop");
     }
