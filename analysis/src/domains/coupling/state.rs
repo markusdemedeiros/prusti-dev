@@ -276,10 +276,26 @@ impl<'tcx> OriginMap<'tcx> {
     }
 
     pub fn tag_origins(&mut self, location: &Location, origin: Region) {
+        // Change the key for this origin to be a tagged version
         if let Some(sig) = self.map.remove(&Tagged::untagged(origin)) {
-            self.map.insert(Tagged::tagged(origin, *location), sig);
+            // Reinsert the new edge
+            self.map
+                .insert(Tagged::tagged(origin, *location), sig.clone());
+
+            // I'm not really sure about this to be completely honest
+            for cap in sig.leaves.iter() {
+                match cap {
+                    CDGNode::Place(_) => self.tag_node(location, cap),
+                    CDGNode::Borrow(_) => match sig.kind {
+                        SignatureKind::Subgraph(_) => self.tag_node(location, cap),
+                        SignatureKind::Coupled(_, _, _) => self.tag_node(location, cap),
+                        SignatureKind::Owned => (),
+                    },
+                }
+            }
         }
 
+        // Change all subgraphs that refer to this graph to be tagged as well
         for (_, sig) in self.map.iter_mut() {
             if let SignatureKind::Subgraph(sbg) = &(sig.kind) {
                 if *sbg == Tagged::untagged(origin) {
@@ -359,23 +375,53 @@ impl<'tcx> OriginMap<'tcx> {
         return ret;
     }
 
+    // A _parent_ is a live place node that is blocking another node, with no live
+    // nodes in between. Eg.
+    //
+    //  x --> y --> w@bb1[2] --> z
+    //
+    // y is a parent of z. w@bb1[2] is not a parent of z because it is not live,
+    // and x is not a parent of z because of y. At a join in the coupling graph,
+    // parents are preserved between branches. That is,
+    //
+    //    a --> b --> x    join    b --> a --> x
+    //
+    // is impossible (due to the eager kills of origins in Polonius).
+    //
+    // Parents are supposed to represent the finest possible subgraphs that
+    // we can couple. A node can have any number of parents. For example,
+    // in the graph
+    //
+    //    x --coupled--> {y, z}
+    //    w --coupled--> {y, z}
+    //
+    // both x and w are parents of y. An invariant of the coupling graph is that
+    // all possible parents must expire before a resource can be regained. As such,
+    // if we consider coupled edges to be equal, the coupling graph should form a
+    // directed hypertree where the edges are parent-child relationships*. The
+    // process of coupling amounts to abstracting over all of the possible parents
+    // across several branches so that this invariant is maintained.
+    //
+    //
+    // *in the case of exlusive capabilities, anyways.
+
     // if root is a root, there should be exactly one edge in the coupling graph that directly blocks it.
     // fixme: this needs to ger refactored to return many possible parents! (a coupled parent)
     fn get_direct_parent(
         &self,
         root: &CDGNode<'tcx>,
-    ) -> (Tagged<Region, Location>, OriginSignature<'tcx>) {
-        let possible_parents = self
-            .map
+    ) -> Vec<(Tagged<Region, Location>, OriginSignature<'tcx>)> {
+        self.map
             .iter()
             .filter(|(_, sig)| sig.roots.contains(root))
-            .collect::<Vec<_>>();
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect::<Vec<_>>()
 
-        if let [(k, v)] = possible_parents[..] {
-            return (k.clone(), v.clone());
-        } else {
-            panic!("excess parents: {:?}", possible_parents);
-        }
+        // if let [(k, v)] = possible_parents[..] {
+        //     return (k.clone(), v.clone());
+        // } else {
+        //     panic!("excess parents: {:?}", possible_parents);
+        // }
     }
 
     // Get a list of origins to expire in order to end up at a root
@@ -419,26 +465,27 @@ impl<'tcx> OriginMap<'tcx> {
 
             // If we're not done, get the edge's direct parent.
             let goal_working = roots_todo.pop_first().unwrap();
-            let (tagged_region, sig) = self.get_direct_parent(&goal_working);
-            // For all the roots of this edge, either remove a goal (if it can) or add it to the global effect
-            for r in sig
-                .roots
-                .iter()
-                .filter(|n| !roots_todo.contains(n) && **n != goal_working)
-            {
-                ret_roots.insert(r.clone());
-            }
-            roots_todo.retain(|n| !sig.roots.contains(n));
+            for (tagged_region, sig) in self.get_direct_parent(&goal_working).iter() {
+                // For all the roots of this edge, either remove a goal (if it can) or add it to the global effect
+                for r in sig
+                    .roots
+                    .iter()
+                    .filter(|n| !roots_todo.contains(n) && **n != goal_working)
+                {
+                    ret_roots.insert(r.clone());
+                }
+                roots_todo.retain(|n| !sig.roots.contains(n));
 
-            // Add all new goals for this edge
-            roots_todo = roots_todo.union(&sig.leaves).cloned().collect();
+                // Add all new goals for this edge
+                roots_todo = roots_todo.union(&sig.leaves).cloned().collect();
 
-            // Record this expiry.
-            ret_origins.push(tagged_region);
+                // Record this expiry.
+                ret_origins.push(tagged_region.clone());
 
-            // remove all roots of this edge from the total effect
-            for l in sig.roots.iter() {
-                ret_leaves.remove(l);
+                // remove all roots of this edge from the total effect
+                for l in sig.roots.iter() {
+                    ret_leaves.remove(l);
+                }
             }
         }
         return (ret_origins, ret_roots, ret_leaves);
@@ -781,7 +828,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                     }
                     None => {
                         // The rest of ogs are internal, so get tagged.
-                        // fixme: Do we also need to tag the LHS of that origin? Probably doens't matter.
                         for x in ogs.into_iter() {
                             println!("tagging the internal origin: {:?}", ogs);
                             self.coupling_graph.origins.tag_origins(location, *x);
@@ -976,14 +1022,22 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 {
                     if vs_leaves.is_subset(&coupled_leaves) {
                         vs_origins.reverse();
-                        expires_from_self.append(vs_origins);
+                        for v in vs_origins.iter() {
+                          if !expires_from_self.contains(v) {
+                            expires_from_self.push(v.clone());
+                          }
+                        }
                         for rs in vs_goals.iter() {
                             coupled_root_self.insert(rs.clone());
                         }
                     }
                     if vo_leaves.is_subset(&coupled_leaves) {
                         vo_origins.reverse();
-                        expires_from_other.append(vo_origins);
+                        for v in vo_origins.iter() {
+                          if !expires_from_other.contains(v) {
+                            expires_from_other.push(v.clone());
+                          }
+                        }
                         for rs in vo_goals.iter() {
                             coupled_root_other.insert(rs.clone());
                         }
