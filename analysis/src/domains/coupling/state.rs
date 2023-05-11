@@ -220,7 +220,7 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
 
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct OriginMap<'tcx> {
-    map: BTreeMap<Tagged<Region, Location>, OriginSignature<'tcx>>,
+    pub map: BTreeMap<Tagged<Region, Location>, OriginSignature<'tcx>>,
     // leaves: BTreeSet<OriginLHS<'tcx>>,
 }
 
@@ -658,6 +658,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                 println!("need to repack! matching_leaves:");
                 println!("{:?}", matching_leaves);
                 println!("req: {:?}", req);
+                panic!();
             }
         }
     }

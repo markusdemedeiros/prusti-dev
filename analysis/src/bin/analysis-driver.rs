@@ -289,16 +289,16 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                                 println!("[driver]    {:#?}", state);
                                 println!("[polonius] {:#?}", body_with_facts.input_facts);
                                 println!("[polonius] {:#?}", body_with_facts.output_facts);
-                                // report_with_writer(
-                                //     "coupling_trace",
-                                //     format!(
-                                //         "{}.graph.dot",
-                                //         "latest" // fixme: extract function names
-                                //     ),
-                                //     |writer| {
-                                //         state.to_graphviz(writer).unwrap();
-                                //     },
-                                // );
+                                report_with_writer(
+                                    "coupling_trace",
+                                    format!(
+                                        "{}.graph.dot",
+                                        "latest" // fixme: extract function names
+                                    ),
+                                    |writer| {
+                                        state.to_graphviz(writer).unwrap();
+                                    },
+                                );
 
                                 // todo!("log the state into appropriate graphviz files");
                             }

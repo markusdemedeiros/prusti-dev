@@ -23,7 +23,8 @@ use std::io;
 
 // use super::{CouplingOrigins, CouplingState, OriginMap};
 use crate::mir_utils::Place;
-/*
+
+use super::{CouplingState, OriginMap};
 impl<'facts, 'mir: 'facts, 'tcx: 'mir>
     PointwiseState<'mir, 'tcx, CouplingState<'facts, 'mir, 'tcx>>
 {
@@ -46,23 +47,17 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
         format!("cluster_block_{:?}", ix)
     }
 
-    fn rich_location_label(rloc: RichLocation) -> String {
-        match rloc {
-            RichLocation::Start(l) => format!("loc_start_{:?}_{:?}", l.block, l.statement_index),
-            RichLocation::Mid(l) => format!("loc_mid_{:?}_{:?}", l.block, l.statement_index),
-        }
+    fn location_label(l: Location) -> String {
+        format!("loc_{:?}_{:?}", l.block, l.statement_index)
     }
 
-    fn state_title(state: &CouplingState<'facts, 'mir, 'tcx>, rloc: RichLocation) -> String {
-        let locationindex = match rloc {
-            RichLocation::Start(l) => state.mir.location_table.start_index(l),
-            RichLocation::Mid(l) => state.mir.location_table.mid_index(l),
-        }
-        .index();
-        match rloc {
-            RichLocation::Start(l) => format!("Location {:?}: {:?} (Start)", locationindex, l),
-            RichLocation::Mid(l) => format!("Location {:?}: {:?} (Mid)", locationindex, l),
-        }
+    fn state_title(state: &CouplingState<'facts, 'mir, 'tcx>, loc: Location) -> String {
+        format!(
+            "{:?}/{:?} - {:?}",
+            loc,
+            state.mir.location_table.start_index(loc),
+            state.mir.location_table.mid_index(loc),
+        )
     }
 
     fn statement_formatting_flags() -> String {
@@ -100,24 +95,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
         vec!["penwidth=\"8\"", "weight=\"1.0\""].join(", ")
     }
 
-    // Start(l) -> Node annotated with MIR at start location
-    fn write_mir_edge(
-        &self,
-        loc: Location,
-        to: String,
-        writer: &mut dyn io::Write,
-    ) -> Result<(), std::io::Error> {
-        writeln!(
-            writer,
-            "{} -> {} [{}, label=\"{}\"]",
-            Self::rich_location_label(RichLocation::Start(loc)),
-            to,
-            Self::internal_edge_flags(),
-            Self::kind_label(mir_kind_at(self.mir, loc))
-        )?;
-        Ok(())
-    }
-
     fn kind_label(kind: StatementKinds<'mir, 'tcx>) -> String {
         // fixme: make more ergonomic labels for long statements
         match kind {
@@ -128,58 +105,58 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
 
     fn write_regular_statement(
         &self,
-        loc: RichLocation,
+        loc: Location,
         state: &CouplingState<'facts, 'mir, 'tcx>,
         writer: &mut dyn io::Write,
     ) -> Result<(), std::io::Error> {
         self.write_statement(loc, state, Self::state_title(state, loc), writer)
     }
 
-    fn to_kill_to_string(state: &CouplingState<'facts, 'mir, 'tcx>) -> String {
-        let mut r = "".to_string();
-        for to_kill in state.to_kill.loans.iter() {
-            r = format!("{} {:?}", r, to_kill);
-        }
+    // fn to_kill_to_string(state: &CouplingState<'facts, 'mir, 'tcx>) -> String {
+    //     let mut r = "".to_string();
+    //     for to_kill in state.to_kill.loans.iter() {
+    //         r = format!("{} {:?}", r, to_kill);
+    //     }
 
-        for to_kill in state.to_kill.places.iter().map(|k| format!("{:?} ", k)) {
-            r = format!("{} {:?}", r, to_kill);
-        }
+    //     for to_kill in state.to_kill.places.iter().map(|k| format!("{:?} ", k)) {
+    //         r = format!("{} {:?}", r, to_kill);
+    //     }
 
-        if r == "" {
-            "none".to_string()
-        } else {
-            r
-        }
-    }
+    //     if r == "" {
+    //         "none".to_string()
+    //     } else {
+    //         r
+    //     }
+    // }
 
-    fn write_group(
+    fn write_groups(
         group: &OriginMap<'tcx>,
         writer: &mut dyn io::Write,
     ) -> Result<(), std::io::Error> {
-        for (origin, cdgo) in group.iter() {
+        for (origin, sig) in group.map.iter() {
             writeln!(
                 writer,
                 "<tr><td align=\"left\">  {:?}</td><td align=\"left\">{}</td></tr>",
                 origin,
-                html_escape::encode_text(&format!("{:?} --* {:?}", cdgo.leaves(), cdgo.roots())),
+                html_escape::encode_text(&format!("{:?}", sig)),
             )?;
-            for edge in cdgo.edges.iter() {
-                writeln!(
-                    writer,
-                    "<tr><td></td><td align=\"left\">    {} </td></tr>",
-                    html_escape::encode_text(&format!(
-                        "{:?} -{:?}-> {:?}",
-                        edge.lhs, edge.edge, edge.rhs
-                    ))
-                )?;
-            }
+            // for edge in cdgo.edges.iter() {
+            //     writeln!(
+            //         writer,
+            //         "<tr><td></td><td align=\"left\">    {} </td></tr>",
+            //         html_escape::encode_text(&format!(
+            //             "{:?} -{:?}-> {:?}",
+            //             edge.lhs, edge.edge, edge.rhs
+            //         ))
+            //     )?;
+            // }
         }
         Ok(())
     }
 
     fn write_statement(
         &self,
-        loc: RichLocation,
+        loc: Location,
         state: &CouplingState<'facts, 'mir, 'tcx>,
         title: String,
         writer: &mut dyn io::Write,
@@ -187,7 +164,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
         writeln!(
             writer,
             "{} [ {}",
-            Self::rich_location_label(loc),
+            Self::location_label(loc),
             Self::statement_formatting_flags()
         )?;
         // Write out the table here
@@ -205,22 +182,33 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
             title,
         )?;
 
-        // To kill
-        writeln!(
-            writer,
-            "<tr><td align=\"left\" colspan=\"2\"> to kill: {} </td><td></td></tr>",
-            Self::to_kill_to_string(state)
-        )?;
+        writeln!(writer,
+          "<tr><td bgcolor=\"white\" align=\"center\" colspan=\"2\"><font color=\"black\">{}</font></td></tr>",
+          Self::kind_label(mir_kind_at(&state.mir.body, loc)))?;
+
+        for command in state.coupling_commands.iter() {
+            println!("{:?}:: {:?}", loc, command);
+            writeln!(writer,
+            "<tr><td bgcolor=\"red\" align=\"left\" colspan=\"2\"><font color=\"black\">the command goes here</font></td></tr>")?;
+        }
+
+        // // To kill
+        // writeln!(
+        //     writer,
+        //     "<tr><td align=\"left\" colspan=\"2\"> to kill: {} </td><td></td></tr>",
+        //     Self::to_kill_to_string(state)
+        // )?;
 
         // Groups
-        for (ix, group) in state.coupling_graph.origins.origins.iter().enumerate() {
-            writeln!(
-                writer,
-                "<tr><td align=\"left\" colspan=\"2\"> group {:?} </td><td></td></tr>",
-                ix
-            )?;
-            Self::write_group(group, writer)?;
-        }
+        Self::write_groups(&state.coupling_graph.origins, writer)?;
+        // for (ix, group) in state.coupling_graph.origins.map.iter() {
+        //     writeln!(
+        //         writer,
+        //         "<tr><td align=\"left\" colspan=\"2\"> group {:?} </td><td></td></tr>",
+        //         ix
+        //     )?;
+        //     Self::write_group(group, writer)?;
+        // }
 
         // writeln!(writer, "<tr><td> content </td></tr>")?;
         writeln!(writer, "</table>>];")?;
@@ -234,7 +222,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
         writeln!(
             writer,
             "{} [{}, shape=\"rectangle\",  label=\"{:?} (end)\"]",
-            Self::rich_location_label(RichLocation::Mid(location)),
+            Self::location_label(location),
             Self::statement_formatting_flags(),
             location
         )
@@ -252,13 +240,17 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
             .iter()
             .map(|(_, st)| st)
             .collect::<Vec<_>>();
+
         if let Some(state) = next_states.pop() {
-            for st in next_states.iter() {
-                assert_eq!(&state, st);
-            }
+            // fixme: this is wrong!!!
+            println!("WARNING: terminators are incorrect");
+
+            // for st in next_states.iter() {
+            //     assert_eq!(&state, st);
+            // }
             // Writing as a regular statement assuming that assert_eq never fails
             // If for some reason we need flow-dependence at this point, change the line below
-            self.write_regular_statement(RichLocation::Mid(loc), state, writer)?
+            self.write_regular_statement(loc, state, writer)?
         } else {
             Self::write_ending_node(loc, writer)?;
         }
@@ -279,56 +271,48 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
                 block,
                 statement_index,
             };
-            self.write_regular_statement(
-                RichLocation::Start(location),
-                self.lookup_before(location).unwrap(),
-                writer,
-            )?;
-            self.write_regular_statement(
-                RichLocation::Mid(location),
-                self.lookup_after(location).unwrap(),
-                writer,
-            )?;
+            self.write_regular_statement(location, self.lookup_before(location).unwrap(), writer)?;
         }
 
         let terminator_location = self.mir.terminator_loc(block);
         self.write_regular_statement(
-            RichLocation::Start(terminator_location),
+            terminator_location,
             self.lookup_before(terminator_location).unwrap(),
             writer,
         )?;
         self.write_terminator_out(block, writer)?;
 
         // Write out edges associated to statements
-        for statement_index in 0..=block_data.statements.len() {
-            self.write_mir_edge(
-                Location {
-                    block,
-                    statement_index,
-                },
-                Self::rich_location_label(RichLocation::Mid(Location {
-                    block,
-                    statement_index,
-                })),
-                writer,
-            )?;
-        }
+        // for statement_index in 0..=block_data.statements.len() {
+        //     self.write_mir_edge(
+        //         Location {
+        //             block,
+        //             statement_index,
+        //         },
+        //         Self::location_label(Location {
+        //             block,
+        //             statement_index,
+        //         }),
+        //         writer,
+        //     )?;
+        // }
 
         // Write out edges between statements
         for ix in 0..block_data.statements.len() {
-            let loc_from = RichLocation::Mid(Location {
+            let loc_from = Location {
                 block,
                 statement_index: ix,
-            });
-            let loc_to = RichLocation::Start(Location {
+            };
+            let loc_to = Location {
                 block,
                 statement_index: (ix + 1),
-            });
+            };
+
             writeln!(
                 writer,
                 "{} -> {} [{}]",
-                Self::rich_location_label(loc_from),
-                Self::rich_location_label(loc_to),
+                Self::location_label(loc_from),
+                Self::location_label(loc_to),
                 Self::statement_formatting_flags()
             )?;
         }
@@ -343,20 +327,12 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
         //         block,
         //         statement_index: ix,
         //     });
-        //     write!(writer, "{} ", Self::rich_location_label(loc_s))?;
-        //     write!(writer, "{} ", Self::rich_location_label(loc_m))?;
+        //     write!(writer, "{} ", Self::location_label(loc_s))?;
+        //     write!(writer, "{} ", Self::location_label(loc_m))?;
         // }
         // writeln!(writer, "}}")?;
 
         writeln!(writer, "}}")?;
-        Ok(())
-    }
-
-    fn write_cfg_edge(
-        from: BasicBlock,
-        to: BasicBlock,
-        writer: &mut dyn io::Write,
-    ) -> Result<(), std::io::Error> {
         Ok(())
     }
 
@@ -374,17 +350,17 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
 
         // Write out the edges between blocks
         for (bbno, block) in self.mir.basic_blocks.iter_enumerated() {
-            let end_loc = RichLocation::Mid(self.mir.terminator_loc(bbno));
+            let end_loc = self.mir.terminator_loc(bbno);
             for suc in block.terminator().successors() {
-                let start_loc = RichLocation::Start(Location {
+                let start_loc = Location {
                     block: suc,
                     statement_index: 0,
-                });
+                };
                 writeln!(
                     writer,
                     "{} -> {} [{}]",
-                    Self::rich_location_label(end_loc),
-                    Self::rich_location_label(start_loc),
+                    Self::location_label(end_loc),
+                    Self::location_label(start_loc),
                     Self::inter_block_edge_flags()
                 )?
             }
@@ -505,16 +481,30 @@ fn describe_field_from_ty(
 }
 
 fn escape_graphviz(a: String) -> String {
+    a //.replace("\"", "\\\"")
+        // .replace("[", "\\[")
+        // .replace("]", "\\]")
+        // .replace("{", "\\{")
+        // .replace("}", "\\}")
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        // .replace("-", "\\-")
+        .replace("\t", "")
+        .replace(" ", "")
+        .replace("\n", "")
+}
+
+fn escape_graphviz_xml(a: String) -> String {
     a.replace("\"", "\\\"")
         .replace("[", "\\[")
         .replace("]", "\\]")
         .replace("{", "\\{")
         .replace("}", "\\}")
-        .replace("<", "\\<")
-        .replace(">", "\\>")
+        .replace("<", "&lt")
+        .replace(">", "&gt")
         .replace("-", "\\-")
         .replace("\t", "")
         .replace(" ", "")
         .replace("\n", "")
 }
- */
