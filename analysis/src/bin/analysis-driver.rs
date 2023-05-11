@@ -283,6 +283,8 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                         .run_fwd_analysis()
                         .expect("coupling analysis error");
                         println!("[driver]    Done coupling analysis");
+                        println!("[driver]    --------------------------------------------------------------------------------");
+                        println!("[driver]    --------------------------------------------------------------------------------");
                         println!("[driver]    Starting reborrowing analysis");
                         ReborrowingAnalysis::new(
                             tcx,

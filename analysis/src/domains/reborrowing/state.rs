@@ -104,6 +104,39 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
     }
 
     pub(crate) fn apply_statement_effect(&mut self, location: Location) -> AnalysisResult<()> {
+        println!("== statement effect at {:?}", location);
+        println!("  (both)  MIR {:?}", self.mir.body.stmt_at(location));
+        println!(
+            "  (both)  intro commands: {:?}",
+            self.fact_table.graph_operations.get(&location)
+        );
+        println!(
+            "  (both)  delta leaves: {:?}",
+            self.fact_table.delta_leaves.get(&location)
+        );
+        println!(
+            "  (both)  loan issues: {:?}",
+            self.fact_table.loan_issues.get(&location)
+        );
+        println!(
+            "  (both)  origin_expires_before: {:?}",
+            self.fact_table.origin_expires_before.get(&location)
+        );
+        if let Some(before) = self.coupling.lookup_before(location) {
+            println!("  (before) st_loc: {:?}", before.loc);
+            println!("  (before) cdg: {:?}", before.coupling_graph);
+            println!("  (before) elim commands: {:?}", before.elim_commands);
+            println!(
+                "  (before) coupling commands: {:?}",
+                before.coupling_commands
+            );
+        }
+        if let Some(after) = self.coupling.lookup_after(location) {
+            println!("  (after) st_loc: {:?}", after.loc);
+            println!("  (after) cdg: {:?}", after.coupling_graph);
+            println!("  (after) elim commands: {:?}", after.elim_commands);
+            println!("  (after) coupling commands: {:?}", after.coupling_commands);
+        }
         todo!("apply_statement_effect");
         // self.coupling_commands = Default::default();
         // self.elim_commands = Default::default();

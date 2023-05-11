@@ -864,7 +864,9 @@ impl<'tcx> Serialize for CDG<'tcx> {
 impl fmt::Debug for CouplingState<'_, '_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "[cdg] {:#?}", self.coupling_graph)?;
-        writeln!(f, "[loc] {:#?}", self.loc)
+        writeln!(f, "[loc] {:#?}", self.loc)?;
+        writeln!(f, "[cpl] {:#?}", self.coupling_commands)?;
+        writeln!(f, "[elm] {:#?}", self.elim_commands)
     }
 }
 
