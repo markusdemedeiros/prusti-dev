@@ -8,7 +8,7 @@ use analysis::{
     domains::{
         run_coupling_tests, CouplingAnalysis, DefinitelyAccessibleAnalysis,
         DefinitelyInitializedAnalysis, FactTable, FramingAnalysis, MaybeBorrowedAnalysis,
-        ReachingDefsAnalysis,
+        ReachingDefsAnalysis, ReborrowingAnalysis,
     },
 };
 use prusti_common::config;
@@ -268,6 +268,34 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                             Err(e) => eprintln!("{}", e.to_pretty_str(body)),
                         }
                     }
+
+                    "ReborrowingAnalysis" => {
+                        println!("[driver]    Starting fact table translation");
+                        let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
+                        println!("[driver]    Done fact table translation");
+                        println!("[driver]    Starting coupling analysis");
+                        let coupling_result = CouplingAnalysis::new(
+                            tcx,
+                            local_def_id.to_def_id(),
+                            &fact_table,
+                            &body_with_facts,
+                        )
+                        .run_fwd_analysis()
+                        .expect("coupling analysis error");
+                        println!("[driver]    Done coupling analysis");
+                        println!("[driver]    Starting reborrowing analysis");
+                        ReborrowingAnalysis::new(
+                            tcx,
+                            local_def_id.to_def_id(),
+                            &fact_table,
+                            &body_with_facts,
+                            &coupling_result,
+                        )
+                        .run_fwd_analysis()
+                        .expect("reborrowing analysis error");
+                        println!("[driver]    Done reborrowing analysis");
+                    }
+
                     "CouplingAnalysis" => {
                         if config::coupling_analysis_test() {
                             run_coupling_tests(&body_with_facts.body, tcx);

@@ -7,6 +7,7 @@
 #![feature(rustc_private)]
 #![feature(box_patterns)]
 #![warn(clippy::disallowed_types)]
+#![feature(hash_drain_filter)]
 
 pub mod abstract_interpretation;
 mod analysis_error;

@@ -1,20 +1,24 @@
 {
-    "rust-analyzer.rustc.source": "discover",
-    "rust-analyzer.cargo.buildScripts.overrideCommand": [
-        "python3",
-        "x.py",
-        "check",
-        "--quiet",
-        "--workspace",
-        "--message-format=json",
-        "--all-targets",
-    ],
-    "rust-analyzer.checkOnSave.overrideCommand": [
-        "python3",
-        "x.py",
-        "check",
-        "--workspace",
-        "--message-format=json",
-        "--all-targets",
-    ],
+  "rust-analyzer.rustc.source": "discover",
+  "rust-analyzer.cargo.buildScripts.overrideCommand": [
+    "python3",
+    "x.py",
+    "check",
+    "--quiet",
+    "--workspace",
+    "--message-format=json",
+    "--all-targets",
+  ],
+  "rust-analyzer.checkOnSave.overrideCommand": [
+    "python3",
+    "x.py",
+    "check",
+    "--workspace",
+    "--message-format=json",
+    "--all-targets",
+  ],
+  "rust-analyzer.linkedProjects": [
+    "./analysis/Cargo.toml"
+  ],
+  "rust-analyzer.showUnlinkedFileNotification": false,
 }

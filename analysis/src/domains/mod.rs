@@ -11,6 +11,7 @@ mod framing;
 mod maybe_borrowed;
 mod reaching_definitions;
 mod coupling;
+mod reborrowing;
 
 pub use coupling::*;
 pub use definitely_accessible::*;
@@ -19,3 +20,4 @@ pub use definitely_initialized::*;
 pub use framing::*;
 pub use maybe_borrowed::*;
 pub use reaching_definitions::*;
+pub use reborrowing::*;

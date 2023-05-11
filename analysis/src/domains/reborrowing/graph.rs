@@ -6,12 +6,24 @@
 
 use std::io;
 
-use analysis::mir_utils::{self, PlaceImpl};
-use prusti_interface::environment::borrowck::facts;
+use crate::mir_utils::{self, expand, expand_struct_place, is_prefix, Place, PlaceImpl};
 use prusti_rustc_interface::{
+    borrowck::{consumers::RustcFacts, BodyWithBorrowckFacts},
     data_structures::fx::{FxHashMap, FxHashSet},
-    middle::{mir, ty::TyCtxt},
+    middle::{
+        mir,
+        mir::{BasicBlock, Location},
+        ty::TyCtxt,
+    },
+    polonius_engine::FactTypes,
 };
+
+// These types are stolen from Prusti interface
+pub type Region = <RustcFacts as FactTypes>::Origin;
+pub type Loan = <RustcFacts as FactTypes>::Loan;
+pub type PointIndex = <RustcFacts as FactTypes>::Point;
+pub type Variable = <RustcFacts as FactTypes>::Variable;
+pub type Path = <RustcFacts as FactTypes>::Path;
 
 /// The additional operations that can be performed to construct a conditional graph.
 pub trait ConditionalOps<'tcx>: Sized {
@@ -33,7 +45,7 @@ pub trait CoreOps<'tcx> {
     fn mutable_borrow(
         &mut self,
         from: mir::Place<'tcx>,
-        loan: facts::Loan,
+        loan: Loan,
         to: mir::Place<'tcx>,
         mir: &mir::Body<'tcx>,
         tcx: TyCtxt<'tcx>,
@@ -45,7 +57,7 @@ pub trait CoreOps<'tcx> {
 
     /// Unrolls the graph starting at the leaves, keeping the loans that are still alive, and
     /// outputting the annotations needed to restore the newly added capabilities.
-    fn unwind(&mut self, live_loans: &FxHashSet<facts::Loan>) -> GraphResult<'tcx>;
+    fn unwind(&mut self, live_loans: &FxHashSet<Loan>) -> GraphResult<'tcx>;
 }
 
 pub trait ToGraphviz {
@@ -64,7 +76,7 @@ pub trait ToGraphviz {
     fn edges_to_graphviz(&self, writer: &mut dyn io::Write) -> io::Result<()>;
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ReborrowingGraph<'tcx> {
     Single(Graph<'tcx>),
     Branch {
@@ -76,6 +88,12 @@ pub enum ReborrowingGraph<'tcx> {
         start: mir::BasicBlock,
         graphs: FxHashMap<ConditionValue, ReborrowingGraph<'tcx>>,
     },
+}
+
+impl<'tcx> Default for ReborrowingGraph<'tcx> {
+    fn default() -> Self {
+        Self::Single(Graph::default())
+    }
 }
 
 impl<'tcx> ConditionalOps<'tcx> for ReborrowingGraph<'tcx> {
@@ -150,7 +168,7 @@ impl<'tcx> CoreOps<'tcx> for ReborrowingGraph<'tcx> {
     fn mutable_borrow(
         &mut self,
         from: mir::Place<'tcx>,
-        loan: facts::Loan,
+        loan: Loan,
         to: mir::Place<'tcx>,
         mir: &mir::Body<'tcx>,
         tcx: TyCtxt<'tcx>,
@@ -212,7 +230,7 @@ impl<'tcx> CoreOps<'tcx> for ReborrowingGraph<'tcx> {
         }
     }
 
-    fn unwind(&mut self, live_loans: &FxHashSet<facts::Loan>) -> GraphResult<'tcx> {
+    fn unwind(&mut self, live_loans: &FxHashSet<Loan>) -> GraphResult<'tcx> {
         match self {
             Self::Single(graph) => graph.unwind(live_loans),
             Self::Branch { condition, graph } => {
@@ -439,7 +457,7 @@ impl<'tcx> CoreOps<'tcx> for Graph<'tcx> {
     fn mutable_borrow(
         &mut self,
         from: mir::Place<'tcx>,
-        loan: facts::Loan,
+        loan: Loan,
         to: mir::Place<'tcx>,
         mir: &mir::Body<'tcx>,
         tcx: TyCtxt<'tcx>,
@@ -504,7 +522,7 @@ impl<'tcx> CoreOps<'tcx> for Graph<'tcx> {
         final_annotations
     }
 
-    fn unwind(&mut self, live_loans: &FxHashSet<facts::Loan>) -> GraphResult<'tcx> {
+    fn unwind(&mut self, live_loans: &FxHashSet<Loan>) -> GraphResult<'tcx> {
         self.collapse_killed(live_loans);
 
         let leaves_before = self.leaves();
@@ -540,7 +558,7 @@ impl<'tcx> Graph<'tcx> {
         mir: &mir::Body<'tcx>,
         tcx: TyCtxt<'tcx>,
     ) -> Annotation<'tcx> {
-        let places = mir_utils::expand_struct_place(place, mir, tcx, None)
+        let places = expand_struct_place(place, mir, tcx, None)
             .iter()
             .map(|p| GraphNode::new(p.to_mir_place()))
             .collect::<Vec<_>>();
@@ -554,7 +572,7 @@ impl<'tcx> Graph<'tcx> {
     }
 
     /// Remove the non-live loans from the graph and collapse nodes where possible.
-    fn collapse_killed(&mut self, live_loans: &FxHashSet<facts::Loan>) {
+    fn collapse_killed(&mut self, live_loans: &FxHashSet<Loan>) {
         // TODO: bit of a work around since you can't mutate set elements but we want sets for intersection
         //       maybe we could keep a separate list for the killed loans or a map from edges to loans
         self.edges
@@ -813,7 +831,7 @@ impl<'tcx> ToGraphviz for Graph<'tcx> {
 enum GraphEdge<'tcx> {
     Borrow {
         from: GraphNode<'tcx>,
-        loans: Vec<facts::Loan>,
+        loans: Vec<Loan>,
         to: GraphNode<'tcx>,
     },
     Pack {
@@ -822,12 +840,12 @@ enum GraphEdge<'tcx> {
     },
     Abstract {
         from: GraphNode<'tcx>,
-        loans: Vec<facts::Loan>,
+        loans: Vec<Loan>,
         to: GraphNode<'tcx>,
     },
     Collapsed {
         from: GraphNode<'tcx>,
-        loans: Vec<facts::Loan>,
+        loans: Vec<Loan>,
         annotations: Vec<Annotation<'tcx>>,
         to: GraphNode<'tcx>,
     },
