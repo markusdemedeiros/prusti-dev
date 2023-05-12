@@ -8,15 +8,13 @@
 
 use crate::{
     abstract_interpretation::{AbstractState, AnalysisResult},
-    mir_utils::{self, expand, expand_struct_place, is_prefix, Place},
+    mir_utils::{is_prefix, Place},
 };
-use itertools::Itertools;
 use prusti_rustc_interface::{
     borrowck::{consumers::RustcFacts, BodyWithBorrowckFacts},
     middle::{
         mir,
         mir::{BasicBlock, Location},
-        ty::TyCtxt,
     },
     polonius_engine::FactTypes,
 };
@@ -34,14 +32,6 @@ use super::{btree_replace, FactTable, IntroStatement, OriginLHS};
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;
-pub type PointIndex = <RustcFacts as FactTypes>::Point;
-pub type Variable = <RustcFacts as FactTypes>::Variable;
-pub type Path = <RustcFacts as FactTypes>::Path;
-
-/// Index into arena-allocated coupled borrows.
-/// Coupled borrows are uniquely identified by the join that defined them.
-/// bbfrom1 bbfrom2 bbto
-pub type CoupledBorrowIndex = (BasicBlock, BasicBlock, BasicBlock);
 
 #[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
 pub struct Tagged<Data, Tag> {
@@ -169,17 +159,6 @@ pub struct OriginSignature<'tcx> {
 }
 
 impl<'tcx> OriginSignature<'tcx> {
-    pub fn add_edge(
-        &mut self,
-        remove_leaves: BTreeSet<CDGNode<'tcx>>,
-        add_leaves: BTreeSet<CDGNode<'tcx>>,
-    ) {
-        // Possibly repack an edge to change its signature.
-        // (since we want the leaves and roots to be disjoint)
-        // Only ever do repacks to add to a single edge. We don't care about matching repacks between edges.
-        todo!("add edge");
-    }
-
     /// Tags all untagged places which have to_tag as a prefix in a set of nodes
     fn tag_in_set(set: &mut BTreeSet<CDGNode<'tcx>>, location: &Location, to_tag: &CDGNode<'tcx>) {
         let mut to_replace: Vec<CDGNode<'tcx>> = vec![];
@@ -327,7 +306,7 @@ impl<'tcx> OriginMap<'tcx> {
     // Get the LHS of all origins
     pub fn get_all_lhs(&self) -> BTreeSet<CDGNode<'tcx>> {
         let mut ret = BTreeSet::new();
-        for (o, sig) in self.map.iter() {
+        for (_, sig) in self.map.iter() {
             for l in sig.leaves.iter() {
                 ret.insert(l.clone());
             }
@@ -337,7 +316,7 @@ impl<'tcx> OriginMap<'tcx> {
 
     pub fn get_all_rhs(&self) -> BTreeSet<CDGNode<'tcx>> {
         let mut ret = BTreeSet::new();
-        for (o, sig) in self.map.iter() {
+        for (_, sig) in self.map.iter() {
             for l in sig.roots.iter() {
                 ret.insert(l.clone());
             }
@@ -352,7 +331,7 @@ impl<'tcx> OriginMap<'tcx> {
     pub fn get_roots(&self) -> BTreeSet<CDGNode<'tcx>> {
         let mut ret = BTreeSet::new();
         let lr = self.get_all_lhs();
-        for (o, sig) in self.map.iter() {
+        for (_, sig) in self.map.iter() {
             for r in sig.roots.iter() {
                 if !lr.contains(r) {
                     ret.insert(r.clone());
@@ -365,7 +344,7 @@ impl<'tcx> OriginMap<'tcx> {
     pub fn get_leaves(&self) -> BTreeSet<CDGNode<'tcx>> {
         let mut ret = BTreeSet::new();
         let rr = self.get_all_rhs();
-        for (o, sig) in self.map.iter() {
+        for (_, sig) in self.map.iter() {
             for r in sig.leaves.iter() {
                 if !rr.contains(r) {
                     ret.insert(r.clone());
@@ -743,7 +722,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
     /// Expire non-live origins, and add new live origins
     fn apply_origins(&mut self, location: &Location) -> AnalysisResult<()> {
         // Get the set of origins at a point from the origin_contains_loan_at fact
-        if let Some(mut ogs) = self.fact_table.origin_expires_before.get(location).clone() {
+        if let Some(ogs) = self.fact_table.origin_expires_before.get(location).clone() {
             let mut done = ogs.is_empty();
             while !done {
                 // 1. We need an order in which to expiure these origins. This didn't matter in the last
@@ -1061,7 +1040,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     match working_graph
                         .map
                         .iter()
-                        .filter(|(k, sig)| sig.leaves.contains(g))
+                        .filter(|s| s.1.leaves.contains(g))
                         .collect::<Vec<_>>()[..]
                     {
                         [] => unreachable!("coupled edges must always be above another edge"),

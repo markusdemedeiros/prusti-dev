@@ -10,7 +10,6 @@ use crate::{
 };
 use html_escape;
 use prusti_rustc_interface::{
-    borrowck::consumers::RichLocation,
     middle::{
         mir,
         mir::{BasicBlock, BasicBlockData, Location},
@@ -79,16 +78,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
             // "pencolor=\"blue\"",
         ]
         .join("; ")
-    }
-
-    fn internal_edge_flags() -> String {
-        vec![
-            "weight=\"100\"",
-            //"weight=\"1.5\"",
-            "fontsize=\"20\"",
-            "fontname=\"Courier New\"",
-        ]
-        .join(", ")
     }
 
     fn inter_block_edge_flags() -> String {
@@ -372,6 +361,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir>
 }
 
 // Helpers stolen from definitely accessible
+#[allow(unused)]
 fn pretty_print_place<'tcx>(
     tcx: TyCtxt<'tcx>,
     body: &mir::Body<'tcx>,
@@ -490,20 +480,6 @@ fn escape_graphviz(a: String) -> String {
         .replace("<", "&lt;")
         .replace(">", "&gt;")
         // .replace("-", "\\-")
-        .replace("\t", "")
-        .replace(" ", "")
-        .replace("\n", "")
-}
-
-fn escape_graphviz_xml(a: String) -> String {
-    a.replace("\"", "\\\"")
-        .replace("[", "\\[")
-        .replace("]", "\\]")
-        .replace("{", "\\{")
-        .replace("}", "\\}")
-        .replace("<", "&lt")
-        .replace(">", "&gt")
-        .replace("-", "\\-")
         .replace("\t", "")
         .replace(" ", "")
         .replace("\n", "")

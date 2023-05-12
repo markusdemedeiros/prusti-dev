@@ -6,11 +6,9 @@
 use crate::{
     abstract_interpretation::AnalysisResult,
     mir_utils::{
-        self, expect_mid_location, expect_start_location, get_assigned_to_place,
-        get_borrowed_from_place, get_moved_from_place, get_storage_dead, maximally_pack,
-        mir_kind_at, Place, PlaceImpl,
+        self, expect_mid_location, expect_start_location, get_borrowed_from_place,
+        get_storage_dead, maximally_pack, mir_kind_at, Place, PlaceImpl,
     },
-    AnalysisError,
 };
 use prusti_rustc_interface::{
     borrowck::{
@@ -31,8 +29,6 @@ use std::collections::{BTreeMap, BTreeSet};
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;
 pub type PointIndex = <RustcFacts as FactTypes>::Point;
-pub type Variable = <RustcFacts as FactTypes>::Variable;
-pub type Path = <RustcFacts as FactTypes>::Path;
 
 /// Issue of a new loan. The assocciated region should represent a borrow temporary.
 pub(crate) type LoanIssues<'tcx> = FxHashMap<Location, (Region, Place<'tcx>)>;
@@ -192,7 +188,7 @@ impl<'tcx> FactTable<'tcx> {
                 .input_facts
                 .loan_issued_at
                 .iter()
-                .filter(|(o, l, p)| *p == point)
+                .filter(|p| p.2 == point)
                 .collect::<Vec<_>>()[..]
             {
                 [] => None,
@@ -211,7 +207,7 @@ impl<'tcx> FactTable<'tcx> {
                     StatementKind::Assign(box (
                         asgn_to_place,
                         Rvalue::Ref(
-                            decl_region,
+                            _decl_region,
                             BorrowKind::Mut {
                                 allow_two_phase_borrow: false,
                             },
@@ -273,7 +269,7 @@ impl<'tcx> FactTable<'tcx> {
                     StatementKind::Assign(box (
                         asgn_to_place,
                         Rvalue::Ref(
-                            decl_region,
+                            _decl_region,
                             BorrowKind::Mut {
                                 allow_two_phase_borrow: false,
                             },
@@ -340,7 +336,7 @@ impl<'tcx> FactTable<'tcx> {
                 //  - at an assignment statement
                 (
                     //  - only one subset
-                    [(mv_from_origin, mv_to_origin)],
+                    [(_mv_from_origin, mv_to_origin)],
                     // - an assignment statement
                     StatementKind::Assign(box (
                         mv_to_place,

@@ -32,20 +32,17 @@ use std::{
     fmt,
 };
 
-use super::{Annotation, ReborrowingGraph};
+// use super::{Annotation, ReborrowingGraph};
 
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;
-pub type PointIndex = <RustcFacts as FactTypes>::Point;
-pub type Variable = <RustcFacts as FactTypes>::Variable;
-pub type Path = <RustcFacts as FactTypes>::Path;
 
 #[derive(Clone)]
 pub struct ReborrowingState<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> {
-    pub reborrowing_dag: ReborrowingGraph<'tcx>,
+    pub reborrowing_dag: (), // ReborrowingGraph<'tcx>,
 
-    pub annotations_at: Vec<Annotation<'tcx>>,
+    pub annotations_at: (), // Vec<Annotation<'tcx>>,
 
     // // Location this state applies to (possibly in-between basic blocks)
     pub loc: StateLocation,
@@ -62,7 +59,7 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
         coupling: &'cpl PointwiseState<'mir, 'tcx, CouplingState<'facts, 'mir, 'tcx>>,
     ) -> Self {
         Self {
-            reborrowing_dag: ReborrowingGraph::default(),
+            reborrowing_dag: (), // ReborrowingGraph::default(),
             loc: StateLocation::BeforeProgram,
             annotations_at: Default::default(),
             fact_table,
@@ -104,7 +101,7 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
     }
 
     pub(crate) fn apply_statement_effect(&mut self, location: Location) -> AnalysisResult<()> {
-        println!("== statement effect at {:?}", location);
+        println!("\n========== statement effect at {:?}", location);
         println!("  (both)  MIR {:?}", self.mir.body.stmt_at(location));
         println!(
             "  (both)  intro commands: {:?}",
