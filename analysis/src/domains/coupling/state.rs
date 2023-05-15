@@ -882,7 +882,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             .filter(|st| !st.is_bottom())
             .collect();
         match &states_to_join[..] {
-            [] => return,
+            [] => (),
             [z] => *self = (*z).clone(),
             _ => (),
         };
@@ -946,7 +946,11 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
         // The main iteration reduces a set of "goals" into capabilities we can freely apply.
         // The goals start off with the roots.
-        let mut goals = all_roots.iter().cloned().collect::<Vec<_>>();
+        let mut goals = states_to_join
+            .iter()
+            .map(|st| (st, st.coupling_graph.origins.get_roots()))
+            .collect::<Vec<_>>();
+
         fn goal_is_done<'tcx>(
             def_accessible_leaves: &BTreeSet<CDGNode<'tcx>>,
             n: &CDGNode<'tcx>,
@@ -957,11 +961,16 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
         loop {
             // filter out all of the completed goals.
             for goal_set in goals.iter_mut() {
-                goal_set.retain(|goal| !goal_is_done(&def_accessible_leaves, goal));
+                goal_set.1 = goal_set
+                    .1
+                    .iter()
+                    .filter(|goal| !goal_is_done(&def_accessible_leaves, goal))
+                    .cloned()
+                    .collect();
             }
 
             // Exit condition: if we have no more goals, we are done.
-            if goals.iter().all(|goal_set| goal_set.is_empty()) {
+            if goals.iter().all(|goal_set| goal_set.1.is_empty()) {
                 break;
             }
 
@@ -970,8 +979,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
             let mut goal_parents: Vec<(&Self, BTreeMap<CDGNode<'tcx>, (Vec<_>, _, _)>)> =
                 Default::default();
-
-            for (couplingstate, goal_set) in states_to_join.iter().zip(goals.clone().into_iter()) {
+            for (couplingstate, goal_set) in goals.iter() {
                 let mut ret_map = BTreeMap::default();
                 for goal in goal_set.iter() {
                     ret_map.insert(
@@ -990,6 +998,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             //   (they were generated before the control flow split off, and were not changed).
             if let Some(same_in_all_goal) = goals
                 .iter()
+                .map(|x| &(x.1))
                 .flatten()
                 .filter(|goal| {
                     // Search for any goal whose parent is the same in all origins, by
@@ -1001,45 +1010,67 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 })
                 .next()
             {
-                // match
-                todo!("implement: found a match! {:?}", same_in_all_goal);
+                // some parent is the same in all branches.
+                println!("implement: found a match! {:?}", same_in_all_goal);
+
+                // determine the change in goals
+                let (smp_branch, smp_parents_map) = goal_parents.iter().next().unwrap();
+                let (edges, goals_to_remove, goals_to_add) =
+                    smp_parents_map.get(&same_in_all_goal).unwrap();
+
+                for region in edges.into_iter() {
+                    working_graph.map.insert(
+                        region.clone(),
+                        smp_branch
+                            .coupling_graph
+                            .origins
+                            .map
+                            .get(region)
+                            .unwrap()
+                            .clone(),
+                    );
+                }
+
+                // Since the origins signatures are literally the same (am I checking this?) all
+                // goals include all of the path's removed goals. Therefore we can remove them all.
+                // Some of these assertions will fail in the case of shared borrows. Revisit it.
+                for (_, goal_set) in goals.iter_mut() {
+                    for completed_goal in goals_to_remove.iter() {
+                        assert!(
+                            goal_set.remove(completed_goal),
+                            "tried to complete a goal that didn't exist"
+                        );
+                    }
+
+                    for new_goal in goals_to_add.iter() {
+                        assert!(
+                            goal_set.insert(new_goal.clone()),
+                            "tried to insert a goal that already exist"
+                        );
+                    }
+                }
+
+                println!(
+                    "new goals: {:?} ",
+                    goals.iter().map(|x| &(x.1)).collect::<Vec<_>>()
+                );
             } else {
                 // no match
                 todo!("no match");
             }
         }
 
-        todo!();
-        // goal_parents is a map from a goal to (...).coupling_graph.origins.get_parent([g.clone()].into()),
+        println!("final graph:\n{:?}", working_graph);
+        self.coupling_graph.origins = working_graph;
 
+        // goal_parents is a map from a goal to (...).coupling_graph.origins.get_parent([g.clone()].into()),
+        // if branch:
         //     // fixme: look for origins that
         //     //    - meet the goal
         //     //    - are the same in both
         //     //    - are the _only_ edge that meets the goal
 
-        //     // OR: has a root in one but not the others
-
-        //     if let Some((r, (vs, vo))) = goal_parents.iter().filter(|(_, (vs, vo))| vs == vo /* fixme: here we also need it not to be coupled, probably. */).next()
-        //     {
-        //         println!("{:?}: {:?} // {:?}", r, vs, vo);
-
-        //         // Both graphs do the same kinds of capability exchanges. If their edges are identical, move them.
-        //         // If their edges are not identical, add a coupled edge for this exchange.
-        //         println!("match! moving the origins {:?} to the complete graph", vs.0);
-        //         for o in vs.0.iter() {
-        //             working_graph.map.insert(
-        //                 o.clone(),
-        //                 self.coupling_graph.origins.map.get(o).unwrap().clone(),
-        //             );
-        //         }
-        //         for completed_goal in vs.1.iter() {
-        //             goals.remove(completed_goal);
-        //         }
-        //         for new_goal in vs.2.iter().cloned() {
-        //             goals.insert(new_goal);
-        //         }
-        //         println!("new goals: {:?}", goals);
-        //     } else {
+        // else branch
 
         //         // No match.
         //         // Create a partition of (input/ouput)
