@@ -134,7 +134,9 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
             println!("  (after) elim commands: {:?}", after.elim_commands);
             println!("  (after) coupling commands: {:?}", after.coupling_commands);
         }
+
         todo!("apply_statement_effect");
+
         // self.coupling_commands = Default::default();
         // self.elim_commands = Default::default();
         // self.loc = StateLocation::InsideBB(location.block);

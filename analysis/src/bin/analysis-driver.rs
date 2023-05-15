@@ -303,6 +303,8 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                             run_coupling_tests(&body_with_facts.body, tcx);
                             return;
                         }
+                        println!("[polonius in] {:#?}", body_with_facts.input_facts);
+                        println!("[polonius out] {:#?}", body_with_facts.output_facts);
 
                         println!("[driver]    Starting coupling analysis");
                         let fact_table = FactTable::new(&body_with_facts, tcx).unwrap();
@@ -317,18 +319,16 @@ impl prusti_rustc_interface::driver::Callbacks for OurCompilerCalls {
                             Ok(state) => {
                                 println!("[driver]    Coupling analysis complete. State:");
                                 println!("[driver]    {:#?}", state);
-                                println!("[polonius] {:#?}", body_with_facts.input_facts);
-                                println!("[polonius] {:#?}", body_with_facts.output_facts);
-                                report_with_writer(
-                                    "coupling_trace",
-                                    format!(
-                                        "{}.graph.dot",
-                                        "latest" // fixme: extract function names
-                                    ),
-                                    |writer| {
-                                        state.to_graphviz(writer).unwrap();
-                                    },
-                                );
+                                // report_with_writer(
+                                //     "coupling_trace",
+                                //     format!(
+                                //         "{}.graph.dot",
+                                //         "latest" // fixme: extract function names
+                                //     ),
+                                //     |writer| {
+                                //         state.to_graphviz(writer).unwrap();
+                                //     },
+                                // );
 
                                 // todo!("log the state into appropriate graphviz files");
                             }

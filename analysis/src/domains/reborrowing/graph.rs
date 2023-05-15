@@ -80,12 +80,14 @@ pub enum Annotation<'tcx> {
 ///   graph.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ReborrowingGraphKind<'tcx> {
+    // A sequence of annotations to emit on expiry
     Concrete(Vec<Annotation<'tcx>>),
     // A sequence of (condition-dependent) annotations to be added at a later point.
     Transparent(
         BTreeMap<ConditionId, Vec<Annotation<'tcx>>>,
         Box<Vec<SubgraphID>>,
     ),
+    // A dynamic edge that is only populated at verification-time
     Opqaue(OpaqueID, PhantomData<&'tcx ()>),
 }
 
@@ -133,10 +135,6 @@ impl<'tcx> ReborrowingGraph<'tcx> {
     }
 
     pub(crate) fn collapse(&mut self, origins: BTreeSet<Region>) {
-        todo!();
-    }
-
-    pub fn from_coupling(&mut self, other: &Self, couples: ()) {
         todo!();
     }
 }

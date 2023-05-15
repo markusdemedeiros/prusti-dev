@@ -546,7 +546,7 @@ pub(crate) enum StatementKinds<'mir, 'tcx: 'mir> {
 // Panics when a location is not a start location
 pub(crate) fn expect_mid_location(location: RichLocation) -> mir::Location {
     match location {
-        RichLocation::Start(_) => panic!("expected a mid location"),
+        RichLocation::Start(_) => panic!("expected a mid location, got {:?}", location),
         RichLocation::Mid(l) => return l,
     };
 }
