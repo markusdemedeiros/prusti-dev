@@ -974,6 +974,16 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 break;
             }
 
+            // new behavior: when a place is blocked in one branch but
+            // no the other, kill it and add a
+            //    place@loc -move-> place
+            // edge.
+
+            // We're just going to check this for the roots rn.
+            //   todo!("new behavior");
+            //  [ a -> z -> x      [      b -> x
+            //         b -> y ] V    a -> z -> y ]
+
             // Figure out the ways each goal can be directly satisfied in each graph
             // fixme: this calculation is redundant to do at each step
 
@@ -1050,13 +1060,126 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     }
                 }
 
+                // debug
                 println!(
                     "new goals: {:?} ",
                     goals.iter().map(|x| &(x.1)).collect::<Vec<_>>()
                 );
             } else {
-                // no match
-                todo!("no match");
+                // no direct matches => We need to couple.
+                println!("no match; coupling");
+
+                let mut goals_iter = goals.iter().map(|x| &(x.1));
+                let goals_ref = goals_iter.next().unwrap();
+                assert!(
+                    goals_iter.all(|x| x == goals_ref),
+                    "all goals should be the same at this point"
+                );
+
+                todo!("no match case");
+
+                // Coupling is based on the idea that all possible aliases for a place
+                // block it.
+
+                // A set X is saturated with respect to a relation X -> Y when
+                //    forall C subset X.  f^{-1}(f(C)) = C
+                // where the relation is lifted to a function in the usual way.
+                // We can force a set satuared with respect to a map by taking
+                // a quotient of it's codomain. For example, if ~ is the equivalence
+                // relation   forall a b. a ~ b  then X  is always saturated
+                // with respect to the map f' : (X / ~) -> (Y / ~).
+                //
+                // Let parent: P -> G be the relation describing which capabilities
+                // are parents of a goal (under any branch). We care about finding
+                // the finest partitions G' and P' of G and P respectively such that
+                //      parent' : P' -> G'
+                // is saturated. Because parent' is saturated, all of the places that
+                // possibly alias a goal   g in S in G'  are contained in parent^{-1}(S).
+                // Futhermore, if we consume the capabilities for  S in P'  to
+                // expire a coupled edge, we will not need those capabilities to
+                // expire any other edges under any other branch.
+
+                // Construct the staurated partitions here
+
+                // The following join is impossible according to Polonius:
+                //    [ a -> b -> x ] V [ b -> a -> x ]
+                // After this join, both  a  and  b  can't be used first,
+                // and so one of the two subgraphs graphs is not live.
+                // So the transitive closure of the parent relation "comes_before"
+                // has the property that comes_before(a, b) in one branch impies
+                // !comes_before(b, a) in all branches.
+
+                // Here is an evil example I call the "right rotated triangle":
+                //  [ x' -> a -> b -> x          [ x' -> b -> c -> x
+                //    y' ->      c -> y     V      y' ->      a -> y ]
+                // It doesn't violate the comes_before property, and both
+                // origins are live after the join because x' and y'
+                // None a, b, or c are leaves. Experimentally, the coupling must
+                // looks like
+                // [ {x' y'} -> {a}
+                //   {a} -> {b c}
+                //   {b c} -> {x y} ]
+                //
+                // How would we figure this out? This problem is due to the
+                // edge case where !parent(a, b) does not imply parent(b, a),
+                // because it's possible that b and a lie in different trees.
+                // We can detect that this case might occur because while
+                // c is a parent of x and y in both, a and b are only conditionally
+                // parents of x and y.
+                //
+                // Instead of just taking the parents of the root, let's also take
+                // the parents for all of the nodes which are not common
+                // parents:
+                //
+                //  b -> x      c -> x
+                //  c -> y      a -> y
+                //  a -> b      b -> c
+                //
+                // Then
+                //    preimage(x) = {b, c}
+                //    preimage(y) = {c, a}
+                //    preimage(b) = {a}
+                //    preimage(c) = {b}
+                //    f({b, c}) = {x, y, c}
+                //    f({c, a}) = {x, y, b}
+                //    f({a}) = {b, y}
+                //    f({b}) = {x, c}
+                //
+                // That's no closer :(.
+                //
+                // Question 1: Maybe we need to add edges until the goals are the same again too?
+                //  b  -> x      c  -> x
+                //  c  -> y      a  -> y
+                //  a  -> b      b  -> c
+                //  y' -> c      x' -> b
+                //
+                // but now the goals are different! Add those too.
+                //  b  -> x      c  -> x
+                //  c  -> y      a  -> y
+                //  a  -> b      b  -> c
+                //  y' -> c      x' -> b
+                //  x' -> a      y' -> a
+                //
+                // We should always be able to add edges like this until
+                // the sets of blocked and blocking places are the same,
+                // assuming the new no-op edge feature is implemented right.
+                //
+                // Now let's do our preimage thing?
+                // x   is possibly blocked by {b, c}
+                // y   is possibly blocked by {c, a}
+                // b   is possibly blocked by {a, x'}
+                // a   is possibly blocked by {x', y'}
+                // c   is possibly blocked by {y', b}
+                //
+                // See the problem: It's a cycle (maybe that can be used to
+                // detect when we have enough edges?)
+
+                // Question 2: The preimages in that example are not a partition.
+                // What's the finest partition that identifies all of those sets?
+                //    {a, b, c, x, y} :(
+                // What about the finest partition?
+
+                // Question 3: How would I write out my experiments, logically?
             }
         }
 
@@ -1075,9 +1198,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
         //         // No match.
         //         // Create a partition of (input/ouput)
         //         println!("no match\ngoals: {:?}", goal_parents);
-
-        //         // Partition the set of goals using goal parents:
-        //         // Elements in teh partition must be satuated wrt expiring edges
 
         //         // goals_preimage: map from goal to a set of resources that we can expire to get it back
         //         let mut goals_preimage: BTreeMap<CDGNode<'tcx>, BTreeSet<CDGNode<'tcx>>> =
