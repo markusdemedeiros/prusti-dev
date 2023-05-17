@@ -1075,12 +1075,86 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     goals_iter.all(|x| x == goals_ref),
                     "all goals should be the same at this point"
                 );
+                println!("starting the generalized coupling algorithm");
 
-                todo!("no match case");
+                // Each chunk consists of:
+                //  - a Coupling Graph
+                //  - a goal_map (from goal_parents)
+                //  - a collection of
+                //      (vec(tagged region), set(goal), set(leaf))
+                //    tuples
+                //  - the set of all leaves in that collection
+                //  - the set of all goals in that collection
+                // This collection is initialized so that the set of all goals
+                // is goals_ref.
+                let mut chunks = goal_parents
+                    .iter()
+                    .map(|(coupling_state, goal_map)| {
+                        println!("inside branch (??)");
+                        let mut chunk_contents = Vec::default();
+                        let mut chunk_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::default();
+                        let mut chunk_goals: BTreeSet<CDGNode<'tcx>> = BTreeSet::default();
+                        for goal in goals_ref.iter() {
+                            let res @ (_, set_new_goals, set_new_leaves) =
+                                goal_map.get(goal).unwrap();
+                            chunk_contents.push(res.clone());
+                            chunk_goals = chunk_goals.union(set_new_goals).cloned().collect();
+                            chunk_leaves = chunk_leaves.union(set_new_leaves).cloned().collect();
+                        }
+                        assert_eq!(
+                            &chunk_goals, goals_ref,
+                            "chunk goals and goals do not match"
+                        );
+                        (
+                            coupling_state.clone(),
+                            goal_map.clone(),
+                            chunk_contents,
+                            chunk_goals,
+                            chunk_leaves,
+                        )
+                    })
+                    .collect::<Vec<_>>();
+                println!("traversing a chunk...");
 
+                // Iteratively fill in the chunks so they all have the same set of leaves
+                // and goals.
+                loop {
+                    println!("-- summary of chunk contents:");
+                    for (_, _, contents, goals, leaves) in chunks.iter() {
+                        println!("{:?} / {:?}", leaves, goals);
+                        for c in contents.iter() {
+                            println!("\t{:?}", c);
+                        }
+                    }
+                    println!("--");
+
+                    // Check to see if the goals and/or the leaves are equal in
+                    // all branches
+                    let mut chunk_goals_iter = chunks.iter().map(|x| &(x.3));
+                    let chunk_goals_ref = chunk_goals_iter.next().unwrap();
+                    let chunk_goals_done = chunk_goals_iter.all(|x| x == chunk_goals_ref);
+
+                    let mut chunk_leaves_iter = chunks.iter().map(|x| &(x.4));
+                    let chunk_leaves_ref = chunk_leaves_iter.next().unwrap();
+                    let chunk_leaves_done = chunk_leaves_iter.all(|x| x == chunk_leaves_ref);
+
+                    if !chunk_goals_done {
+                        todo!("implement the traversal when chunk goals are not done");
+                        continue;
+                    } else if !chunk_leaves_done {
+                        todo!("implement the traversal when chunk leaves are not done");
+                        continue;
+                    } else {
+                        println!("traversal complete, chunks are ready.");
+                        break;
+                    }
+                }
+
+                // super vague intuition
                 // Coupling is based on the idea that all possible aliases for a place
                 // block it.
 
+                // concrete description for the simple case
                 // A set X is saturated with respect to a relation X -> Y when
                 //    forall C subset X.  f^{-1}(f(C)) = C
                 // where the relation is lifted to a function in the usual way.
@@ -1099,8 +1173,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 // expire a coupled edge, we will not need those capabilities to
                 // expire any other edges under any other branch.
 
-                // Construct the staurated partitions here
-
+                // invariant
                 // The following join is impossible according to Polonius:
                 //    [ a -> b -> x ] V [ b -> a -> x ]
                 // After this join, both  a  and  b  can't be used first,
@@ -1109,7 +1182,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 // has the property that comes_before(a, b) in one branch impies
                 // !comes_before(b, a) in all branches.
 
-                // Here is an evil example I call the "right rotated triangle":
+                // bad example
+                // Here is an evil example I call the "rotated triangle":
                 //  [ x' -> a -> b -> x          [ x' -> b -> c -> x
                 //    y' ->      c -> y     V      y' ->      a -> y ]
                 // It doesn't violate the comes_before property, and both
@@ -1126,60 +1200,18 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 // We can detect that this case might occur because while
                 // c is a parent of x and y in both, a and b are only conditionally
                 // parents of x and y.
-                //
-                // Instead of just taking the parents of the root, let's also take
-                // the parents for all of the nodes which are not common
-                // parents:
-                //
-                //  b -> x      c -> x
-                //  c -> y      a -> y
-                //  a -> b      b -> c
-                //
-                // Then
-                //    preimage(x) = {b, c}
-                //    preimage(y) = {c, a}
-                //    preimage(b) = {a}
-                //    preimage(c) = {b}
-                //    f({b, c}) = {x, y, c}
-                //    f({c, a}) = {x, y, b}
-                //    f({a}) = {b, y}
-                //    f({b}) = {x, c}
-                //
-                // That's no closer :(.
-                //
-                // Question 1: Maybe we need to add edges until the goals are the same again too?
-                //  b  -> x      c  -> x
-                //  c  -> y      a  -> y
-                //  a  -> b      b  -> c
-                //  y' -> c      x' -> b
-                //
-                // but now the goals are different! Add those too.
-                //  b  -> x      c  -> x
-                //  c  -> y      a  -> y
-                //  a  -> b      b  -> c
-                //  y' -> c      x' -> b
-                //  x' -> a      y' -> a
-                //
-                // We should always be able to add edges like this until
-                // the sets of blocked and blocking places are the same,
-                // assuming the new no-op edge feature is implemented right.
-                //
-                // Now let's do our preimage thing?
-                // x   is possibly blocked by {b, c}
-                // y   is possibly blocked by {c, a}
-                // b   is possibly blocked by {a, x'}
-                // a   is possibly blocked by {x', y'}
-                // c   is possibly blocked by {y', b}
-                //
-                // See the problem: It's a cycle (maybe that can be used to
-                // detect when we have enough edges?)
 
-                // Question 2: The preimages in that example are not a partition.
-                // What's the finest partition that identifies all of those sets?
-                //    {a, b, c, x, y} :(
-                // What about the finest partition?
+                // general description of the coupling algorithm
+                // Start with a set of goals.
 
-                // Question 3: How would I write out my experiments, logically?
+                // examing the "x blocks y" relation
+                // if one branch has a x or y that the other doesn't, add it.
+                // This always ends because their leaves are identical and so are their roots.
+                // Keep going until they're the same set.
+                // Assert that the graph is n-regular
+                // Starting from the top, work your way down (there should be a set of leaves)
+
+                todo!("no match case");
             }
         }
 
