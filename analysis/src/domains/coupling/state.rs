@@ -143,12 +143,30 @@ pub enum SignatureKind {
     // Field 0: The location we are joining into.
     // Field 1: The locations we are joining from
     // Field 2: The set of edges this coupled edge is a parent to
+    // Field 3: The groups of annotations coupled under this edge
     Coupled(
         BasicBlock,
         BTreeSet<BasicBlock>,
         BTreeSet<Tagged<Region, Location>>,
     ),
     Owned,
+}
+
+#[derive(Clone, PartialEq, Eq)]
+pub enum CoupledAnnotation<'tcx> {
+    ExpireOrigin(Tagged<Region, Location>),
+    Freeze(CDGNode<'tcx>),
+    Unfreeze(CDGNode<'tcx>),
+}
+
+impl<'tcx> fmt::Debug for CoupledAnnotation<'tcx> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ExpireOrigin(origin) => write!(f, "{:?}", origin),
+            Self::Freeze(p) => write!(f, "freeze({:?})", p),
+            Self::Unfreeze(p) => write!(f, "unfreeze({:?})", p),
+        }
+    }
 }
 
 /// A data structure representing an abstract exchange of capabilities
@@ -1106,7 +1124,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                             "chunk goals and goals do not match"
                         );
                         (
-                            coupling_state.clone(),
+                            (**coupling_state).clone(),
                             goal_map.clone(),
                             chunk_contents,
                             chunk_goals,
@@ -1133,7 +1151,6 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     let mut chunk_goals_iter = chunks.iter().map(|x| &(x.3));
                     let chunk_goals_ref = chunk_goals_iter.next().unwrap();
                     let chunk_goals_done = chunk_goals_iter.all(|x| x == chunk_goals_ref);
-
                     let mut chunk_leaves_iter = chunks.iter().map(|x| &(x.4));
                     let chunk_leaves_ref = chunk_leaves_iter.next().unwrap();
                     let chunk_leaves_done = chunk_leaves_iter.all(|x| x == chunk_leaves_ref);
@@ -1148,6 +1165,284 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                         println!("traversal complete, chunks are ready.");
                         break;
                     }
+                }
+
+                // The chunks are ready, we will couple all origins associated to the
+                // chunks together, through possibly a sequence of couplings.
+
+                // Remove the origins associated to each chunk here (in the CouplingState map)
+                println!("removed the chunks associated to the traversal. New states:");
+                for (state, _, edges_to_couple, _, _) in chunks.iter_mut() {
+                    for (groups_of_origins_to_remove, _, _) in edges_to_couple.iter() {
+                        for region in groups_of_origins_to_remove.iter() {
+                            assert!(state.coupling_graph.origins.map.remove(region).is_some());
+                        }
+                    }
+                    println!(" - {:?}", state.coupling_graph.origins.map);
+                }
+                println!("(note: states from direct match case not removed yet)");
+
+                // Furthremore, we are going to change the set of goals for the
+                // overall coupling algorithm.
+                let coupling_removes_goals = chunks.iter().map(|x| &(x.3)).next().unwrap();
+                let coupling_new_goals = chunks.iter().map(|x| &(x.4)).next().unwrap();
+                println!(
+                    "coupling will remove goals {:?} and add {:?}",
+                    coupling_removes_goals, coupling_new_goals
+                );
+
+                print!("new goals are: ");
+                for (_, g) in goals.iter_mut() {
+                    *g = g
+                        .difference(coupling_removes_goals)
+                        .cloned()
+                        .collect::<BTreeSet<_>>()
+                        .union(coupling_new_goals)
+                        .cloned()
+                        .collect();
+                    print!("{:?}, ", g);
+                }
+                println!();
+
+                // We can start the traversal.
+                // A TraversalState consists of
+                //  - A coupling state
+                //  - A the contents of a chunk (which can be modified)
+                //  - A set of flagged (Node, bool) pairs.
+                //  If a node has it's flag set it is "unfrozen", otherwise it
+                //  is "frozen". "Freezing" a capability instructs a backend to
+                //  remove a capability from it's representation of the
+                //  PCS at each point. If (like Viper) the backend is able to track
+                //  condition-sensitive capabilities without extra work,
+                //  ``freeze`` and ``melt`` can be treated as no-ops.
+
+                let goal_caps = chunks.iter().map(|x| &(x.3)).next().unwrap().clone();
+                let starting_caps = chunks.iter().map(|x| &(x.4)).next().unwrap().clone();
+
+                let mut traversal_st = chunks
+                    .into_iter()
+                    .map(|(cpl_state, _, expiry_groups, _, _)| {
+                        (
+                            cpl_state,
+                            expiry_groups,
+                            starting_caps
+                                .iter()
+                                .map(|c| (c.clone(), true))
+                                .collect::<BTreeSet<_>>(),
+                        )
+                    })
+                    .collect::<Vec<_>>();
+
+                let completed_st = goal_caps
+                    .into_iter()
+                    .map(|x| (x, true))
+                    .collect::<BTreeSet<_>>();
+
+                // We stop the traversal once all branches have a state
+                // that equals coupling_new_goals.
+                while !(traversal_st.iter().all(|st| st.2 == completed_st)) {
+                    // This is the main part of the algorithm where we calculate the coupled edges.
+
+                    // (1/4) First, we choose a capability that we can definitely
+                    // get access to. We can definitely get access to a
+                    // capability if it is reachable one step from the traversal
+                    // caps, or is frozen in the traversal caps. One such
+                    // capability must always exist. We will definitely
+                    // get this capability back.
+
+                    let mut all_possible_accessible_caps = Vec::default();
+                    for (_, expiry_grps, tr_leaves) in traversal_st.iter() {
+                        let mut current_grp = BTreeSet::default();
+                        // Frozen capabilities are accessible
+                        for l in tr_leaves.iter().filter_map(|(node, flag)| match flag {
+                            true => None,
+                            false => Some(node),
+                        }) {
+                            println!("\t\t-- pushing a frozen cap {:?}", l);
+                            current_grp.insert(l.clone());
+                        }
+                        for (_, acc, _) in expiry_grps.iter() {
+                            for a in acc {
+                                current_grp.insert(a.clone());
+                            }
+                        }
+                        all_possible_accessible_caps.push(current_grp);
+                    }
+                    println!("all possible caps: {:?}", all_possible_accessible_caps);
+
+                    let target_cap: CDGNode<'tcx> = all_possible_accessible_caps
+                        .into_iter()
+                        .reduce(|acc, e| acc.intersection(&e).cloned().collect())
+                        .unwrap()
+                        .into_iter()
+                        .next()
+                        .unwrap();
+                    println!("target cap: {:?}", target_cap);
+
+                    // (2/4) Next, we look at the resources we need to consume to
+                    // obtain that capability. We will definitely consume
+                    // all of these resources.
+
+                    // fixme: do I need to consider the no-op case where the target
+                    // is unfrozen in the tr_leaves?
+
+                    let mut consumed_resources: BTreeSet<_> = Default::default();
+                    for (_, expiry_grps, tr_leaves) in traversal_st.iter() {
+                        // Nothing is consumed to unfreeze a place.
+                        if tr_leaves.contains(&(target_cap.clone(), true)) {
+                            continue;
+                        }
+
+                        // Get every group that is possibly blocking this place
+                        for (_, _, consume_set) in expiry_grps
+                            .iter()
+                            .filter(|(_, regain_set, _)| regain_set.contains(&target_cap))
+                        {
+                            consumed_resources =
+                                consumed_resources.union(consume_set).cloned().collect();
+                        }
+                    }
+                    println!("definitely consumed capabilities: {:?}", consumed_resources);
+
+                    // (3/4) Now we look at which other resources those expiries will
+                    // obtain. If a capability is present under all branches,
+                    // we also definitely get it back. All other capabiities
+                    // will be frozen and we will not get them back yet.
+
+                    // Collect the sets of resouces that these consumptions will
+                    // unblock.
+                    let mut unblocked_caps: Vec<BTreeSet<_>> = Default::default();
+                    // Collec the sets of resources that are frozen in each branch
+                    let mut frozen_caps: Vec<BTreeSet<_>> = Default::default();
+
+                    for (_, expiry_grps, tr_leaves) in traversal_st.iter() {
+                        let frozen = tr_leaves
+                            .iter()
+                            .filter_map(|(node, frozen)| match frozen {
+                                true => None,
+                                false => Some(node),
+                            })
+                            .cloned()
+                            .collect::<BTreeSet<_>>();
+                        let unblocked: BTreeSet<_> = expiry_grps
+                            .iter()
+                            .filter(|(_, _, origin_lhs)| origin_lhs.is_subset(&consumed_resources))
+                            .fold(BTreeSet::default(), |acc, (_, unblocks, _)| {
+                                acc.union(unblocks).cloned().collect()
+                            })
+                            .clone();
+                        frozen_caps.push(frozen);
+                        unblocked_caps.push(unblocked);
+                    }
+                    println!("frozen caps: {:?}", frozen_caps);
+                    println!("unblocked caps: {:?}", unblocked_caps);
+
+                    let mut definitely_regained_caps: BTreeSet<_> =
+                        frozen_caps[0].union(&unblocked_caps[0]).cloned().collect();
+                    for (frozen, regained) in frozen_caps.iter().zip(unblocked_caps.iter()) {
+                        definitely_regained_caps
+                            .retain(|x| frozen.contains(x) || regained.contains(x));
+                    }
+                    println!("definitely regained caps: {:?}", definitely_regained_caps);
+
+                    // (4/4) Finally, we make the actual coupled edge, remove the
+                    // expired edges, and change the accessible nodes in
+                    // each of the the traversal states.
+
+                    let mut annotations: Vec<_> = Default::default();
+                    for (_, expiry_grps, tr_leaves) in traversal_st.iter_mut() {
+                        let mut ann: Vec<_> = Default::default();
+
+                        // 1. All capabilities that are frozen and definitely regained get unfrozen
+                        // ie tr_leaves retains unfrozen leaves, and leavs that aren't definitely regained
+                        *tr_leaves = tr_leaves
+                            .clone()
+                            .into_iter()
+                            .filter_map(|(leaf, frozen)| {
+                                if frozen && definitely_regained_caps.contains(&leaf) {
+                                    ann.push(CoupledAnnotation::Unfreeze(leaf.clone()));
+                                    Some((leaf, false))
+                                } else {
+                                    Some((leaf, frozen))
+                                }
+                            })
+                            .collect::<BTreeSet<(CDGNode, bool)>>();
+
+                        // 2. We expire all definitely consumed capabilities
+                        let mut this_branch_gains: BTreeSet<_> = Default::default();
+                        loop {
+                            // Continue until all expiry_grps are eliminated
+                            if expiry_grps.is_empty() {
+                                break;
+                            }
+                            // Find a group that we can expire
+
+                            let can_use_to_expire = tr_leaves
+                                .iter()
+                                .map(|(x, flag)| x.clone())
+                                .collect::<BTreeSet<_>>();
+
+                            let (anns, rgn, cnsm) = expiry_grps
+                                .iter()
+                                .filter(|(_, _, cnsm)| cnsm.is_subset(&can_use_to_expire))
+                                .next()
+                                .unwrap()
+                                .clone();
+
+                            // Any capabilities we need to expire it are frozen, unfreeze them.
+                            for k in cnsm.iter() {
+                                if tr_leaves.contains(&(k.clone(), false)) {
+                                    assert!(tr_leaves.remove(&(k.clone(), false)));
+                                    assert!(tr_leaves.insert((k.clone(), true)));
+                                    ann.push(CoupledAnnotation::Unfreeze(k.clone()));
+                                }
+                            }
+
+                            // Now we should have all the right capabilities in tr_leaves
+                            for k in cnsm.iter() {
+                                assert!(tr_leaves.contains(&(k.clone(), true)));
+                            }
+
+                            // Record the annotations to expure those origins
+                            for expiring_origin in anns.iter() {
+                                ann.push(CoupledAnnotation::ExpireOrigin(expiring_origin.clone()));
+                            }
+
+                            // Record the change in capabilities into tr_leaves
+                            tr_leaves.retain(|(x, _)| !cnsm.contains(x));
+                            for r in rgn.iter() {
+                                assert!(tr_leaves.insert((r.clone(), true)));
+                            }
+
+                            // Record the change in capabilities into this_branch_gains
+                            this_branch_gains.retain(|x| !cnsm.contains(x));
+                            for r in rgn.iter() {
+                                assert!(this_branch_gains.insert(r.clone()));
+                            }
+
+                            let to_remove = (anns.clone(), rgn.clone(), cnsm.clone());
+                            // Eliminate this group from the expiry_grps
+                            expiry_grps.retain(|x| x != &to_remove);
+                        }
+
+                        // 3. Any caps this gives back but are not definitely regained get frozen
+                        for gained in this_branch_gains.into_iter() {
+                            if !definitely_regained_caps.contains(&gained) {
+                                ann.push(CoupledAnnotation::Freeze(gained));
+                            }
+                        }
+                        annotations.push(ann);
+                    }
+
+                    println!("finished generating the annotations:");
+                    for ann in annotations.iter() {
+                        println!("\t- {:?}", ann);
+                    }
+
+                    // Use "annotations" to issue the correct coupling commands
+                    // Insert a coupled edge into every origin that gets one in the graph
+
+                    todo!("make coupled edge");
                 }
 
                 // super vague intuition
@@ -1194,22 +1489,10 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 //   {a} -> {b c}
                 //   {b c} -> {x y} ]
                 //
-                // How would we figure this out? This problem is due to the
-                // edge case where !parent(a, b) does not imply parent(b, a),
-                // because it's possible that b and a lie in different trees.
-                // We can detect that this case might occur because while
-                // c is a parent of x and y in both, a and b are only conditionally
-                // parents of x and y.
+                // Ultimately this is due to the fact that comes_before is only
+                // antisymmetric on directed-path-components of the graph.
 
-                // general description of the coupling algorithm
-                // Start with a set of goals.
-
-                // examing the "x blocks y" relation
-                // if one branch has a x or y that the other doesn't, add it.
-                // This always ends because their leaves are identical and so are their roots.
-                // Keep going until they're the same set.
-                // Assert that the graph is n-regular
-                // Starting from the top, work your way down (there should be a set of leaves)
+                // How would we model this then? [explain the new approach]
 
                 todo!("no match case");
             }
