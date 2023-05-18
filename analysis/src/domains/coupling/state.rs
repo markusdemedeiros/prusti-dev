@@ -142,11 +142,12 @@ pub enum SignatureKind {
     // above some other region.
     // Field 0: The location we are joining into.
     // Field 1: The locations we are joining from
+    // Field 2: A unique index
     // Field 2: The set of edges this coupled edge is a parent to
-    // Field 3: The groups of annotations coupled under this edge
     Coupled(
         BasicBlock,
         BTreeSet<BasicBlock>,
+        usize,
         BTreeSet<Tagged<Region, Location>>,
     ),
     Owned,
@@ -207,8 +208,10 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
             self.leaves.iter().collect::<Vec<_>>(),
             match &self.kind {
                 SignatureKind::Subgraph(o) => format!("branch {:?}", o),
-                SignatureKind::Coupled(bb_to, bbs_from, parent_to) =>
-                    format!("couple {:?}~>{:?}; {:?}", bbs_from, bb_to, parent_to),
+                SignatureKind::Coupled(bb_to, bbs_from, id, parent_to) => format!(
+                    "couple {:?}~>{:?}::{:?}; {:?}",
+                    bbs_from, bb_to, id, parent_to
+                ),
                 SignatureKind::Owned => format!("owned"),
             },
             self.roots.iter().collect::<Vec<_>>()
@@ -287,7 +290,7 @@ impl<'tcx> OriginMap<'tcx> {
                     CDGNode::Place(_) => self.tag_node(location, cap),
                     CDGNode::Borrow(_) => match sig.kind {
                         SignatureKind::Subgraph(_) => self.tag_node(location, cap),
-                        SignatureKind::Coupled(_, _, _) => self.tag_node(location, cap),
+                        SignatureKind::Coupled(_, _, _, _) => self.tag_node(location, cap),
                         SignatureKind::Owned => (),
                     },
                 }
@@ -765,7 +768,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             .iter()
                             .all(|(_, sig)| match &sig.kind {
                                 SignatureKind::Subgraph(y) => y != *x,
-                                SignatureKind::Coupled(_, _, children) => !children.contains(x),
+                                SignatureKind::Coupled(_, _, _, children) => !children.contains(x),
                                 SignatureKind::Owned => true,
                             })
                     })
@@ -792,7 +795,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                                     leaf_sig.roots.clone(),
                                 ))
                             }
-                            SignatureKind::Coupled(leaf_froms, leaf_to, _) => {
+                            SignatureKind::Coupled(leaf_froms, leaf_to, _, _) => {
                                 // Push the expiry of the coupled edge. Only regain capability if it's the last
                                 // coupled edge.
                                 match self
@@ -801,7 +804,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                                     .map
                                     .values()
                                     .filter(|sig| match &sig.kind {
-                                        SignatureKind::Coupled(froms, to, _) => {
+                                        SignatureKind::Coupled(froms, to, _, _) => {
                                             froms == leaf_froms
                                                 && to == leaf_to
                                                 && leaf_sig.roots == sig.roots
@@ -913,6 +916,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
         // Begin the construction of a new coupling graph.
         let mut working_graph: OriginMap = Default::default();
+        let mut next_coupling_id: usize = 0;
 
         // // Make the LHS of the origins coherent (kill leaves that are in one branch but not the other)
         // let lhs = self.coupling_graph.origins.get_live_lhs();
@@ -1439,62 +1443,98 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                         println!("\t- {:?}", ann);
                     }
 
-                    // Use "annotations" to issue the correct coupling commands
-                    // Insert a coupled edge into every origin that gets one in the graph
+                    println!("making a coupled edge");
 
-                    todo!("make coupled edge");
+                    println!("calculating the children:");
+                    let mut live_expiries = None;
+                    let mut children = None;
+                    for (ann_list, graph) in annotations.iter().zip(goals.iter()) {
+                        println!("---");
+                        let mut all_children = BTreeSet::new();
+                        let mut all_origins = BTreeSet::new();
+                        for ann in ann_list {
+                            if let CoupledAnnotation::ExpireOrigin(o) = ann {
+                                all_origins.insert(o.clone());
+                                match &graph.0.coupling_graph.origins.map.get(o).unwrap().kind {
+                                    SignatureKind::Subgraph(s) => {
+                                        all_children.insert(s.clone());
+                                    }
+                                    SignatureKind::Coupled(_, _, _, ss) => {
+                                        for s in ss {
+                                            all_children.insert(s.clone());
+                                        }
+                                    }
+                                    SignatureKind::Owned => (),
+                                }
+                            }
+                        }
+                        let this_children = (&all_children) - (&all_origins);
+                        let this_expiries = (&all_origins) - (&all_children);
+                        match &live_expiries {
+                            None => {
+                                live_expiries = Some(this_expiries);
+                            }
+                            Some(x) => {
+                                assert!(x == &this_expiries);
+                            }
+                        }
+                        match &children {
+                            None => {
+                                children = Some(this_children);
+                            }
+                            Some(x) => {
+                                assert!(x == &this_children);
+                            }
+                        }
+                    }
+                    let live_expiries = live_expiries.unwrap();
+                    let children = children.unwrap();
+
+                    let cpl_id = next_coupling_id;
+                    next_coupling_id += 1;
+
+                    let mut joining_to_set = None;
+                    let joining_from_set = goals
+                        .iter()
+                        .map(|(st, _)| match st.loc {
+                            StateLocation::BeforeProgram => unreachable!(),
+                            StateLocation::Joining(from, to) => {
+                                joining_to_set = Some(to.clone());
+                                from
+                            }
+                            StateLocation::InsideBB(_) => unreachable!(),
+                        })
+                        .collect::<BTreeSet<_>>();
+                    let joining_to_set: BasicBlock = joining_to_set.unwrap();
+
+                    // Insert a coupled edge into every origin that gets one in the graph
+                    for origin in live_expiries.iter() {
+                        // We're assuming all lhs's are the same here, this has to be checked earlier
+                        let lhs = &goals[0]
+                            .0
+                            .coupling_graph
+                            .origins
+                            .map
+                            .get(origin)
+                            .unwrap()
+                            .leaves;
+                        let new_coupled_edge = OriginSignature {
+                            leaves: lhs.clone(),
+                            roots: definitely_regained_caps.clone(),
+                            kind: SignatureKind::Coupled(
+                                joining_to_set.clone(),
+                                joining_from_set.clone(),
+                                cpl_id,
+                                children.clone(),
+                            ),
+                        };
+
+                        // Use "annotations" to issue the correct coupling commands here
+                        working_graph.map.insert(origin.clone(), new_coupled_edge);
+                    }
                 }
 
-                // super vague intuition
-                // Coupling is based on the idea that all possible aliases for a place
-                // block it.
-
-                // concrete description for the simple case
-                // A set X is saturated with respect to a relation X -> Y when
-                //    forall C subset X.  f^{-1}(f(C)) = C
-                // where the relation is lifted to a function in the usual way.
-                // We can force a set satuared with respect to a map by taking
-                // a quotient of it's codomain. For example, if ~ is the equivalence
-                // relation   forall a b. a ~ b  then X  is always saturated
-                // with respect to the map f' : (X / ~) -> (Y / ~).
-                //
-                // Let parent: P -> G be the relation describing which capabilities
-                // are parents of a goal (under any branch). We care about finding
-                // the finest partitions G' and P' of G and P respectively such that
-                //      parent' : P' -> G'
-                // is saturated. Because parent' is saturated, all of the places that
-                // possibly alias a goal   g in S in G'  are contained in parent^{-1}(S).
-                // Futhermore, if we consume the capabilities for  S in P'  to
-                // expire a coupled edge, we will not need those capabilities to
-                // expire any other edges under any other branch.
-
-                // invariant
-                // The following join is impossible according to Polonius:
-                //    [ a -> b -> x ] V [ b -> a -> x ]
-                // After this join, both  a  and  b  can't be used first,
-                // and so one of the two subgraphs graphs is not live.
-                // So the transitive closure of the parent relation "comes_before"
-                // has the property that comes_before(a, b) in one branch impies
-                // !comes_before(b, a) in all branches.
-
-                // bad example
-                // Here is an evil example I call the "rotated triangle":
-                //  [ x' -> a -> b -> x          [ x' -> b -> c -> x
-                //    y' ->      c -> y     V      y' ->      a -> y ]
-                // It doesn't violate the comes_before property, and both
-                // origins are live after the join because x' and y'
-                // None a, b, or c are leaves. Experimentally, the coupling must
-                // looks like
-                // [ {x' y'} -> {a}
-                //   {a} -> {b c}
-                //   {b c} -> {x y} ]
-                //
-                // Ultimately this is due to the fact that comes_before is only
-                // antisymmetric on directed-path-components of the graph.
-
-                // How would we model this then? [explain the new approach]
-
-                todo!("no match case");
+                println!("{:?}", working_graph.map);
             }
         }
 
