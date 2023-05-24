@@ -49,11 +49,11 @@ impl<Data, Tag> Tagged<Data, Tag> {
         }
     }
 
-    fn untagged(data: Data) -> Self {
+    pub fn untagged(data: Data) -> Self {
         Self { data, tag: None }
     }
 
-    fn tagged(data: Data, tag: Tag) -> Self {
+    pub fn tagged(data: Data, tag: Tag) -> Self {
         Self {
             data,
             tag: Some(tag),

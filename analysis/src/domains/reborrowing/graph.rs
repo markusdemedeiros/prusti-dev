@@ -58,18 +58,6 @@ pub struct ReborrowingGraphEntry<'tcx> {
     content: ReborrowingGraphKind<'tcx>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum TagKind {
-    // Inaccessible because it is frozen behind a conditional
-    Frozen,
-
-    // Inaccessible because it has been written to or went out of scope
-    Killed(Location),
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct RBNode<'tcx>(Tagged<CDGNode<'tcx>, TagKind>);
-
 /// The purpose of the reborrowing DAG is to track annotations.
 ///  These are steps that the a backend would have to take in order
 ///  to put all of the borrows back together while preserving values.
@@ -80,13 +68,14 @@ pub enum Annotation<'tcx> {
     Package(OpaqueID, Vec<Annotation<'tcx>>),
     Apply(OpaqueID, PhantomData<&'tcx ()>),
     // Tag a place in the FPCS
-    TagAt(RBNode<'tcx>, Location),
+    TagAt(CDGNode<'tcx>, Location),
     // Borrows: details of issuing a borrow should be handled by OpSem. Same with Moves.
     ExpireBorrow(Place<'tcx>, Loan),
-    UnMove(RBNode<'tcx>, RBNode<'tcx>),
+    //     moved into    moved from
+    UnMove(CDGNode<'tcx>, CDGNode<'tcx>),
     // For coupling
-    ConditionalFreeze(RBNode<'tcx>),
-    ConditionalThaw(RBNode<'tcx>),
+    ConditionalFreeze(CDGNode<'tcx>),
+    ConditionalThaw(CDGNode<'tcx>),
     // ...
 }
 
@@ -139,11 +128,30 @@ impl<'tcx> ReborrowingGraph<'tcx> {
                 todo!()
             }
 
-            IntroStatement::Assign(_, _) => {
-                // Do any annotations need to be emitted in this case?
-                // Modify the annotation in the related origin?
-                // Not sure what is needed to propagate values in backends...
-                todo!()
+            IntroStatement::Assign(from, to) => {
+                let move_to_origin = fact_table
+                    .origins
+                    .get_origin(mir, OriginLHS::Place((*to).clone()))
+                    .unwrap();
+                let move_from_origin = fact_table.origins.get_origin(mir, (*from).clone()).unwrap();
+
+                self.new_concrete(
+                    SubgraphID {
+                        0: [move_to_origin].into(),
+                    },
+                    [Annotation::UnMove(
+                        CDGNode::Place(Tagged::untagged((*to).clone())),
+                        ((*from).clone()).into(),
+                    )]
+                    .into(),
+                    [SubgraphID {
+                        0: [move_from_origin].into(),
+                    }]
+                    .into(),
+                );
+
+                // Opsem should handle statements for this assignment
+                [].into()
             }
             IntroStatement::Reborrow(_, _, _) => {
                 // Add annotations that expire this reborrow
