@@ -32,6 +32,8 @@ use std::{
     fmt,
 };
 
+use super::{Annotation, ReborrowingGraph};
+
 // use super::{Annotation, ReborrowingGraph};
 
 // These types are stolen from Prusti interface
@@ -40,9 +42,9 @@ pub type Loan = <RustcFacts as FactTypes>::Loan;
 
 #[derive(Clone)]
 pub struct ReborrowingState<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> {
-    pub reborrowing_dag: (), // ReborrowingGraph<'tcx>,
+    pub reborrowing_dag: ReborrowingGraph<'tcx>,
 
-    pub annotations_at: (), // Vec<Annotation<'tcx>>,
+    pub annotations_at: Vec<Annotation<'tcx>>,
 
     // // Location this state applies to (possibly in-between basic blocks)
     pub loc: StateLocation,
@@ -59,7 +61,7 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
         coupling: &'cpl PointwiseState<'mir, 'tcx, CouplingState<'facts, 'mir, 'tcx>>,
     ) -> Self {
         Self {
-            reborrowing_dag: (), // ReborrowingGraph::default(),
+            reborrowing_dag: Default::default(),
             loc: StateLocation::BeforeProgram,
             annotations_at: Default::default(),
             fact_table,
@@ -107,9 +109,16 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
             "  (both)  intro commands: {:?}",
             self.fact_table.graph_operations.get(&location)
         );
+        let (delta_leaves_pre, delta_leaves_post) = self
+            .fact_table
+            .delta_leaves
+            .get(&location)
+            .map(|(v0, v1)| ((*v0).clone(), (*v1).clone()))
+            .unwrap_or_default();
+
         println!(
             "  (both)  delta leaves: {:?}",
-            self.fact_table.delta_leaves.get(&location)
+            (&delta_leaves_pre, &delta_leaves_post)
         );
         println!(
             "  (both)  loan issues: {:?}",
@@ -119,28 +128,41 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
             "  (both)  origin_expires_before: {:?}",
             self.fact_table.origin_expires_before.get(&location)
         );
-        if let Some(before) = self.coupling.lookup_before(location) {
-            println!("  (before) st_loc: {:?}", before.loc);
-            println!("  (before) cdg: {:?}", before.coupling_graph);
-            println!("  (before) elim commands: {:?}", before.elim_commands);
-            println!(
-                "  (before) coupling commands: {:?}",
-                before.coupling_commands
-            );
-        }
-        if let Some(after) = self.coupling.lookup_after(location) {
-            println!("  (after) st_loc: {:?}", after.loc);
-            println!("  (after) cdg: {:?}", after.coupling_graph);
-            println!("  (after) elim commands: {:?}", after.elim_commands);
-            println!("  (after) coupling commands: {:?}", after.coupling_commands);
+
+        let after = self.coupling.lookup_after(location).unwrap();
+
+        println!("  (after) cdg: {:?}", after.coupling_graph);
+        println!("  (after) elim commands: {:?}", after.elim_commands);
+        println!("  (after) coupling commands: {:?}", after.coupling_commands);
+
+        println!(
+            "unimplemented: repack so that {:?} is in the PCS",
+            delta_leaves_pre
+        );
+
+        if let Some(intros) = self.fact_table.graph_operations.get(&location) {
+            for st in intros.iter() {
+                self.annotations_at =
+                    self.reborrowing_dag
+                        .apply_intro_command(st, &self.mir.body, &self.fact_table);
+            }
         }
 
-        todo!("apply_statement_effect");
+        for cmd in after.elim_commands.iter() {
+            self.annotations_at
+                .append(&mut (self.reborrowing_dag.apply_elim_command(cmd)));
+        }
 
-        // self.coupling_commands = Default::default();
-        // self.elim_commands = Default::default();
-        // self.loc = StateLocation::InsideBB(location.block);
-        // self.cdg_step(location)
+        for cmd in after.coupling_commands.iter() {
+            panic!("nontrivial coupling command");
+            // self.annotations_at
+            //     .append((self.reborrowing_dag.apply_elim_command(cmd)));
+        }
+
+        println!("reborrowing step done: ");
+        println!("{:?}", self.reborrowing_dag);
+
+        Ok(())
     }
 }
 

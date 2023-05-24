@@ -3,14 +3,10 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    io,
-    marker::PhantomData,
-};
 
 use crate::{
-    abstract_interpretation::{CDGNode, ElimCommand, IntroStatement},
+    abstract_interpretation::{CDGNode, ElimCommand, IntroStatement, OriginLHS, Tagged},
+    domains::FactTable,
     mir_utils::{self, expand, expand_struct_place, is_prefix, Place, PlaceImpl},
 };
 use prusti_rustc_interface::{
@@ -18,10 +14,15 @@ use prusti_rustc_interface::{
     data_structures::fx::{FxHashMap, FxHashSet},
     middle::{
         mir,
-        mir::{BasicBlock, Location},
+        mir::{BasicBlock, Body, Location},
         ty::TyCtxt,
     },
     polonius_engine::FactTypes,
+};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    io,
+    marker::PhantomData,
 };
 
 // These types are stolen from Prusti interface
@@ -31,7 +32,7 @@ pub type PointIndex = <RustcFacts as FactTypes>::Point;
 pub type Variable = <RustcFacts as FactTypes>::Variable;
 pub type Path = <RustcFacts as FactTypes>::Path;
 
-#[derive(Debug, Clone, Eq, Hash, PartialEq)]
+#[derive(Debug, Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
 pub struct SubgraphID(BTreeSet<Region>);
 
 pub type OpaqueID = usize;
@@ -48,7 +49,7 @@ pub struct ConditionId {
 /// The reborrowing graph is described by a collectionn of disjoint subgraphs.
 ///   Each subgraph has an ID, each subgraph must connect to all of its children.
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct ReborrowingGraph<'tcx>(pub BTreeMap<SubgraphID, ReborrowingGraphEntry<'tcx>>);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -57,13 +58,21 @@ pub struct ReborrowingGraphEntry<'tcx> {
     content: ReborrowingGraphKind<'tcx>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TagKind {
+    // Inaccessible because it is frozen behind a conditional
+    Frozen,
+
+    // Inaccessible because it has been written to or went out of scope
+    Killed(Location),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RBNode<'tcx>(Tagged<CDGNode<'tcx>, TagKind>);
+
 /// The purpose of the reborrowing DAG is to track annotations.
 ///  These are steps that the a backend would have to take in order
 ///  to put all of the borrows back together while preserving values.
-///
-/// That said... we decided that the rbdag doesn't need to remain in sync
-/// with the PCS. So in between each of these annotations, we may need
-/// to call the FPCS to repack. An alternate design would include these edges here.
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Annotation<'tcx> {
@@ -71,7 +80,13 @@ pub enum Annotation<'tcx> {
     Package(OpaqueID, Vec<Annotation<'tcx>>),
     Apply(OpaqueID, PhantomData<&'tcx ()>),
     // Tag a place in the FPCS
-    TagAt(CDGNode<'tcx>, Location),
+    TagAt(RBNode<'tcx>, Location),
+    // Borrows: details of issuing a borrow should be handled by OpSem. Same with Moves.
+    ExpireBorrow(Place<'tcx>, Loan),
+    UnMove(RBNode<'tcx>, RBNode<'tcx>),
+    // For coupling
+    ConditionalFreeze(RBNode<'tcx>),
+    ConditionalThaw(RBNode<'tcx>),
     // ...
 }
 
@@ -92,10 +107,31 @@ pub enum ReborrowingGraphKind<'tcx> {
 }
 
 impl<'tcx> ReborrowingGraph<'tcx> {
-    pub(crate) fn apply_intro_command(
+    // Make a new concrete edge
+    // panic if that origin already has an edge
+    fn new_concrete(
         &mut self,
-        stmt: IntroStatement<'tcx>,
-    ) -> Vec<Annotation<'tcx>> {
+        trg: SubgraphID,
+        anns: Vec<Annotation<'tcx>>,
+        children: BTreeSet<SubgraphID>,
+    ) {
+        let entry = ReborrowingGraphEntry {
+            children,
+            content: ReborrowingGraphKind::Concrete(anns),
+        };
+        assert!(self.0.insert(trg, entry).is_none())
+    }
+
+    // Apply an intro command to the graph, and translate it into a sequence of annotations.
+    pub(crate) fn apply_intro_command<'mir>(
+        &mut self,
+        stmt: &IntroStatement<'tcx>,
+        mir: &'mir Body<'tcx>,
+        fact_table: &FactTable<'tcx>,
+    ) -> Vec<Annotation<'tcx>>
+    where
+        'tcx: 'mir,
+    {
         match stmt {
             IntroStatement::Kill(_) => {
                 // Emit an annotation at the current location that kills the place (actually, do we need to do this?)
@@ -113,14 +149,29 @@ impl<'tcx> ReborrowingGraph<'tcx> {
                 // Add annotations that expire this reborrow
                 todo!()
             }
-            IntroStatement::Borrow(_, _) => {
+            IntroStatement::Borrow(from, ix) => {
                 // Add annotations that expire this borrow
-                todo!()
+                // Get the origin associated to ix, put a transparent edge
+                let issuing_origin = fact_table
+                    .origins
+                    .get_origin(mir, OriginLHS::Loan(*ix))
+                    .unwrap();
+                self.new_concrete(
+                    SubgraphID {
+                        0: [issuing_origin].into(),
+                    },
+                    [Annotation::ExpireBorrow((*from).clone(), ix.clone())].into(),
+                    [].into(),
+                );
+
+                // No annotations needed at the current point; that is the
+                // responsibility of the owned opsem
+                [].into()
             }
         }
     }
 
-    pub(crate) fn apply_elim_command(&mut self, stmt: ElimCommand<'tcx>) -> Vec<Annotation<'tcx>> {
+    pub(crate) fn apply_elim_command(&mut self, stmt: &ElimCommand<'tcx>) -> Vec<Annotation<'tcx>> {
         match stmt {
             ElimCommand::Consume(_) => {
                 // Emit an annotation at the current location to snapshot a place,
