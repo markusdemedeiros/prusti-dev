@@ -4,7 +4,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 use crate::{
-    abstract_interpretation::AnalysisResult,
+    abstract_interpretation::{place_mutability, AnalysisResult},
     mir_utils::{
         self, expect_mid_location, expect_start_location, get_borrowed_from_place,
         get_storage_dead, maximally_pack, mir_kind_at, Place, PlaceImpl,
@@ -104,6 +104,17 @@ impl<'tcx> FactTable<'tcx> {
         Self::collect_subsets_at(mir, &mut working_table);
         Self::collect_origin_expiries(mir, &mut working_table);
         println!("[fact table]  {:#?}", working_table);
+
+        println!("[origins w/ muts]");
+        for (k, v) in working_table.origins.map.iter() {
+            match v {
+                OriginLHS::Place(p) => {
+                    println!("{:?} -> {:?} ({:?})", k, p, place_mutability(&mir.body, p))
+                }
+                OriginLHS::Loan(l) => println!("{:?} -> {:?}", k, l),
+            }
+        }
+
         return Ok(working_table);
     }
 

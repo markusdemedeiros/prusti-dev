@@ -74,8 +74,8 @@ pub enum Annotation<'tcx> {
     //     moved into    moved from
     UnMove(CDGNode<'tcx>, CDGNode<'tcx>),
     // For coupling
-    ConditionalFreeze(CDGNode<'tcx>),
-    ConditionalThaw(CDGNode<'tcx>),
+    Freeze(CDGNode<'tcx>),
+    Thaw(CDGNode<'tcx>),
     // ...
 }
 
@@ -122,10 +122,11 @@ impl<'tcx> ReborrowingGraph<'tcx> {
         'tcx: 'mir,
     {
         match stmt {
-            IntroStatement::Kill(_) => {
+            IntroStatement::Kill(k) => {
                 // Emit an annotation at the current location that kills the place (actually, do we need to do this?)
                 // Maybe just modify the annotations instead? This is not a _consume_.
-                todo!()
+                todo!();
+                // [].into();
             }
 
             IntroStatement::Assign(from, to) => {

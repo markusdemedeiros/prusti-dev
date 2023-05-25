@@ -29,50 +29,11 @@ use std::{
     sync::Arc,
 };
 
-use super::{btree_replace, FactTable, IntroStatement, OriginLHS};
+use super::{btree_replace, FactTable, IntroStatement, OriginLHS, Tagged};
 
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
 pub type Loan = <RustcFacts as FactTypes>::Loan;
-
-#[derive(PartialEq, Eq, Hash, Clone, PartialOrd, Ord)]
-pub struct Tagged<Data, Tag> {
-    pub data: Data,
-    pub tag: Option<Tag>,
-}
-
-impl<Data, Tag> Tagged<Data, Tag> {
-    // Tag a place if it is not already tagged
-    fn tag(&mut self, t: Tag) {
-        if self.tag.is_none() {
-            self.tag = Some(t);
-        }
-    }
-
-    pub fn untagged(data: Data) -> Self {
-        Self { data, tag: None }
-    }
-
-    pub fn tagged(data: Data, tag: Tag) -> Self {
-        Self {
-            data,
-            tag: Some(tag),
-        }
-    }
-
-    pub fn is_tagged(&self) -> bool {
-        self.tag.is_some()
-    }
-}
-
-impl<Data: fmt::Debug, Tag: fmt::Debug> fmt::Debug for Tagged<Data, Tag> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match &self.tag {
-            Some(t) => write!(f, "{:?}@{:?}", self.data, t),
-            None => write!(f, "{:?}", self.data),
-        }
-    }
-}
 
 /// A CDGNode represents a permission (a node in the coupling graph)
 /// A CDGNode is one of

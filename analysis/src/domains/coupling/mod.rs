@@ -8,6 +8,7 @@ mod analysis;
 mod state;
 mod graphviz;
 mod facts;
+mod repack;
 
 pub mod test;
 
@@ -16,6 +17,7 @@ use std::collections::BTreeSet;
 pub use self::analysis::*;
 pub use facts::*;
 pub use graphviz::*;
+pub use repack::*;
 pub use state::*;
 pub use test::run_coupling_tests;
 
