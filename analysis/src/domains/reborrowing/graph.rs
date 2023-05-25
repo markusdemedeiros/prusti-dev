@@ -5,7 +5,7 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use crate::{
-    abstract_interpretation::{CDGNode, ElimCommand, IntroStatement, OriginLHS, Tagged},
+    abstract_interpretation::{Capability, ElimCommand, IntroStatement, OriginLHS, Tagged},
     domains::FactTable,
     mir_utils::{self, expand, expand_struct_place, is_prefix, Place, PlaceImpl},
 };
@@ -68,14 +68,14 @@ pub enum Annotation<'tcx> {
     Package(OpaqueID, Vec<Annotation<'tcx>>),
     Apply(OpaqueID, PhantomData<&'tcx ()>),
     // Tag a place in the FPCS
-    TagAt(CDGNode<'tcx>, Location),
+    TagAt(Capability<'tcx>, Location),
     // Borrows: details of issuing a borrow should be handled by OpSem. Same with Moves.
     ExpireBorrow(Place<'tcx>, Loan),
     //     moved into    moved from
-    UnMove(CDGNode<'tcx>, CDGNode<'tcx>),
+    UnMove(Capability<'tcx>, Capability<'tcx>),
     // For coupling
-    Freeze(CDGNode<'tcx>),
-    Thaw(CDGNode<'tcx>),
+    Freeze(Capability<'tcx>),
+    Thaw(Capability<'tcx>),
     // ...
 }
 
@@ -136,20 +136,22 @@ impl<'tcx> ReborrowingGraph<'tcx> {
                     .unwrap();
                 let move_from_origin = fact_table.origins.get_origin(mir, (*from).clone()).unwrap();
 
-                self.new_concrete(
-                    SubgraphID {
-                        0: [move_to_origin].into(),
-                    },
-                    [Annotation::UnMove(
-                        CDGNode::Place(Tagged::untagged((*to).clone())),
-                        ((*from).clone()).into(),
-                    )]
-                    .into(),
-                    [SubgraphID {
-                        0: [move_from_origin].into(),
-                    }]
-                    .into(),
-                );
+                todo!();
+
+                // self.new_concrete(
+                //     SubgraphID {
+                //         0: [move_to_origin].into(),
+                //     },
+                //     [Annotation::UnMove(
+                //         CDGNode::Place(Tagged::untagged((*to).clone())),
+                //         ((*from).clone()).into(),
+                //     )]
+                //     .into(),
+                //     [SubgraphID {
+                //         0: [move_from_origin].into(),
+                //     }]
+                //     .into(),
+                // );
 
                 // Opsem should handle statements for this assignment
                 [].into()

@@ -113,6 +113,32 @@ impl<'tcx> fmt::Debug for Capability<'tcx> {
     }
 }
 
+impl<'tcx> Capability<'tcx> {
+    /// Tags a node at a point, if it isn't already untagged
+    pub fn kill(&mut self, l: &Location) {
+        self.permission.tag(*l);
+    }
+
+    /// Determine if a kill should tag the current place:
+    ///     - A borrow should be tagged only if it is untagged, and equal to to_kill
+    ///     - A place should be tagged only if it is untagged, and to_kill is its prefix
+    pub fn should_tag(&self, to_kill: &Self) -> bool {
+        if self.is_tagged() {
+            return false;
+        }
+
+        match (&self.resource, &to_kill.resource) {
+            (Resource::Place(p_self), Resource::Place(p_other)) => is_prefix(*p_self, *p_other),
+            (Resource::Borrow(l_self), Resource::Borrow(l_other)) => l_self == l_other,
+            _ => false,
+        }
+    }
+
+    pub fn is_tagged(&self) -> bool {
+        self.permission.is_tagged()
+    }
+}
+
 /// Helper function: Get mutability associated to a local
 pub fn loc_mutability<'mir, 'tcx: 'mir>(
     body: &'mir Body<'tcx>,
@@ -127,6 +153,28 @@ pub fn place_mutability<'mir, 'tcx: 'mir>(
     place: &Place<'tcx>,
 ) -> Option<Mutability> {
     loc_mutability(body, &place.to_mir_place().local)
+}
+
+/// Get the deep capabilty associate with a place
+pub fn place_deep_cap<'mir, 'tcx: 'mir>(
+    body: &'mir Body<'tcx>,
+    place: &Place<'tcx>,
+) -> Option<PermissionKind> {
+    match place_mutability(body, place)? {
+        Mutability::Mut => Some(PermissionKind::Excl),
+        Mutability::Not => Some(PermissionKind::Read),
+    }
+}
+
+/// Get the shallow capabilty associate with a place
+pub fn place_shallow_cap<'mir, 'tcx: 'mir>(
+    body: &'mir Body<'tcx>,
+    place: &Place<'tcx>,
+) -> Option<PermissionKind> {
+    match place_mutability(body, place)? {
+        Mutability::Mut => Some(PermissionKind::ShallowExcl),
+        Mutability::Not => Some(PermissionKind::ShallowRead),
+    }
 }
 
 /// Struct to help us do repacks at the capability level

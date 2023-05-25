@@ -18,12 +18,14 @@ use prusti_rustc_interface::{
     data_structures::fx::{FxHashMap, FxHashSet},
     middle::{
         mir,
-        mir::{BorrowKind, Location, Operand, Rvalue, StatementKind},
+        mir::{Body, BorrowKind, Location, Mutability, Operand, Rvalue, StatementKind},
         ty::TyCtxt,
     },
     polonius_engine::FactTypes,
 };
 use std::collections::{BTreeMap, BTreeSet};
+
+use super::{Capability, PermissionKind, Resource, Tagged};
 
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
@@ -658,6 +660,30 @@ impl<'tcx> std::fmt::Debug for OriginPlaces<'tcx> {
 pub enum OriginLHS<'tcx> {
     Place(Place<'tcx>),
     Loan(Loan),
+}
+
+impl<'tcx> OriginLHS<'tcx> {
+    pub fn into_cap<'mir>(self, mir: &'mir Body<'tcx>) -> Capability<'tcx>
+    where
+        'tcx: 'mir,
+    {
+        match self {
+            OriginLHS::Place(p) => {
+                let perm = match place_mutability(mir, &p).unwrap() {
+                    Mutability::Not => PermissionKind::Read,
+                    Mutability::Mut => PermissionKind::Excl,
+                };
+                Capability {
+                    resource: Resource::Place(p),
+                    permission: Tagged::untagged(perm),
+                }
+            }
+            OriginLHS::Loan(l) => Capability {
+                resource: Resource::Borrow(l),
+                permission: Tagged::untagged(PermissionKind::Excl),
+            },
+        }
+    }
 }
 
 impl<'tcx> std::fmt::Debug for OriginLHS<'tcx> {

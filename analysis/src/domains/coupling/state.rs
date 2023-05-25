@@ -7,7 +7,7 @@
 // use log::info;
 
 use crate::{
-    abstract_interpretation::{AbstractState, AnalysisResult},
+    abstract_interpretation::{AbstractState, AnalysisResult, PermissionKind, Resource},
     mir_utils::{is_prefix, Place},
 };
 use itertools::Itertools;
@@ -29,7 +29,9 @@ use std::{
     sync::Arc,
 };
 
-use super::{btree_replace, FactTable, IntroStatement, OriginLHS, Tagged};
+use super::{
+    btree_replace, place_deep_cap, Capability, FactTable, IntroStatement, OriginLHS, Tagged,
+};
 
 // These types are stolen from Prusti interface
 pub type Region = <RustcFacts as FactTypes>::Origin;
@@ -39,61 +41,11 @@ pub type Loan = <RustcFacts as FactTypes>::Loan;
 /// A CDGNode is one of
 ///     - A Place: a mir_utils::Place, tagged by a point
 ///     - A Borrow: a Loan, tagged by a point
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum CDGNode<'tcx> {
-    Place(Tagged<Place<'tcx>, Location>),
-    Borrow(Tagged<Loan, Location>),
-}
-
-impl<'tcx> CDGNode<'tcx> {
-    /// Tags a node at a point, if it isn't already untagged
-    pub fn kill(mut self, l: &Location) -> Self {
-        match &mut self {
-            CDGNode::Place(p) => p.tag(*l),
-            CDGNode::Borrow(b) => b.tag(*l),
-        }
-        self
-    }
-
-    /// Determine if a kill should tag the current place:
-    ///     - A borrow should be tagged only if it is untagged, and equal to to_kill
-    ///     - A place should be tagged only if it is untagged, and to_kill is its prefix
-    pub fn should_tag(&self, to_kill: &CDGNode<'tcx>) -> bool {
-        match (self, to_kill) {
-            (CDGNode::Place(p_self), CDGNode::Place(p_kill)) => {
-                p_self.tag.is_none() && p_kill.tag.is_none() && is_prefix(p_self.data, p_kill.data)
-            }
-            (l0 @ CDGNode::Borrow(_), l1 @ CDGNode::Borrow(_)) => l0 == l1,
-            _ => false,
-        }
-    }
-
-    pub fn is_tagged(&self) -> bool {
-        match self {
-            CDGNode::Place(x) => x.is_tagged(),
-            CDGNode::Borrow(x) => x.is_tagged(),
-        }
-    }
-}
-
-impl<'tcx> Into<CDGNode<'tcx>> for OriginLHS<'tcx> {
-    /// Turn an OriginLHS into a CDGNode by creating a new untagged node
-    fn into(self) -> CDGNode<'tcx> {
-        match self {
-            OriginLHS::Place(p) => CDGNode::Place(Tagged::untagged(p)),
-            OriginLHS::Loan(l) => CDGNode::Borrow(Tagged::untagged(l)),
-        }
-    }
-}
-
-impl<'tcx> fmt::Debug for CDGNode<'tcx> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            CDGNode::Place(tp) => write!(f, "{:?}", tp),
-            CDGNode::Borrow(tb) => write!(f, "{:?}", tb),
-        }
-    }
-}
+// #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+// pub enum CDGNode<'tcx> {
+//     Place(Tagged<Place<'tcx>, Location>),
+//     Borrow(Tagged<Loan, Location>),
+// }
 
 /// The smallest amount of metadata needed to calculate the coupling graph
 #[derive(Clone, PartialEq, Eq)]
@@ -117,8 +69,8 @@ pub enum SignatureKind {
 #[derive(Clone, PartialEq, Eq)]
 pub enum CoupledAnnotation<'tcx> {
     ExpireOrigin(Tagged<Region, Location>),
-    Freeze(CDGNode<'tcx>),
-    Unfreeze(CDGNode<'tcx>),
+    Freeze(Capability<'tcx>),
+    Unfreeze(Capability<'tcx>),
 }
 
 impl<'tcx> fmt::Debug for CoupledAnnotation<'tcx> {
@@ -135,27 +87,33 @@ impl<'tcx> fmt::Debug for CoupledAnnotation<'tcx> {
 /// associated to the expiry of an origin.
 #[derive(Clone, PartialEq, Eq)]
 pub struct OriginSignature<'tcx> {
-    leaves: BTreeSet<CDGNode<'tcx>>,
-    roots: BTreeSet<CDGNode<'tcx>>,
+    leaves: BTreeSet<Capability<'tcx>>,
+    roots: BTreeSet<Capability<'tcx>>,
     kind: SignatureKind,
 }
 
 impl<'tcx> OriginSignature<'tcx> {
     /// Tags all untagged places which have to_tag as a prefix in a set of nodes
-    fn tag_in_set(set: &mut BTreeSet<CDGNode<'tcx>>, location: &Location, to_tag: &CDGNode<'tcx>) {
-        let mut to_replace: Vec<CDGNode<'tcx>> = vec![];
+    fn tag_in_set(
+        set: &mut BTreeSet<Capability<'tcx>>,
+        location: &Location,
+        to_tag: &Capability<'tcx>,
+    ) {
+        let mut to_replace: Vec<_> = vec![];
         for node in set.iter() {
             if node.should_tag(to_tag) {
                 to_replace.push((*node).clone())
             }
         }
         for node in to_replace.iter() {
-            btree_replace(set, node, node.clone().kill(location));
+            let mut node1 = node.clone();
+            node1.kill(location);
+            btree_replace(set, node, node1);
         }
     }
 
     /// Tags all untagged places which have to_tag as a prefix
-    pub fn tag(&mut self, location: &Location, to_tag: &CDGNode<'tcx>) {
+    pub fn tag(&mut self, location: &Location, to_tag: &Capability<'tcx>) {
         Self::tag_in_set(&mut self.roots, location, to_tag);
         Self::tag_in_set(&mut self.leaves, location, to_tag);
     }
@@ -184,7 +142,7 @@ impl<'tcx> fmt::Debug for OriginSignature<'tcx> {
 #[derive(Clone, Default, PartialEq, Eq)]
 pub struct OriginMap<'tcx> {
     pub map: BTreeMap<Tagged<Region, Location>, OriginSignature<'tcx>>,
-    // leaves: BTreeSet<OriginLHS<'tcx>>,
+    // leaves: BTreeSet<Capability<'tcx>>,
 }
 
 impl<'tcx> fmt::Debug for OriginMap<'tcx> {
@@ -202,11 +160,15 @@ impl<'tcx> OriginMap<'tcx> {
     }
 
     // Add a new borrow root to the tree
-    pub fn new_borrow(&mut self, bw_from_place: Place<'tcx>, bw_ix: Loan, bw_origin: &Region) {
+    pub fn new_borrow(&mut self, bw_from_cap: Capability<'tcx>, bw_ix: Loan, bw_origin: &Region) {
         assert!(self.map.get(&Tagged::untagged(*bw_origin)).is_none());
         let sig = OriginSignature {
-            leaves: [CDGNode::Borrow(Tagged::untagged(bw_ix))].into(),
-            roots: [CDGNode::Place(Tagged::untagged(bw_from_place))].into(),
+            leaves: [Capability {
+                resource: Resource::Borrow(bw_ix),
+                permission: Tagged::untagged(PermissionKind::Excl),
+            }]
+            .into(),
+            roots: [bw_from_cap].into(),
             kind: SignatureKind::Owned,
         };
         self.map.insert(Tagged::untagged(*bw_origin), sig);
@@ -215,9 +177,9 @@ impl<'tcx> OriginMap<'tcx> {
     // Add a new
     pub fn new_shared_subgraph(
         &mut self,
-        subgraph_node: CDGNode<'tcx>,
+        subgraph_node: Capability<'tcx>,
         subgraph_origin: &Region,
-        supgraph_node: CDGNode<'tcx>,
+        supgraph_node: Capability<'tcx>,
         supgraph_origin: &Region,
     ) {
         // For connectivity
@@ -247,9 +209,9 @@ impl<'tcx> OriginMap<'tcx> {
 
             // I'm not really sure about this to be completely honest
             for cap in sig.leaves.iter() {
-                match cap {
-                    CDGNode::Place(_) => self.tag_node(location, cap),
-                    CDGNode::Borrow(_) => match sig.kind {
+                match cap.resource {
+                    Resource::Place(_) => self.tag_node(location, cap),
+                    Resource::Borrow(_) => match sig.kind {
                         SignatureKind::Subgraph(_) => self.tag_node(location, cap),
                         SignatureKind::Coupled(_, _, _, _) => self.tag_node(location, cap),
                         SignatureKind::Owned => (),
@@ -268,14 +230,14 @@ impl<'tcx> OriginMap<'tcx> {
         }
     }
 
-    pub fn tag_node(&mut self, location: &Location, node: &CDGNode<'tcx>) {
+    pub fn tag_node(&mut self, location: &Location, node: &Capability<'tcx>) {
         for (_, sig) in self.map.iter_mut() {
             sig.tag(location, node);
         }
     }
 
     // Get the LHS of all live origins
-    pub fn get_live_lhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+    pub fn get_live_lhs(&self) -> BTreeSet<Capability<'tcx>> {
         let mut ret = BTreeSet::new();
         for (o, sig) in self.map.iter() {
             if !o.is_tagged() {
@@ -288,7 +250,7 @@ impl<'tcx> OriginMap<'tcx> {
     }
 
     // Get the LHS of all origins
-    pub fn get_all_lhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+    pub fn get_all_lhs(&self) -> BTreeSet<Capability<'tcx>> {
         let mut ret = BTreeSet::new();
         for (_, sig) in self.map.iter() {
             for l in sig.leaves.iter() {
@@ -298,7 +260,7 @@ impl<'tcx> OriginMap<'tcx> {
         return ret;
     }
 
-    pub fn get_all_rhs(&self) -> BTreeSet<CDGNode<'tcx>> {
+    pub fn get_all_rhs(&self) -> BTreeSet<Capability<'tcx>> {
         let mut ret = BTreeSet::new();
         for (_, sig) in self.map.iter() {
             for l in sig.roots.iter() {
@@ -312,7 +274,7 @@ impl<'tcx> OriginMap<'tcx> {
     // Assumes the tree is correctly connected (eg. in the correct packing state)
     // Hoenstly both this and leaves should be precomputed since they rarely change
     // so don't need to always be recomputed
-    pub fn get_roots(&self) -> BTreeSet<CDGNode<'tcx>> {
+    pub fn get_roots(&self) -> BTreeSet<Capability<'tcx>> {
         let mut ret = BTreeSet::new();
         let lr = self.get_all_lhs();
         for (_, sig) in self.map.iter() {
@@ -325,7 +287,7 @@ impl<'tcx> OriginMap<'tcx> {
         return ret;
     }
 
-    pub fn get_leaves(&self) -> BTreeSet<CDGNode<'tcx>> {
+    pub fn get_leaves(&self) -> BTreeSet<Capability<'tcx>> {
         let mut ret = BTreeSet::new();
         let rr = self.get_all_rhs();
         for (_, sig) in self.map.iter() {
@@ -372,7 +334,7 @@ impl<'tcx> OriginMap<'tcx> {
     // fixme: this needs to ger refactored to return many possible parents! (a coupled parent)
     fn get_direct_parent(
         &self,
-        root: &CDGNode<'tcx>,
+        root: &Capability<'tcx>,
     ) -> Vec<(Tagged<Region, Location>, OriginSignature<'tcx>)> {
         self.map
             .iter()
@@ -394,15 +356,15 @@ impl<'tcx> OriginMap<'tcx> {
     //  - the roots of that set of origins, which is a superset of the ``root``
     pub fn get_parent(
         &self,
-        roots: BTreeSet<CDGNode<'tcx>>,
+        roots: BTreeSet<Capability<'tcx>>,
     ) -> (
         Vec<Tagged<Region, Location>>,
-        BTreeSet<CDGNode<'tcx>>,
-        BTreeSet<CDGNode<'tcx>>,
+        BTreeSet<Capability<'tcx>>,
+        BTreeSet<Capability<'tcx>>,
     ) {
         let mut ret_origins: Vec<_> = Vec::new();
-        let mut ret_roots: BTreeSet<CDGNode<'tcx>> = roots.clone();
-        let mut ret_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::new();
+        let mut ret_roots: BTreeSet<Capability<'tcx>> = roots.clone();
+        let mut ret_leaves: BTreeSet<Capability<'tcx>> = BTreeSet::new();
 
         let graph_leaves = self.get_leaves();
 
@@ -478,11 +440,11 @@ pub enum StateLocation {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ElimCommand<'tcx> {
     // Take a place from the free PCS (and kill it in the graph)
-    Consume(CDGNode<'tcx>),
+    Consume(Capability<'tcx>),
     // apply all annotations associated to a region, except possibly coupled edges
     // if there are other coupled still live. Regains a set of nodes in the
     // free PCS
-    Expire(Tagged<Region, Location>, BTreeSet<CDGNode<'tcx>>),
+    Expire(Tagged<Region, Location>, BTreeSet<Capability<'tcx>>),
 }
 
 /// CouplingState consists of
@@ -497,8 +459,10 @@ pub struct CouplingState<'facts, 'mir: 'facts, 'tcx: 'mir> {
     /// Coupling commands:
     ///  indexed by to-bb, from-bb, and the coupled edge to create (identified by the set it blocks)
     ///  the RB DAG must abstract over the specified origins
-    pub coupling_commands:
-        BTreeMap<(BasicBlock, BasicBlock, BTreeSet<CDGNode<'tcx>>), Vec<Tagged<Region, Location>>>,
+    pub coupling_commands: BTreeMap<
+        (BasicBlock, BasicBlock, BTreeSet<Capability<'tcx>>),
+        Vec<Tagged<Region, Location>>,
+    >,
 
     pub elim_commands: Vec<ElimCommand<'tcx>>,
 
@@ -617,12 +581,26 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
 
             // I'm also going to leave actual unpacking completely unimplemented (lol).
             // Check that the corresponding CDGNode associate to req is contained in the matching_leaves.
-            if !matching_leaves.contains(&Into::<CDGNode<'tcx>>::into(req.clone())) {
+            if !matching_leaves.contains(&(req.clone().into_cap(&self.mir.body))) {
                 println!("need to repack! matching_leaves:");
                 println!("{:?}", matching_leaves);
                 println!("req: {:?}", req);
                 panic!();
             }
+        }
+    }
+
+    fn default_deep_cap(&self, place: Place<'tcx>) -> Capability<'tcx> {
+        Capability {
+            resource: Resource::Place(place.clone()),
+            permission: Tagged::untagged(place_deep_cap(&self.mir.body, &place).unwrap()),
+        }
+    }
+
+    fn loan_cap(&self, loan: Loan) -> Capability<'tcx> {
+        Capability {
+            resource: Resource::Borrow(loan),
+            permission: Tagged::untagged(PermissionKind::Excl),
         }
     }
 
@@ -636,9 +614,9 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                     IntroStatement::Kill(node) => {
                         self.coupling_graph
                             .origins
-                            .tag_node(location, &((*node).clone().into()));
+                            .tag_node(location, &((*node).clone().into_cap(&self.mir.body)));
                     }
-                    IntroStatement::Assign(asgn_from_node, asgn_to_node) => {
+                    IntroStatement::Assign(asgn_from_node, asgn_to_place) => {
                         let asgn_from_origin = self
                             .fact_table
                             .origins
@@ -647,7 +625,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                         let asgn_to_origin = self
                             .fact_table
                             .origins
-                            .get_origin(&self.mir.body, OriginLHS::Place(*asgn_to_node))
+                            .get_origin(&self.mir.body, OriginLHS::Place(*asgn_to_place))
                             .unwrap();
                         if asgn_from_origin == asgn_to_origin {
                             // This should rewrite the LHS of a place.
@@ -658,9 +636,9 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             unimplemented!("assignment to self places not implemented yet");
                         } else {
                             self.coupling_graph.origins.new_shared_subgraph(
-                                (*asgn_from_node).clone().into(),
+                                (*asgn_from_node).clone().into_cap(&self.mir.body),
                                 &asgn_from_origin,
-                                CDGNode::Place(Tagged::untagged(*asgn_to_node)),
+                                self.default_deep_cap(*asgn_to_place),
                                 &asgn_to_origin,
                             );
                         }
@@ -680,9 +658,9 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                         // Rewrite the graph to internally repack it here, if that's needed
 
                         self.coupling_graph.origins.new_shared_subgraph(
-                            CDGNode::Place(Tagged::untagged(*rb_from_place)),
+                            self.default_deep_cap(*rb_from_place),
                             rb_from_origin,
-                            CDGNode::Borrow(Tagged::untagged(*bw_ix)),
+                            self.loan_cap(*bw_ix),
                             &rb_into_origin,
                         );
                     }
@@ -693,7 +671,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
                             .get_origin(&self.mir.body, OriginLHS::Loan(*bw_ix))
                             .unwrap();
                         self.coupling_graph.origins.new_borrow(
-                            *bw_from_place,
+                            self.default_deep_cap(*bw_from_place),
                             *bw_ix,
                             &bw_into_origin,
                         );
@@ -935,8 +913,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             .collect::<Vec<_>>();
 
         fn goal_is_done<'tcx>(
-            def_accessible_leaves: &BTreeSet<CDGNode<'tcx>>,
-            n: &CDGNode<'tcx>,
+            def_accessible_leaves: &BTreeSet<Capability<'tcx>>,
+            n: &Capability<'tcx>,
         ) -> bool {
             def_accessible_leaves.contains(n) || n.is_tagged()
         }
@@ -970,7 +948,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             // Figure out the ways each goal can be directly satisfied in each graph
             // fixme: this calculation is redundant to do at each step
 
-            let mut goal_parents: Vec<(&Self, BTreeMap<CDGNode<'tcx>, (Vec<_>, _, _)>)> =
+            let mut goal_parents: Vec<(&Self, BTreeMap<Capability<'tcx>, (Vec<_>, _, _)>)> =
                 Default::default();
             for (couplingstate, goal_set) in goals.iter() {
                 let mut ret_map = BTreeMap::default();
@@ -1075,8 +1053,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     .map(|(coupling_state, goal_map)| {
                         println!("inside branch (??)");
                         let mut chunk_contents = Vec::default();
-                        let mut chunk_leaves: BTreeSet<CDGNode<'tcx>> = BTreeSet::default();
-                        let mut chunk_goals: BTreeSet<CDGNode<'tcx>> = BTreeSet::default();
+                        let mut chunk_leaves: BTreeSet<Capability<'tcx>> = BTreeSet::default();
+                        let mut chunk_goals: BTreeSet<Capability<'tcx>> = BTreeSet::default();
                         for goal in goals_ref.iter() {
                             let res @ (_, set_new_goals, set_new_leaves) =
                                 goal_map.get(goal).unwrap();
@@ -1235,7 +1213,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     }
                     println!("all possible caps: {:?}", all_possible_accessible_caps);
 
-                    let target_cap: CDGNode<'tcx> = all_possible_accessible_caps
+                    let target_cap: Capability<'tcx> = all_possible_accessible_caps
                         .into_iter()
                         .reduce(|acc, e| acc.intersection(&e).cloned().collect())
                         .unwrap()
@@ -1331,7 +1309,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                                     Some((leaf, frozen))
                                 }
                             })
-                            .collect::<BTreeSet<(CDGNode, bool)>>();
+                            .collect::<BTreeSet<(Capability<'tcx>, bool)>>();
 
                         // 2. We expire all definitely consumed capabilities
                         let mut this_branch_gains: BTreeSet<_> = Default::default();
@@ -1516,7 +1494,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
         //         println!("no match\ngoals: {:?}", goal_parents);
 
         //         // goals_preimage: map from goal to a set of resources that we can expire to get it back
-        //         let mut goals_preimage: BTreeMap<CDGNode<'tcx>, BTreeSet<CDGNode<'tcx>>> =
+        //         let mut goals_preimage: BTreeMap<Capability<'tcx>, BTreeSet<Capability<'tcx>>> =
         //             BTreeMap::default();
 
         //         for (_, (vs, vo)) in goal_parents.iter() {
