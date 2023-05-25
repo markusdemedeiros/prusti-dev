@@ -140,6 +140,19 @@ impl<'tcx> Place<'tcx> {
         })
     }
 
+    // Remove the uppermost projecttion
+    pub(crate) fn strip_uppermost(&self, tcx: TyCtxt<'tcx>) -> Option<Self> {
+        let mut projection = self.projection.to_vec();
+        projection.pop()?;
+        Some(
+            mir::Place {
+                local: self.local,
+                projection: tcx.intern_place_elems(&projection),
+            }
+            .into(),
+        )
+    }
+
     /// Removes the outermost projection from a place, if the following is allowed:
     ///     { self } pack(self) { strip(self) }
     pub(crate) fn strip(&self, tcx: TyCtxt<'tcx>) -> Option<Self> {

@@ -105,13 +105,13 @@ impl<'tcx> FactTable<'tcx> {
         Self::collect_origin_expiries(mir, &mut working_table);
         println!("[fact table]  {:#?}", working_table);
 
-        println!("[origins w/ muts]");
-        for (k, v) in working_table.origins.map.iter() {
+        println!("[place mutability]");
+        for v in working_table.origins.map.values() {
             match v {
                 OriginLHS::Place(p) => {
-                    println!("{:?} -> {:?} ({:?})", k, p, place_mutability(&mir.body, p))
+                    println!("{:?}: {:?}", p, place_mutability(&mir.body, &p))
                 }
-                OriginLHS::Loan(l) => println!("{:?} -> {:?}", k, l),
+                OriginLHS::Loan(l) => (),
             }
         }
 
