@@ -6,16 +6,11 @@
 
 use std::{cmp::Ordering, collections::BTreeSet, fmt};
 
-use crate::{
-    abstract_interpretation::{AbstractState, AnalysisResult},
-    mir_utils::{is_prefix, Place, PlaceImpl},
-};
+use crate::mir_utils::{is_prefix, Place, PlaceImpl};
 use prusti_rustc_interface::{
     borrowck::consumers::RustcFacts,
-    data_structures::fx::{FxHashMap, FxHashSet},
     middle::{
-        mir,
-        mir::{BasicBlock, Body, Local, Location, Mutability},
+        mir::{Body, Local, Location, Mutability},
         ty::TyCtxt,
     },
     polonius_engine::FactTypes,

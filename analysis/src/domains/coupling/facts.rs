@@ -113,7 +113,7 @@ impl<'tcx> FactTable<'tcx> {
                 OriginLHS::Place(p) => {
                     println!("{:?}: {:?}", p, place_mutability(&mir.body, &p))
                 }
-                OriginLHS::Loan(l) => (),
+                OriginLHS::Loan(_) => (),
             }
         }
 
