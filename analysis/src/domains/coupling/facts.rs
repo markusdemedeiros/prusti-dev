@@ -379,9 +379,10 @@ impl<'tcx> FactTable<'tcx> {
 
                     // Impose the semantics for moves
                     let cur_op = working_table.graph_operations.entry(loc).or_default();
-                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(
-                        PlaceImpl::from_mir_place(mv_to_place),
-                    )));
+                    cur_op.push(IntroStatement::Kill(
+                        OriginLHS::Place(PlaceImpl::from_mir_place(mv_to_place)),
+                        loc,
+                    ));
 
                     cur_op.push(IntroStatement::Assign(
                         OriginLHS::Place(PlaceImpl::from_mir_place(mv_from_place)),
@@ -485,7 +486,7 @@ impl<'tcx> FactTable<'tcx> {
         for (l, p) in mir.input_facts.loan_killed_at.iter() {
             let location = expect_mid_location(mir.location_table.to_location(*p));
             let cur_op = working_table.graph_operations.entry(location).or_default();
-            cur_op.push(IntroStatement::Kill(OriginLHS::Loan(*l)));
+            cur_op.push(IntroStatement::Kill(OriginLHS::Loan(*l), location));
         }
     }
 
@@ -501,7 +502,7 @@ impl<'tcx> FactTable<'tcx> {
                 };
                 if let StatementKind::StorageDead(l) = stmt.kind {
                     let cur_op = working_table.graph_operations.entry(location).or_default();
-                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(l.into())));
+                    cur_op.push(IntroStatement::Kill(OriginLHS::Place(l.into()), location));
                 }
             }
         }
@@ -700,7 +701,7 @@ impl<'tcx> std::fmt::Debug for OriginLHS<'tcx> {
 #[derive(Debug)]
 pub(crate) enum IntroStatement<'tcx> {
     // Kill all nodes of a certain kind in the graph
-    Kill(OriginLHS<'tcx>),
+    Kill(OriginLHS<'tcx>, Location),
 
     // Insert a "move" edge into the graph.
     // Belongs to the origin associated to "Place"

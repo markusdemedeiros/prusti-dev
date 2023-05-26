@@ -5,7 +5,9 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use crate::{
-    abstract_interpretation::{Capability, ElimCommand, IntroStatement, OriginLHS, Tagged},
+    abstract_interpretation::{
+        place_deep_cap, Capability, ElimCommand, IntroStatement, OriginLHS, Resource, Tagged,
+    },
     domains::FactTable,
     mir_utils::{self, expand, expand_struct_place, is_prefix, Place, PlaceImpl},
 };
@@ -68,15 +70,59 @@ pub enum Annotation<'tcx> {
     Package(OpaqueID, Vec<Annotation<'tcx>>),
     Apply(OpaqueID, PhantomData<&'tcx ()>),
     // Tag a place in the FPCS
-    TagAt(Capability<'tcx>, Location),
+    Snapshot(Capability<'tcx>, Location),
     // Borrows: details of issuing a borrow should be handled by OpSem. Same with Moves.
-    ExpireBorrow(Place<'tcx>, Loan),
+    ExpireBorrow(Capability<'tcx>, Tagged<Loan, Location>),
     //     moved into    moved from
     UnMove(Capability<'tcx>, Capability<'tcx>),
     // For coupling
     Freeze(Capability<'tcx>),
     Thaw(Capability<'tcx>),
     // ...
+}
+
+impl<'tcx> Annotation<'tcx> {
+    pub fn kill_annotation<'mir>(
+        &mut self,
+        k: &OriginLHS<'tcx>,
+        l: &Location,
+        mir: &'mir Body<'tcx>,
+    ) where
+        'tcx: 'mir,
+    {
+        match self {
+            &mut Annotation::Package(_, ref mut anns) => {
+                for a in anns.iter_mut() {
+                    a.kill_annotation(k, l, mir);
+                }
+            }
+            &mut Annotation::ExpireBorrow(ref mut cap, ref mut loan) => {
+                // If we should tag the cap, tag it
+                if cap.should_tag(&(k.clone().into_cap(mir))) {
+                    cap.kill(l);
+                }
+
+                // If we should tag the loan, tag it
+                if let OriginLHS::Loan(l0) = k {
+                    if !loan.is_tagged() && loan.data == *l0 {
+                        loan.tag(*l);
+                    }
+                }
+            }
+            &mut Annotation::UnMove(ref mut c0, ref mut c1) => {
+                if c0.should_tag(&(k.clone().into_cap(mir))) {
+                    c0.kill(l);
+                }
+                if c1.should_tag(&(k.clone().into_cap(mir))) {
+                    c1.kill(l);
+                }
+            }
+
+            _ => {
+                unimplemented!("unknown how to kill {:?} at {:?} in {:?}", k, l, self);
+            }
+        }
+    }
 }
 
 ///   It does not have to interacct with the free PCS, nor does it have to know
@@ -122,11 +168,14 @@ impl<'tcx> ReborrowingGraph<'tcx> {
         'tcx: 'mir,
     {
         match stmt {
-            IntroStatement::Kill(k) => {
+            IntroStatement::Kill(k, l) => {
                 // Emit an annotation at the current location that kills the place (actually, do we need to do this?)
                 // Maybe just modify the annotations instead? This is not a _consume_.
-                todo!();
-                // [].into();
+
+                // What kind of annotations does this entail?
+                // Snapshot?
+                self.do_kill(k, l, mir);
+                [Annotation::Snapshot((*k).clone().into_cap(&mir), *l)].into()
             }
 
             IntroStatement::Assign(from, to) => {
@@ -135,30 +184,56 @@ impl<'tcx> ReborrowingGraph<'tcx> {
                     .get_origin(mir, OriginLHS::Place((*to).clone()))
                     .unwrap();
                 let move_from_origin = fact_table.origins.get_origin(mir, (*from).clone()).unwrap();
-
-                todo!();
-
-                // self.new_concrete(
-                //     SubgraphID {
-                //         0: [move_to_origin].into(),
-                //     },
-                //     [Annotation::UnMove(
-                //         CDGNode::Place(Tagged::untagged((*to).clone())),
-                //         ((*from).clone()).into(),
-                //     )]
-                //     .into(),
-                //     [SubgraphID {
-                //         0: [move_from_origin].into(),
-                //     }]
-                //     .into(),
-                // );
+                self.new_concrete(
+                    SubgraphID {
+                        0: [move_to_origin].into(),
+                    },
+                    [Annotation::UnMove(
+                        Capability {
+                            resource: Resource::Place(to.clone()),
+                            permission: Tagged::untagged(place_deep_cap(&mir, &to).unwrap()),
+                        },
+                        ((*from).clone()).into_cap(&mir),
+                    )]
+                    .into(),
+                    [SubgraphID {
+                        0: [move_from_origin].into(),
+                    }]
+                    .into(),
+                );
 
                 // Opsem should handle statements for this assignment
                 [].into()
             }
-            IntroStatement::Reborrow(_, _, _) => {
+            IntroStatement::Reborrow(rb_from_place, rb_loan, rb_from_region) => {
                 // Add annotations that expire this reborrow
-                todo!()
+                let issuing_origin = fact_table
+                    .origins
+                    .get_origin(mir, OriginLHS::Loan(*rb_loan))
+                    .unwrap();
+                self.new_concrete(
+                    SubgraphID {
+                        0: [issuing_origin].into(),
+                    },
+                    [Annotation::ExpireBorrow(
+                        Capability {
+                            resource: Resource::Place(rb_from_place.clone()),
+                            permission: Tagged::untagged(
+                                place_deep_cap(&mir, &rb_from_place).unwrap(),
+                            ),
+                        },
+                        Tagged::untagged(rb_loan.clone()),
+                    )]
+                    .into(),
+                    [SubgraphID {
+                        0: [*rb_from_region].into(),
+                    }]
+                    .into(),
+                );
+                // No annotations needed atm.
+                // fixme: Unless we need to repack, in which case they get put here?
+                // Or does OpSem handle it
+                [].into()
             }
             IntroStatement::Borrow(from, ix) => {
                 // Add annotations that expire this borrow
@@ -171,7 +246,14 @@ impl<'tcx> ReborrowingGraph<'tcx> {
                     SubgraphID {
                         0: [issuing_origin].into(),
                     },
-                    [Annotation::ExpireBorrow((*from).clone(), ix.clone())].into(),
+                    [Annotation::ExpireBorrow(
+                        Capability {
+                            resource: Resource::Place(from.clone()),
+                            permission: Tagged::untagged(place_deep_cap(&mir, &from).unwrap()),
+                        },
+                        Tagged::untagged(ix.clone()),
+                    )]
+                    .into(),
                     [].into(),
                 );
 
@@ -192,6 +274,31 @@ impl<'tcx> ReborrowingGraph<'tcx> {
             ElimCommand::Expire(_, _) => {
                 // Emit the annotations associated to an origin and remove that origin from the graph.
                 todo!();
+            }
+        }
+    }
+
+    fn do_kill<'mir>(&mut self, k: &OriginLHS<'tcx>, l: &Location, mir: &'mir Body<'tcx>)
+    where
+        'tcx: 'mir,
+    {
+        for (_, subg_content) in self.0.iter_mut() {
+            match &mut subg_content.content {
+                ReborrowingGraphKind::Concrete(anns) => {
+                    for a in anns.iter_mut() {
+                        a.kill_annotation(k, l, mir);
+                    }
+                }
+                ReborrowingGraphKind::Transparent(mp, _) => {
+                    for (_, anns) in mp.iter_mut() {
+                        for a in anns.iter_mut() {
+                            a.kill_annotation(k, l, mir);
+                        }
+                    }
+                }
+                ReborrowingGraphKind::Opqaue(_, _) => unimplemented!(
+                    "what annotations do we need to kill part of an opaque edge? maybe none?"
+                ),
             }
         }
     }

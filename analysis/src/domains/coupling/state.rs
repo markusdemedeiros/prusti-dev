@@ -611,7 +611,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> CouplingState<'facts, 'mir, 'tcx> {
         for x in self.fact_table.graph_operations.get(location).iter() {
             for s in x.iter() {
                 match s {
-                    IntroStatement::Kill(node) => {
+                    IntroStatement::Kill(node, _) => {
                         self.coupling_graph
                             .origins
                             .tag_node(location, &((*node).clone().into_cap(&self.mir.body)));
