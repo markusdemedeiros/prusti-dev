@@ -142,6 +142,10 @@ pub enum ReborrowingGraphKind<'tcx> {
 }
 
 impl<'tcx> ReborrowingGraph<'tcx> {
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     // Make a new concrete edge
     // panic if that origin already has an edge
     fn new_concrete(

@@ -83,23 +83,16 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> ReborrowingState<'cpl, 'facts
         &self,
         location: Location,
     ) -> AnalysisResult<Vec<(mir::BasicBlock, Self)>> {
-        todo!("apply_terminator_effect");
-        // let mut new_state = self.clone();
-        // new_state.coupling_commands = Default::default();
-        // new_state.elim_commands = Default::default();
-        // new_state.cdg_step(location)?;
+        // Terminators don't change the graph right?
+        // I guess the will change the graph with function callls
+        // We couple at the start of blocks?
 
-        // let joining_from = location.block;
-        // let terminator = self.mir.body[location.block].terminator();
-        // Ok(terminator
-        //     .successors()
-        //     .into_iter()
-        //     .map(|bb| {
-        //         let mut ns = new_state.clone();
-        //         ns.loc = StateLocation::Joining(joining_from, bb);
-        //         (bb, ns)
-        //     })
-        //     .collect())
+        let terminator = self.mir.body[location.block].terminator();
+        Ok(terminator
+            .successors()
+            .into_iter()
+            .map(|bb| (bb, self.clone()))
+            .collect())
     }
 
     pub(crate) fn apply_statement_effect(&mut self, location: Location) -> AnalysisResult<()> {
@@ -193,10 +186,25 @@ impl<'cpl, 'facts: 'cpl, 'mir: 'facts, 'tcx: 'mir> AbstractState
     for ReborrowingState<'cpl, 'facts, 'mir, 'tcx>
 {
     fn is_bottom(&self) -> bool {
-        todo!("is_bottom");
+        // Maybe loc too?
+        self.reborrowing_dag.is_empty()
     }
 
     fn join(&mut self, other: &Self) {
+        // Filter out trivial cases (this is a substantial number of the joins in MIR).
+        let mut states_to_join = vec![self.clone(), other.clone()];
+        states_to_join = states_to_join
+            .into_iter()
+            .filter(|st| !st.is_bottom())
+            .collect();
+        match &states_to_join[..] {
+            [] => (),
+            [z] => {
+                *self = (*z).clone();
+                return;
+            }
+            _ => (),
+        };
         todo!("join");
     }
 
