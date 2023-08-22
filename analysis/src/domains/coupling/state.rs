@@ -833,51 +833,36 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
     // the coupling state will not be equal between these two paths (for the def'n of
     // equality currently implemented, anyways).
     fn join(&mut self, other: &Self) {
-        // Generalize to n-ary joins.
+        // The new algorithm generalizes to n-ary joins.
         let mut states_to_join = vec![self.clone(), other.clone()];
 
-        // Filter out trivial cases (this is a substantial number of the joins in MIR).
+        // Filter out trivial cases
+        // If there is only one case left, return that state
         states_to_join = states_to_join
             .into_iter()
             .filter(|st| !st.is_bottom())
             .collect();
         match &states_to_join[..] {
             [] => (),
-            [z] => *self = (*z).clone(),
+            [z] => {
+                *self = (*z).clone();
+                return;
+            }
             _ => (),
         };
 
         // debug
-        println!("(JOIN 1 loc: {:?})", self.loc);
-        println!("JOIN 1: {:?}\n", self.coupling_graph);
-        println!("(JOIN 2 loc: {:?})", other.loc);
-        println!("JOIN 2: {:?}\n", other.coupling_graph);
+        // println!("(JOIN 1 loc: {:?})", self.loc);
+        // println!("JOIN 1: {:?}\n", self.coupling_graph);
+        // println!("(JOIN 2 loc: {:?})", other.loc);
+        // println!("JOIN 2: {:?}\n", other.coupling_graph);
 
         // Begin the construction of a new coupling graph.
         let mut working_graph: OriginMap = Default::default();
-        let mut next_coupling_id: usize = 0;
+        let mut coupling_id_generator = CGGensym::new();
 
-        // // Make the LHS of the origins coherent (kill leaves that are in one branch but not the other)
-        // let lhs = self.coupling_graph.origins.get_live_lhs();
-        // if lhs != other.coupling_graph.origins.get_live_lhs() {
-        //     unimplemented!("kill dead lhs in live origins");
-        // }
-
-        // Repack and kill the LHS to be coherent b
-        let reference_packing_state = states_to_join[0].coupling_graph.origins.get_live_lhs();
-        let reference_packing_leaves = states_to_join[0].coupling_graph.origins.get_leaves();
-        assert!(
-            states_to_join
-                .iter()
-                .all(|st| st.coupling_graph.origins.get_live_lhs() == reference_packing_state),
-            "unimplemented: correctly killing LHS at join points"
-        );
-        assert!(
-            states_to_join
-                .iter()
-                .all(|st| st.coupling_graph.origins.get_leaves() == reference_packing_leaves),
-            "unimplemented: correctly repacking LHS's at join points"
-        );
+        // Repack the leaves to cohere
+        let reference_packing_leaves = repack_leaves_to_cohere(&mut states_to_join);
 
         // Save a vector of roots and leaves for later and for debugging
         let all_roots = states_to_join
@@ -912,12 +897,14 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
             .map(|st| (st, st.coupling_graph.origins.get_roots()))
             .collect::<Vec<_>>();
 
-        fn goal_is_done<'tcx>(
-            def_accessible_leaves: &BTreeSet<Capability<'tcx>>,
-            n: &Capability<'tcx>,
-        ) -> bool {
-            def_accessible_leaves.contains(n) || n.is_tagged()
-        }
+        let goal_is_done =
+            |n: &Capability<'tcx>| def_accessible_leaves.contains(n) || n.is_tagged();
+
+        //fn goal_is_done<'tcx>(
+        //    def_accessible_leaves: &BTreeSet<Capability<'tcx>>,
+        //    n: &Capability<'tcx>,
+        //) -> bool {
+        //}
 
         loop {
             // filter out all of the completed goals.
@@ -925,7 +912,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                 goal_set.1 = goal_set
                     .1
                     .iter()
-                    .filter(|goal| !goal_is_done(&def_accessible_leaves, goal))
+                    .filter(|goal| !goal_is_done(goal))
                     .cloned()
                     .collect();
             }
@@ -1123,6 +1110,8 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     }
                     println!(" - {:?}", state.coupling_graph.origins.map);
                 }
+
+                // fixme: implement this
                 println!("(note: states from direct match case not removed yet)");
 
                 // Furthremore, we are going to change the set of goals for the
@@ -1429,8 +1418,7 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
                     let live_expiries = live_expiries.unwrap();
                     let children = children.unwrap();
 
-                    let cpl_id = next_coupling_id;
-                    next_coupling_id += 1;
+                    let cpl_id = coupling_id_generator.gensym();
 
                     let mut joining_to_set = None;
                     let joining_from_set = goals
@@ -1479,195 +1467,50 @@ impl<'facts, 'mir: 'facts, 'tcx: 'mir> AbstractState for CouplingState<'facts, '
 
         println!("final graph:\n{:?}", working_graph);
         self.coupling_graph.origins = working_graph;
-
-        // goal_parents is a map from a goal to (...).coupling_graph.origins.get_parent([g.clone()].into()),
-        // if branch:
-        //     // fixme: look for origins that
-        //     //    - meet the goal
-        //     //    - are the same in both
-        //     //    - are the _only_ edge that meets the goal
-
-        // else branch
-
-        //         // No match.
-        //         // Create a partition of (input/ouput)
-        //         println!("no match\ngoals: {:?}", goal_parents);
-
-        //         // goals_preimage: map from goal to a set of resources that we can expire to get it back
-        //         let mut goals_preimage: BTreeMap<Capability<'tcx>, BTreeSet<Capability<'tcx>>> =
-        //             BTreeMap::default();
-
-        //         for (_, (vs, vo)) in goal_parents.iter() {
-        //             for goal in vs.1.iter() {
-        //                 let pre_entry = goals_preimage.entry(goal.clone()).or_default();
-        //                 for consume in vs.2.iter() {
-        //                     pre_entry.insert(consume.clone());
-        //                 }
-        //             }
-        //             for goal in vo.1.iter() {
-        //                 let pre_entry = goals_preimage.entry(goal.clone()).or_default();
-        //                 for consume in vo.2.iter() {
-        //                     pre_entry.insert(consume.clone());
-        //                 }
-        //             }
-        //         }
-
-        //         println!("pre {:?}", goals_preimage);
-
-        //         // Pick one to couple.
-        //         let coupled_leaves = goals_preimage.pop_first().unwrap().1;
-
-        //         println!("consume {:?}", coupled_leaves);
-
-        //         // fixme: here, we should check to see if it's already a coupled edge.
-
-        //         // collect all edges and goals that this consumption gives us back
-        //         let mut expires_from_self = Vec::default();
-        //         let mut expires_from_other = Vec::default();
-        //         let mut coupled_root_self = BTreeSet::default();
-        //         let mut coupled_root_other = BTreeSet::default();
-        //         for (_, ((vs_origins, vs_goals, vs_leaves), (vo_origins, vo_goals, vo_leaves))) in
-        //             goal_parents.iter_mut()
-        //         {
-        //             if vs_leaves.is_subset(&coupled_leaves) {
-        //                 vs_origins.reverse();
-        //                 for v in vs_origins.iter() {
-        //                   if !expires_from_self.contains(v) {
-        //                     expires_from_self.push(v.clone());
-        //                   }
-        //                 }
-        //                 for rs in vs_goals.iter() {
-        //                     coupled_root_self.insert(rs.clone());
-        //                 }
-        //             }
-        //             if vo_leaves.is_subset(&coupled_leaves) {
-        //                 vo_origins.reverse();
-        //                 for v in vo_origins.iter() {
-        //                   if !expires_from_other.contains(v) {
-        //                     expires_from_other.push(v.clone());
-        //                   }
-        //                 }
-        //                 for rs in vo_goals.iter() {
-        //                     coupled_root_other.insert(rs.clone());
-        //                 }
-        //             }
-        //         }
-
-        //         // assert!(coupled_root_self == coupled_root_other);
-
-        //         println!("coupling:");
-        //         println!("{:?} ", coupled_leaves);
-        //         println!("{:?} // {:?}", expires_from_self, expires_from_other);
-        //         println!("{:?} // {:?}", coupled_root_self, coupled_root_other);
-
-        //         // insert the edge into the new graph
-        //         // - what edges is it above?
-        //         let mut above_origins = BTreeSet::new();
-        //         for g in coupled_root_self.iter() {
-        //             match working_graph
-        //                 .map
-        //                 .iter()
-        //                 .filter(|s| s.1.leaves.contains(g))
-        //                 .collect::<Vec<_>>()[..]
-        //             {
-        //                 [] => unreachable!("coupled edges must always be above another edge"),
-        //                 [g_origin] => above_origins.insert(g_origin.0.clone()),
-        //                 _ => {
-        //                     unimplemented!("unsure how to model ambiguous blocks. revisit me. ")
-        //                 }
-        //             };
-        //         }
-        //         println!("above origins {:?}", above_origins);
-
-        //         // - which origins get a coupled edge? This should be recorded from earlier but I recalculate here.
-        //         let origins_that_get_a_copy = expires_from_self
-        //             .iter()
-        //             .cloned()
-        //             .filter(|x| !x.is_tagged())
-        //             .collect::<BTreeSet<_>>();
-        //         assert!(
-        //             origins_that_get_a_copy
-        //                 == expires_from_other
-        //                     .iter()
-        //                     .cloned()
-        //                     .filter(|x| !x.is_tagged())
-        //                     .collect::<BTreeSet<_>>()
-        //         );
-
-        //         // Add the current LHS to the origins_that_get_a_copy list.
-        //         // This should be done earlier.
-        //         let origins_that_get_a_copy = origins_that_get_a_copy
-        //             .into_iter()
-        //             .map(|o| {
-        //                 (
-        //                     o.clone(),
-        //                     self.coupling_graph
-        //                         .origins
-        //                         .map
-        //                         .get(&o)
-        //                         .unwrap()
-        //                         .leaves
-        //                         .clone(),
-        //                 )
-        //             })
-        //             .collect::<BTreeSet<_>>();
-        //         println!("origins that get a copy: {:?}", origins_that_get_a_copy);
-
-        //         // - which edges to expire under which bb?
-        //         // - which bb are we coming from?
-        //         //    - add latest_bb to the state
-        //         let ((from_s, to_s), (from_o, to_o)) = match (self.loc.clone(), other.loc.clone()) {
-        //             (StateLocation::Joining(x, y), StateLocation::Joining(w, z)) => {
-        //                 ((x, y), (w, z))
-        //             }
-        //             // To implement this, I need to reimplement join to be associative. IE, for coupled edges
-        //             // to get coupled again. It also should be commutative, to ensure we terminate.
-        //             (x, y) => unimplemented!("unimplemented join kind: {:?}", (x, y)),
-        //         };
-        //         println!("from {:?}", (from_s, from_o));
-        //         println!("to {:?}", (to_s, to_o));
-        //         assert!(to_s == to_o);
-
-        //         //  - Issue commands to expire these coupled edges.
-        //         //  "at the join (bb1, bb2), to create the coupled borrow with roots {...},  if coming from bb1, use annotations from the following origins in order: [...]"
-        //         self.coupling_commands
-        //             .insert((to_s, from_s, coupled_root_self.clone()), expires_from_self);
-        //         self.coupling_commands.insert(
-        //             (to_s, from_o, coupled_root_self.clone()),
-        //             expires_from_other,
-        //         );
-
-        //         // Add the edges to the new graph
-        //         for (o, lhs) in origins_that_get_a_copy.into_iter() {
-        //             println!("inserting into {:?}", o);
-        //             let sig = OriginSignature {
-        //                 leaves: lhs,
-        //                 roots: coupled_root_self.clone(),
-        //                 kind: SignatureKind::Coupled(
-        //                     to_s,
-        //                     [from_s, from_o].into(),
-        //                     above_origins.clone(),
-        //                 ),
-        //             };
-        //             working_graph.map.insert(o.clone(), sig);
-        //         }
-        //         println!("done inserting, graph is\n{:#?}", working_graph);
-
-        //         // Update the set of goals
-        //         for g in coupled_root_self.iter() {
-        //             goals.remove(g);
-        //         }
-        //         for g in coupled_leaves.iter() {
-        //             goals.insert(g.clone());
-        //         }
-        //     }
-        // }
-        // println!("final graph:\n{:?}", working_graph);
-
-        // self.coupling_graph.origins = working_graph;
     }
 
     fn widen(&mut self, _: &Self) {
         unreachable!("widening is not possible in this model")
+    }
+}
+
+fn repack_leaves_to_cohere<'facts, 'mir, 'tcx>(
+    states_to_join: &mut Vec<CouplingState<'facts, 'mir, 'tcx>>,
+) -> BTreeSet<Capability<'tcx>>
+where
+    'tcx: 'mir,
+    'mir: 'facts,
+{
+    // Repack and kill the LHS to be coherent b
+    let reference_packing_state = states_to_join[0].coupling_graph.origins.get_live_lhs();
+    let reference_packing_leaves = states_to_join[0].coupling_graph.origins.get_leaves();
+    assert!(
+        states_to_join
+            .iter()
+            .all(|st| st.coupling_graph.origins.get_live_lhs() == reference_packing_state),
+        "unimplemented: correctly killing LHS at join points"
+    );
+    assert!(
+        states_to_join
+            .iter()
+            .all(|st| st.coupling_graph.origins.get_leaves() == reference_packing_leaves),
+        "unimplemented: correctly repacking LHS's at join points"
+    );
+    reference_packing_leaves
+}
+
+struct CGGensym {
+    counter: usize,
+}
+
+impl CGGensym {
+    fn new() -> Self {
+        Self { counter: 0 }
+    }
+
+    fn gensym(&mut self) -> usize {
+        let r = self.counter;
+        self.counter += 1;
+        return r;
     }
 }
