@@ -10,12 +10,10 @@ use crate::encoder::Encoder;
 use crate::encoder::snapshot::interface::SnapshotEncoderInterface;
 use vir_crate::polymorphic as vir;
 use prusti_rustc_interface::hir::def_id::DefId;
-use prusti_rustc_interface::middle::ty::subst::SubstsRef;
+use prusti_rustc_interface::middle::ty::GenericArgsRef;
 use prusti_rustc_interface::middle::mir;
-use log::{trace, debug};
-
+use log::debug;
 use crate::encoder::errors::WithSpan;
-
 use crate::encoder::errors::SpannedEncodingResult;
 
 pub struct StubFunctionEncoder<'p, 'v: 'p, 'tcx: 'v> {
@@ -23,17 +21,17 @@ pub struct StubFunctionEncoder<'p, 'v: 'p, 'tcx: 'v> {
     mir: &'p mir::Body<'tcx>,
     mir_encoder: MirEncoder<'p, 'v, 'tcx>,
     proc_def_id: DefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 }
 
 impl<'p, 'v: 'p, 'tcx: 'v> StubFunctionEncoder<'p, 'v, 'tcx> {
+    #[tracing::instrument(name = "StubFunctionEncoder::new", level = "trace", skip(encoder, mir))]
     pub fn new(
         encoder: &'p Encoder<'v, 'tcx>,
         proc_def_id: DefId,
         mir: &'p mir::Body<'tcx>,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> Self {
-        trace!("StubFunctionEncoder constructor: {:?}", proc_def_id);
         StubFunctionEncoder {
             encoder,
             mir,
@@ -43,6 +41,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> StubFunctionEncoder<'p, 'v, 'tcx> {
         }
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn encode_function(&self) -> SpannedEncodingResult<vir::Function> {
         let function_name = self.encode_function_name();
         debug!("Encode stub function {}", function_name);
@@ -85,7 +84,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> StubFunctionEncoder<'p, 'v, 'tcx> {
     pub fn encode_function_name(&self) -> String {
         // TODO: It would be nice to somehow mark that this function is a stub
         // in the encoding.
-        self.encoder.encode_item_name(self.proc_def_id)
+        self.encoder.encode_pure_item_name(self.proc_def_id)
     }
 
     pub fn encode_function_return_type(&self) -> SpannedEncodingResult<vir::Type> {

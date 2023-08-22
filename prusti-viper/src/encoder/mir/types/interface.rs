@@ -2,9 +2,10 @@ use super::TypeEncoder;
 use crate::encoder::{
     errors::{EncodingError, EncodingResult, SpannedEncodingError, SpannedEncodingResult},
     high::types::HighTypeEncoderInterface,
-    mir::types::interface::ty::SubstsRef,
+    mir::types::interface::ty::GenericArgsRef,
 };
 use prusti_rustc_interface::{
+    abi::FieldIdx,
     errors::MultiSpan,
     middle::{mir, ty},
     span::Span,
@@ -33,18 +34,26 @@ pub(crate) trait MirTypeEncoderInterface<'tcx> {
     fn encode_field(
         &self,
         ty: &vir_high::Type,
-        index: mir::Field,
+        index: FieldIdx,
         use_span: Option<Span>,
         declaration_span: Span,
     ) -> SpannedEncodingResult<vir_high::FieldDecl>;
     fn encode_value_field_high(&self, ty: ty::Ty<'tcx>) -> EncodingResult<vir_high::FieldDecl>;
+    fn get_lifetimes_from_types(
+        &self,
+        types: impl IntoIterator<Item = ty::Ty<'tcx>>,
+    ) -> SpannedEncodingResult<Vec<vir_high::ty::LifetimeConst>>;
     fn get_lifetimes_from_substs(
         &self,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<Vec<vir_high::ty::LifetimeConst>>;
     fn get_const_parameters_from_substs(
         &self,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
+    ) -> SpannedEncodingResult<Vec<vir_high::VariableDecl>>;
+    fn get_const_parameters_from_types(
+        &self,
+        types: impl IntoIterator<Item = ty::Ty<'tcx>>,
     ) -> SpannedEncodingResult<Vec<vir_high::VariableDecl>>;
     fn get_lifetimes_from_type_high(
         &self,
@@ -80,7 +89,7 @@ pub(crate) trait MirTypeEncoderInterface<'tcx> {
     fn encode_adt_def(
         &self,
         adt_def: ty::AdtDef<'tcx>,
-        substs: ty::subst::SubstsRef<'tcx>,
+        substs: ty::GenericArgsRef<'tcx>,
         variant_index: Option<prusti_rustc_interface::target::abi::VariantIdx>,
     ) -> SpannedEncodingResult<vir_high::TypeDecl>;
     fn encode_type_bounds_high(
@@ -109,7 +118,7 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
     }
     /// Creates a field that corresponds to the enum variant ``index``.
     fn encode_enum_variant_field(&self, index: &str) -> vir::Field {
-        let name = format!("enum_{}", index);
+        let name = format!("enum_{index}");
         vir::Field::new(name, vir::Type::typed_ref(""))
     }
     fn encode_discriminant_field(&self) -> vir::Field {
@@ -119,7 +128,7 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
     fn encode_field(
         &self,
         ty: &vir_high::Type,
-        field: mir::Field,
+        field: FieldIdx,
         use_span: Option<Span>,
         declaration_span: Span,
     ) -> SpannedEncodingResult<vir_high::FieldDecl> {
@@ -161,7 +170,7 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
             }
             _ => {
                 return Err(SpannedEncodingError::internal(
-                    format!("{} has no fields", type_decl,),
+                    format!("{type_decl} has no fields",),
                     primary_span,
                 ));
             }
@@ -176,20 +185,40 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
     }
     fn get_lifetimes_from_substs(
         &self,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<Vec<vir_high::ty::LifetimeConst>> {
         let mut lifetimes = Vec::new();
         super::lifetimes::extract_lifetimes_from_substs(self, substs, &mut lifetimes)?;
         Ok(lifetimes)
     }
+    fn get_lifetimes_from_types(
+        &self,
+        types: impl IntoIterator<Item = ty::Ty<'tcx>>,
+    ) -> SpannedEncodingResult<Vec<vir_high::ty::LifetimeConst>> {
+        let mut lifetimes = Vec::new();
+        super::lifetimes::extract_lifetimes_from_types(self, types, &mut lifetimes)?;
+        Ok(lifetimes)
+    }
     fn get_const_parameters_from_substs(
         &self,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<Vec<vir_high::VariableDecl>> {
         let mut const_parameters = Vec::new();
         super::const_parameters::extract_const_parameters_from_substs(
             self,
             substs,
+            &mut const_parameters,
+        )?;
+        Ok(const_parameters)
+    }
+    fn get_const_parameters_from_types(
+        &self,
+        types: impl IntoIterator<Item = ty::Ty<'tcx>>,
+    ) -> SpannedEncodingResult<Vec<vir_high::VariableDecl>> {
+        let mut const_parameters = Vec::new();
+        super::const_parameters::extract_const_parameters_from_types(
+            self,
+            types,
             &mut const_parameters,
         )?;
         Ok(const_parameters)
@@ -287,7 +316,7 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
             let name = variant.ident(self.env().tcx()).to_string();
             Ok(name.into())
         } else {
-            Err(EncodingError::internal(format!("{:?} is not an enum", ty)))
+            Err(EncodingError::internal(format!("{ty:?} is not an enum")))
         }
     }
     fn decode_type_high(&self, ty: &vir_high::Type) -> ty::Ty<'tcx> {
@@ -298,18 +327,22 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
         } else if ty == &vir_high::Type::Bool {
             // Bools may be generated by our encoding without having them in the
             // original program.
-            self.env().tcx().mk_ty(ty::TyKind::Bool)
+            self.env().tcx().mk_ty_from_kind(ty::TyKind::Bool)
         } else if ty == &vir_high::Type::Int(vir_high::ty::Int::Usize) {
             // Usizes may be generated by our encoding without having them in
             // the original program.
-            self.env().tcx().mk_ty(ty::TyKind::Uint(ty::UintTy::Usize))
+            self.env()
+                .tcx()
+                .mk_ty_from_kind(ty::TyKind::Uint(ty::UintTy::Usize))
         } else if let vir_high::Type::Pointer(pointer) = ty {
             // We use pointer types for modelling addresses of references.
             let target_type = self.decode_type_high(&pointer.target_type);
-            self.env().tcx().mk_ty(ty::TyKind::RawPtr(ty::TypeAndMut {
-                ty: target_type,
-                mutbl: mir::Mutability::Mut,
-            }))
+            self.env()
+                .tcx()
+                .mk_ty_from_kind(ty::TyKind::RawPtr(ty::TypeAndMut {
+                    ty: target_type,
+                    mutbl: mir::Mutability::Mut,
+                }))
         } else if let Some(ty) = self
             .mir_type_encoder_state
             .encoded_types_inverse
@@ -399,7 +432,7 @@ impl<'v, 'tcx: 'v> MirTypeEncoderInterface<'tcx> for super::super::super::Encode
     fn encode_adt_def(
         &self,
         adt_def: ty::AdtDef<'tcx>,
-        substs: ty::subst::SubstsRef<'tcx>,
+        substs: ty::GenericArgsRef<'tcx>,
         variant_index: Option<prusti_rustc_interface::target::abi::VariantIdx>,
     ) -> SpannedEncodingResult<vir_high::TypeDecl> {
         super::encoder::encode_adt_def(self, adt_def, substs, variant_index)

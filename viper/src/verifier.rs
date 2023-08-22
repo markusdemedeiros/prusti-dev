@@ -20,8 +20,8 @@ use viper_sys::wrappers::{scala, viper::*};
 
 pub struct Verifier<'a> {
     env: &'a JNIEnv<'a>,
-    verifier_wrapper: silver::verifier::Verifier<'a>,
-    verifier_instance: JObject<'a>,
+    frontend_wrapper: silver::frontend::ViperFrontendAPI<'a>,
+    frontend_instance: JObject<'a>,
     jni: JniUtils<'a>,
     ast_utils: AstUtils<'a>,
     smt_manager: SmtManager,
@@ -36,8 +36,9 @@ impl<'a> Verifier<'a> {
     ) -> Self {
         let jni = JniUtils::new(env);
         let ast_utils = AstUtils::new(env);
-        let verifier_wrapper = silver::verifier::Verifier::with(env);
-        let verifier_instance = jni.unwrap_result(env.with_local_frame(16, || {
+        let frontend_wrapper = silver::frontend::ViperFrontendAPI::with(env);
+
+        let frontend_instance = jni.unwrap_result(env.with_local_frame(16, || {
             let reporter = if let Some(real_report_path) = report_path {
                 jni.unwrap_result(silver::reporter::CSVReporter::with(env).new(
                     jni.new_string("csv_reporter"),
@@ -47,30 +48,25 @@ impl<'a> Verifier<'a> {
                 jni.unwrap_result(silver::reporter::NoopReporter_object::with(env).singleton())
             };
 
-            let debug_info = jni.new_seq(&[]);
-            match backend {
-                VerificationBackend::Silicon => {
-                    silicon::Silicon::with(env).new(reporter, debug_info)
+            let unwrapped_frontend_instance = {
+                match backend {
+                    VerificationBackend::Silicon => {
+                        silicon::SiliconFrontendAPI::with(env).new(reporter)
+                    }
+                    VerificationBackend::Carbon => {
+                        carbon::CarbonFrontendAPI::with(env).new(reporter)
+                    }
                 }
-                VerificationBackend::Carbon => {
-                    carbon::CarbonVerifier::with(env).new(reporter, debug_info)
-                }
-            }
-        }));
+            };
+            let frontend_instance = jni.unwrap_result(unwrapped_frontend_instance);
 
-        ast_utils.with_local_frame(16, || {
-            let name =
-                jni.to_string(jni.unwrap_result(verifier_wrapper.call_name(verifier_instance)));
-            let build_version = jni.to_string(
-                jni.unwrap_result(verifier_wrapper.call_buildVersion(verifier_instance)),
-            );
-            info!("Using backend {} version {}", name, build_version);
-        });
+            Ok(frontend_instance)
+        }));
 
         Verifier {
             env,
-            verifier_wrapper,
-            verifier_instance,
+            frontend_wrapper,
+            frontend_instance,
             jni,
             ast_utils,
             smt_manager,
@@ -78,7 +74,8 @@ impl<'a> Verifier<'a> {
     }
 
     #[must_use]
-    pub fn parse_command_line(self, args: &[String]) -> Self {
+    #[tracing::instrument(level = "debug", skip_all)]
+    pub fn initialize(self, args: &[String]) -> Self {
         self.ast_utils.with_local_frame(16, || {
             let args = self.jni.new_seq(
                 &args
@@ -87,24 +84,31 @@ impl<'a> Verifier<'a> {
                     .collect::<Vec<JObject>>(),
             );
             self.jni.unwrap_result(
-                self.verifier_wrapper
-                    .call_parseCommandLine(self.verifier_instance, args),
+                self.frontend_wrapper
+                    .call_initialize(self.frontend_instance, args),
             );
+            let verifier_wrapper = silver::verifier::Verifier::with(self.env);
+            let verifier_instance = self
+                .jni
+                .unwrap_result(self.frontend_wrapper.call_verifier(self.frontend_instance));
+
+            let name = self.jni.to_string(
+                self.jni
+                    .unwrap_result(verifier_wrapper.call_name(verifier_instance)),
+            );
+            let build_version = self.jni.to_string(
+                self.jni
+                    .unwrap_result(verifier_wrapper.call_buildVersion(verifier_instance)),
+            );
+            info!("Using backend {} version {}", name, build_version);
         });
         self
     }
 
-    #[must_use]
-    pub fn start(self) -> Self {
-        self.ast_utils.with_local_frame(16, || {
-            self.jni
-                .unwrap_result(self.verifier_wrapper.call_start(self.verifier_instance));
-        });
-        self
-    }
-
+    #[tracing::instrument(name = "viper::verify", level = "debug", skip_all)]
     pub fn verify(&mut self, program: Program) -> VerificationResult {
-        self.ast_utils.with_local_frame(16, || {
+        let ast_utils = self.ast_utils;
+        ast_utils.with_local_frame(16, || {
             debug!(
                 "Program to be verified:\n{}",
                 self.ast_utils.pretty_print(program)
@@ -133,10 +137,7 @@ impl<'a> Verifier<'a> {
             }
 
             run_timed!("Viper verification", debug,
-                let viper_result = self.jni.unwrap_result(
-                    self.verifier_wrapper
-                        .call_verify(self.verifier_instance, program.to_jobject()),
-                );
+                let viper_result = self.jni.unwrap_result(self.frontend_wrapper.call_verify(self.frontend_instance, program.to_jobject()));
             );
             debug!(
                 "Viper verification result: {}",
@@ -339,10 +340,10 @@ impl<'a> Drop for Verifier<'a> {
     fn drop(&mut self) {
         // Tell the verifier to stop its threads.
         self.jni
-            .unwrap_result(self.verifier_wrapper.call_stop(self.verifier_instance));
+            .unwrap_result(self.frontend_wrapper.call_stop(self.frontend_instance));
         // Delete the local reference to the verifier in the JVM
         // so that the JVM garbage collector can clean it up.
         self.jni
-            .unwrap_result(self.env.delete_local_ref(self.verifier_instance));
+            .unwrap_result(self.env.delete_local_ref(self.frontend_instance));
     }
 }

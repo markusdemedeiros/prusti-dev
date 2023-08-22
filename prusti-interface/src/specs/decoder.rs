@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use prusti_rustc_interface::{
     hir::def_id::{CrateNum, DefId, DefIndex, DefPathHash},
     middle::{
@@ -14,14 +16,18 @@ pub struct DefSpecsDecoder<'a, 'tcx> {
     opaque: opaque::MemDecoder<'a>,
     tcx: TyCtxt<'tcx>,
     ty_rcache: FxHashMap<usize, Ty<'tcx>>,
+    specs_file: PathBuf,
+    crate_name: String,
 }
 
 impl<'a, 'tcx> DefSpecsDecoder<'a, 'tcx> {
-    pub fn new(tcx: TyCtxt<'tcx>, data: &'a [u8]) -> Self {
+    pub fn new(tcx: TyCtxt<'tcx>, data: &'a [u8], specs_file: PathBuf, crate_name: &str) -> Self {
         DefSpecsDecoder {
             opaque: opaque::MemDecoder::new(data, 0),
             tcx,
             ty_rcache: Default::default(),
+            specs_file,
+            crate_name: crate_name.to_string(),
         }
     }
 
@@ -32,7 +38,15 @@ impl<'a, 'tcx> DefSpecsDecoder<'a, 'tcx> {
             cstore.stable_crate_id_to_crate_num(hash.stable_crate_id())
         });
         if result.is_err() {
-            panic!("A compiled dependency is out of sync. Try deleting the target folder (`cargo clean`).")
+            // The way to fix this in Prusti is to somehow regenerate the `.specs`
+            // file whenever the DefPathHash might change (e.g. different args)
+            let (specs_file, crate_name) = (&self.specs_file, &self.crate_name);
+            let target_dir = specs_file.parent().unwrap();
+            panic!(
+                "A compiled dependency (referenced from `{specs_file:?}`) is out of sync. \
+            Running `cargo clean -p {crate_name}` and rebuilding should fix this. \
+            Otherwise try deleting the entire `{target_dir:?}` directory."
+            )
         }
         // Get `DefId`
         self.tcx.def_path_hash_to_def_id(hash, &mut || {
@@ -96,16 +110,6 @@ impl<'a, 'tcx> TyDecoder for DefSpecsDecoder<'a, 'tcx> {
         self.tcx
     }
 
-    #[inline]
-    fn peek_byte(&self) -> u8 {
-        self.opaque.data[self.opaque.position()]
-    }
-
-    #[inline]
-    fn position(&self) -> usize {
-        self.opaque.position()
-    }
-
     fn cached_ty_for_shorthand<F>(&mut self, shorthand: usize, or_insert_with: F) -> Ty<'tcx>
     where
         F: FnOnce(&mut Self) -> Ty<'tcx>,
@@ -123,7 +127,7 @@ impl<'a, 'tcx> TyDecoder for DefSpecsDecoder<'a, 'tcx> {
     where
         F: FnOnce(&mut Self) -> R,
     {
-        let new_opaque = opaque::MemDecoder::new(self.opaque.data, pos);
+        let new_opaque = opaque::MemDecoder::new(self.opaque.data(), pos);
         let old_opaque = std::mem::replace(&mut self.opaque, new_opaque);
         let r = f(self);
         self.opaque = old_opaque;

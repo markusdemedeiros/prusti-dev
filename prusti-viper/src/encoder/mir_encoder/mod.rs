@@ -4,20 +4,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use std::fmt::Debug;
+
 use crate::encoder::errors::{
     ErrorCtxt, PanicCause, SpannedEncodingError, EncodingError, WithSpan,
     SpannedEncodingResult, EncodingResult
 };
 use crate::encoder::Encoder;
 use crate::encoder::snapshot::interface::SnapshotEncoderInterface;
-use crate::utils;
+use crate::{utils, error_internal, error_unsupported};
 use prusti_common::vir_expr;
 use vir_crate::{polymorphic as vir};
 use prusti_common::config;
 use prusti_rustc_interface::target::abi;
 use prusti_rustc_interface::hir::def_id::DefId;
 use prusti_rustc_interface::middle::{mir, ty};
-use prusti_rustc_interface::index::vec::IndexVec;
+use prusti_rustc_interface::index::IndexVec;
 use prusti_rustc_interface::span::{Span, DUMMY_SP};
 use log::{trace, debug};
 use prusti_interface::environment::mir_utils::MirPlace;
@@ -45,7 +47,7 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
     fn get_local_span(&self, local: mir::Local) -> Span;
 
     fn encode_local_var_name(&self, local: mir::Local) -> String {
-        format!("{:?}", local)
+        format!("{local:?}")
     }
 
     fn encode_local_high(&self, local: mir::Local) -> SpannedEncodingResult<vir_crate::high::VariableDecl> {
@@ -70,11 +72,11 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
     /// - `PlaceEncoding`: the result of the projection;
     /// - `ty::Ty<'tcx>`: the type of the expression;
     /// - `Option<usize>`: optionally, the variant of the enum.
+    #[tracing::instrument(level = "trace", skip(self))]
     fn encode_place(
         &self,
         place: mir::Place<'tcx>,
     ) -> EncodingResult<(PlaceEncoding<'tcx>, ty::Ty<'tcx>, Option<usize>)> {
-        trace!("Encode place {:?}", place);
         self.encode_projection(place.local, place.projection)
     }
 
@@ -82,13 +84,12 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
     /// - `PlaceEncoding`: the result of the projection;
     /// - `ty::Ty<'tcx>`: the type of the place;
     /// - `Option<usize>`: optionally, the variant of the enum.
+    #[tracing::instrument(level = "trace", skip(self))]
     fn encode_projection(
         &self,
         local: mir::Local,
         projection: &[mir::PlaceElem<'tcx>],
     ) -> EncodingResult<(PlaceEncoding<'tcx>, ty::Ty<'tcx>, Option<usize>)> {
-        trace!("Encode projection {:?}, {:?}", local, projection);
-
         if projection.is_empty() {
             return Ok((
                 PlaceEncoding::Expr(self.encode_local(local)?.into()),
@@ -124,15 +125,13 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                             num
                         } else {
                             if num_variants != 1 {
-                                return Err(EncodingError::internal(
-                                    format!(
-                                        "tried to encode a projection that accesses the field {} \
-                                        of a variant without first downcasting its enumeration \
-                                        {:?}",
-                                        field.index(),
-                                        base_ty,
-                                    )
-                                ));
+                                error_internal!(
+                                    "tried to encode a projection that accesses the field {} \
+                                    of a variant without first downcasting its enumeration \
+                                    {:?}",
+                                    field.index(),
+                                    base_ty,
+                                );
                             }
                             0
                         };
@@ -143,12 +142,10 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                         } else {
                             encoded_base
                         };
-                        let field = &variant_def.fields[field.index()];
+                        let field = &variant_def.fields[*field];
                         let field_ty = *proj_field_ty;
                         if utils::is_reference(field_ty) {
-                            return Err(EncodingError::unsupported(
-                                "access to reference-typed fields is not supported",
-                            ));
+                            error_unsupported!("access to reference-typed fields is not supported");
                         }
                         let encoded_field = self
                             .encoder()
@@ -177,13 +174,11 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                     }
 
                     ty::TyKind::Generator(..) => {
-                        return Err(EncodingError::unsupported("generator fields are not supported"));
+                        error_unsupported!("generator fields are not supported");
                     }
 
                     x => {
-                        return Err(EncodingError::internal(
-                            format!("{} has no fields", utils::ty_to_string(x))
-                        ));
+                        error_internal!("{} has no fields", utils::ty_to_string(x));
                     }
                 }
             }
@@ -194,9 +189,9 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                         let (e, ty, v) = self.encode_deref(e, base_ty)?;
                         (PlaceEncoding::Expr(e), ty, v)
                     }
-                    Err(_) => return Err(EncodingError::unsupported(
+                    Err(_) => error_unsupported!(
                         "mixed dereferencing and array indexing projections are not supported"
-                    )),
+                    ),
                 }
             }
 
@@ -239,9 +234,9 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                                 );
                                 vir_expr! { [ slice_len ] - [ vir::Expr::from(offset) ] }
                             }
-                            _ => return Err(EncodingError::unsupported(
-                                format!("pattern matching on the end of '{:?} is not supported", base_ty),
-                            ))
+                            _ => error_unsupported!(
+                                "pattern matching on the end of '{:?} is not supported", base_ty,
+                            )
                         }
                     }
                     _ => unreachable!(),
@@ -250,7 +245,7 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                     ty::TyKind::Array(elem_ty, _) => {
                         (
                             PlaceEncoding::ArrayAccess {
-                                base: box encoded_base,
+                                base: Box::new(encoded_base),
                                 index,
                                 encoded_elem_ty: self.encoder().encode_type(*elem_ty)?,
                                 rust_array_ty: base_ty,
@@ -262,7 +257,7 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                     ty::TyKind::Slice(elem_ty) => {
                         (
                             PlaceEncoding::SliceAccess {
-                                base: box encoded_base,
+                                base: Box::new(encoded_base),
                                 index,
                                 encoded_elem_ty: self.encoder().encode_type(*elem_ty)?,
                                 rust_slice_ty: base_ty,
@@ -271,25 +266,22 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                             None,
                         )
                     },
-                    _ => return Err(EncodingError::unsupported(
-                        format!("index on unsupported type '{:?}'", base_ty)
-                    )),
+                    _ => error_unsupported!("index on unsupported type '{:?}'", base_ty),
                 }
             }
 
-            mir::ProjectionElem::Subslice { .. } => return Err(EncodingError::unsupported(
+            mir::ProjectionElem::Subslice { .. } => error_unsupported!(
                 "slice patterns are not supported",
-            )),
+            ),
         })
     }
 
+    #[tracing::instrument(level = "trace", skip_all, fields(encoded_base = %encoded_base, base_ty = %base_ty))]
     fn encode_deref(
         &self,
         encoded_base: vir::Expr,
         base_ty: ty::Ty<'tcx>,
     ) -> EncodingResult<(vir::Expr, ty::Ty<'tcx>, Option<usize>)> {
-        trace!("encode_deref {} {}", encoded_base, base_ty);
-
         Ok(match base_ty.kind() {
             ty::TyKind::RawPtr(ty::TypeAndMut { ty, .. })
             | ty::TyKind::Ref(_, ty, _) => {
@@ -315,15 +307,13 @@ pub trait PlaceEncoder<'v, 'tcx: 'v> {
                 (access, base_ty.boxed_ty(), None)
             }
             ref x => {
-                return Err(EncodingError::internal(
-                    format!("Type {:?} can not be dereferenced", x)
-                ));
+                error_internal!("Type {:?} can not be dereferenced", x);
             }
         })
     }
 
+    #[tracing::instrument(level = "trace", skip_all, fields(base_ty = %base_ty))]
     fn can_be_dereferenced(&self, base_ty: ty::Ty<'tcx>) -> bool {
-        trace!("can_be_dereferenced {}", base_ty);
         match base_ty.kind() {
             ty::TyKind::RawPtr(..) | ty::TyKind::Ref(..) => true,
 
@@ -344,12 +334,12 @@ pub struct FakeMirEncoder<'p, 'v: 'p, 'tcx: 'v> {
 }
 
 impl<'p, 'v: 'p, 'tcx: 'v> FakeMirEncoder<'p, 'v, 'tcx> {
+    #[tracing::instrument(name = "FakeMirEncoder::new", level = "trace", skip_all)]
     pub fn new(
         encoder: &'p Encoder<'v, 'tcx>,
         arg_tys: Vec<ty::Ty<'tcx>>,
         return_ty: ty::Ty<'tcx>,
     ) -> Self {
-        trace!("FakeMirEncoder constructor");
         let mut tys: IndexVec<mir::Local, ty::Ty<'tcx>> = IndexVec::new();
         tys.push(return_ty);
         for arg_ty in arg_tys {
@@ -401,12 +391,12 @@ impl<'p, 'v: 'p, 'tcx: 'v> PlaceEncoder<'v, 'tcx> for MirEncoder<'p, 'v, 'tcx> {
 }
 
 impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
+    #[tracing::instrument(name = "MirEncoder::new", level = "trace", skip_all)]
     pub fn new(
         encoder: &'p Encoder<'v, 'tcx>,
         mir: &'p mir::Body<'tcx>,
         def_id: DefId,
     ) -> Self {
-        trace!("MirEncoder constructor");
         MirEncoder {
             encoder,
             mir,
@@ -415,11 +405,11 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
     }
 
     /// Returns an `vir::Expr` that corresponds to the value of the operand
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn encode_operand_expr(
         &self,
         operand: &mir::Operand<'tcx>,
     ) -> EncodingResult<vir::Expr> {
-        trace!("Encode operand expr {:?}", operand);
         Ok(match operand {
             mir::Operand::Constant(expr) => self.encoder.encode_const_expr(expr.ty(), expr.literal)?,
             &mir::Operand::Copy(place) | &mir::Operand::Move(place) => {
@@ -460,8 +450,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
         })
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn get_operand_ty(&self, operand: &mir::Operand<'tcx>) -> ty::Ty<'tcx> {
-        debug!("Get operand ty {:?}", operand);
         // match operand {
         //     &mir::Operand::Move(ref place) | &mir::Operand::Copy(ref place) => {
         //         let (_, ty, _) = self.encode_place(place);
@@ -473,10 +463,10 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
     }
 
     /// Returns an `vir::Type` that corresponds to the type of the value of the operand
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn encode_operand_expr_type(&self, operand: &mir::Operand<'tcx>)
         -> EncodingResult<vir::Type>
     {
-        trace!("Encode operand expr {:?}", operand);
         // match operand {
         //     &mir::Operand::Constant(box mir::Constant { ty, .. }) => {
         //         let ty = self.encoder.resolve_typaram(ty);
@@ -510,40 +500,39 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
             mir::BinOp::Ge => vir::Expr::ge_cmp(left, right),
             mir::BinOp::Lt => vir::Expr::lt_cmp(left, right),
             mir::BinOp::Le => vir::Expr::le_cmp(left, right),
-            mir::BinOp::Add => vir::Expr::add(left, right),
-            mir::BinOp::Sub => vir::Expr::sub(left, right),
+            mir::BinOp::AddUnchecked | mir::BinOp::Add => vir::Expr::add(left, right),
+            mir::BinOp::SubUnchecked | mir::BinOp::Sub => vir::Expr::sub(left, right),
             mir::BinOp::Rem => vir::Expr::rem(left, right),
             mir::BinOp::Div => vir::Expr::div(left, right),
-            mir::BinOp::Mul => vir::Expr::mul(left, right),
+            mir::BinOp::MulUnchecked | mir::BinOp::Mul => vir::Expr::mul(left, right),
             mir::BinOp::BitAnd if is_bool => vir::Expr::and(left, right),
             mir::BinOp::BitOr if is_bool => vir::Expr::or(left, right),
             mir::BinOp::BitXor if is_bool => vir::Expr::xor(left, right),
             mir::BinOp::BitAnd |
             mir::BinOp::BitOr |
             mir::BinOp::BitXor if !config::encode_bitvectors() => {
-                return Err(EncodingError::unsupported(
-                    "bitwise operations on non-boolean types are experimental and disabled by default; use `encode_bitvectors` to enable"
-                ))
+                error_unsupported!(
+                    "bitwise operations on non-boolean types are experimental and disabled by \
+                    default; use `encode_bitvectors` to enable"
+                );
             }
             unsupported_op if !config::encode_bitvectors() => {
-                return Err(EncodingError::unsupported(format!(
-                    "support for operation '{:?}' is experimental and disabled by default; use `encode_bitvectors` to enable",
+                error_unsupported!(
+                    "support for operation '{:?}' is experimental and disabled by default; use \
+                    `encode_bitvectors` to enable it",
                     unsupported_op
-                )))
+                );
             }
             mir::BinOp::BitAnd => vir::Expr::bin_op(vir::BinaryOpKind::BitAnd, left, right),
             mir::BinOp::BitOr => vir::Expr::bin_op(vir::BinaryOpKind::BitOr, left, right),
             mir::BinOp::BitXor => vir::Expr::bin_op(vir::BinaryOpKind::BitXor, left, right),
-            mir::BinOp::Shl => vir::Expr::bin_op(vir::BinaryOpKind::Shl, left, right),
+            mir::BinOp::ShlUnchecked | mir::BinOp::Shl => vir::Expr::bin_op(vir::BinaryOpKind::Shl, left, right),
             // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
             // Arithmetic right shift on signed integer types, logical right shift on unsigned integer types.
-            mir::BinOp::Shr if is_signed => vir::Expr::bin_op(vir::BinaryOpKind::AShr, left, right),
-            mir::BinOp::Shr => vir::Expr::bin_op(vir::BinaryOpKind::LShr, left, right),
+            mir::BinOp::ShrUnchecked | mir::BinOp::Shr if is_signed => vir::Expr::bin_op(vir::BinaryOpKind::AShr, left, right),
+            mir::BinOp::ShrUnchecked | mir::BinOp::Shr => vir::Expr::bin_op(vir::BinaryOpKind::LShr, left, right),
             mir::BinOp::Offset => {
-                return Err(EncodingError::unsupported(format!(
-                    "operation '{:?}' is not supported",
-                    op
-                )))
+                error_unsupported!("operation '{:?}' is not supported", op);
             }
         })
     }
@@ -563,7 +552,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
         right: vir::Expr,
         ty: ty::Ty<'tcx>,
     ) -> EncodingResult<vir::Expr> {
-        if !op.is_checkable() || !config::check_overflows() {
+        if !matches!(op, mir::BinOp::Add | mir::BinOp::Sub | mir::BinOp::Mul | mir::BinOp::Shl | mir::BinOp::Shr) || !config::check_overflows() {
             Ok(false.into())
         } else {
             let result = self.encode_bin_op_expr(op, left, right.clone(), ty)?;
@@ -630,11 +619,11 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
                         vir::Expr::gt_cmp(result, std::f64::MAX.into()),
                     ),
                     _ => {
-                        return Err(EncodingError::unsupported(format!(
+                        error_unsupported!(
                             "overflow checks are unsupported for operation '{:?}' on type '{:?}'",
                             op,
                             ty,
-                        )));
+                        );
                     }
                 },
 
@@ -646,9 +635,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
                         ty::TyKind::Uint(ty::UintTy::U64) => 64,
                         ty::TyKind::Uint(ty::UintTy::U128) => 128,
                         ty::TyKind::Uint(ty::UintTy::Usize) => {
-                            return Err(EncodingError::unsupported(
-                                "unknown size of usize for the overflow check",
-                            ));
+                            error_unsupported!("unknown size of usize for the overflow check");
                         }
                         ty::TyKind::Int(ty::IntTy::I8) => 8,
                         ty::TyKind::Int(ty::IntTy::I16) => 16,
@@ -656,15 +643,13 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
                         ty::TyKind::Int(ty::IntTy::I64) => 64,
                         ty::TyKind::Int(ty::IntTy::I128) => 128,
                         ty::TyKind::Int(ty::IntTy::Isize) => {
-                            return Err(EncodingError::unsupported(
-                                "unknown size of isize for the overflow check",
-                            ));
+                            error_unsupported!("unknown size of isize for the overflow check");
                         },
                         _ => {
-                            return Err(EncodingError::unsupported(format!(
+                            error_unsupported!(
                                 "overflow checks are unsupported for operation '{:?}' on type '{:?}'",
                                 op, ty,
-                            )));
+                            );
                         }
                     };
                     vir::Expr::or(
@@ -768,9 +753,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
             _ => {
                 return Err(SpannedEncodingError::unsupported(
                     format!(
-                        "unsupported cast from type '{:?}' to type '{:?}'",
-                        src_ty,
-                        dst_ty
+                        "unsupported cast from type '{src_ty:?}' to type '{dst_ty:?}'"
                     ),
                     span
                 ));
@@ -780,11 +763,11 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
         Ok(encoded_val)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn encode_operand_place(
         &self,
         operand: &mir::Operand<'tcx>,
     ) -> EncodingResult<Option<vir::Expr>> {
-        debug!("Encode operand place {:?}", operand);
         Ok(match operand {
             &mir::Operand::Move(place) | &mir::Operand::Copy(place) => {
                 let (src, _, _) = self.encode_place(place)?;
@@ -803,8 +786,8 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
         vir::Expr::pred_permission(place, perm)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn encode_old_expr(&self, expr: vir::Expr, label: &str) -> vir::Expr {
-        debug!("encode_old_expr {}, {}", expr, label);
         vir::Expr::labelled_old(label, expr)
     }
 
@@ -821,15 +804,16 @@ impl<'p, 'v: 'p, 'tcx: 'v> MirEncoder<'p, 'v, 'tcx> {
         bb_data.terminator().source_info.span
     }
 
-    pub fn register_span<T: Into<MultiSpan>>(&self, span: T) -> vir::Position {
+    pub fn register_span<T: Into<MultiSpan> + Debug>(&self, span: T) -> vir::Position {
         self.encoder.error_manager().register_span(self.def_id, span)
     }
 
-    pub fn register_error<T: Into<MultiSpan>>(&self, span: T, error_ctxt: ErrorCtxt) -> vir::Position {
+    pub fn register_error<T: Into<MultiSpan> + Debug>(&self, span: T, error_ctxt: ErrorCtxt) -> vir::Position {
         self.encoder.error_manager().register_error(span, error_ctxt, self.def_id)
     }
 
     /// Return the cause of a call to `begin_panic`
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn encode_panic_cause(&self, span: Span) -> PanicCause {
         let macro_backtrace: Vec<_> = span.macro_backtrace().collect();
         debug!("macro_backtrace: {:?}", macro_backtrace);

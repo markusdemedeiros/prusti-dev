@@ -7,8 +7,8 @@
 use log::{error, info, warn};
 
 use crate::verification_result::VerificationResult;
+use rustc_hash::FxHashMap;
 use std::{
-    collections::HashMap,
     fs, io,
     ops::DerefMut,
     path::{Path, PathBuf},
@@ -24,14 +24,14 @@ pub trait Cache {
 pub struct PersistentCache {
     updated: bool,
     load_loc: PathBuf,
-    data: HashMap<u64, VerificationResult>,
+    data: FxHashMap<u64, VerificationResult>,
 }
 
-const RESULT_CACHE_VERSION: u64 = 2;
+const RESULT_CACHE_VERSION: u64 = 3;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct ResultCache {
-    data: HashMap<u64, VerificationResult>,
+    data: FxHashMap<u64, VerificationResult>,
     version: u64,
 }
 
@@ -58,6 +58,7 @@ impl From<&PersistentCache> for ResultCache {
 }
 
 impl PersistentCache {
+    #[tracing::instrument(level = "debug")]
     pub fn load_cache(cache_loc: PathBuf) -> Self {
         let mut data_res: Option<ResultCache> = None;
         if !cache_loc.as_os_str().is_empty() {
@@ -86,18 +87,26 @@ impl PersistentCache {
             data_res.unwrap_or_else(|| {
                 info!("Cache file doesn't exist or is invalid. Using fresh cache.");
                 ResultCache {
-                    data: HashMap::new(),
+                    data: FxHashMap::default(),
                     version: RESULT_CACHE_VERSION,
                 }
             }),
         ))
     }
+    #[tracing::instrument(level = "debug")]
     pub fn save_cache(&self, cache_loc: &Path) {
         match fs::File::create(cache_loc) {
             Ok(f) => {
                 info!("Saving cache to \"{}\"", cache_loc.display());
-                bincode::serialize_into(&mut io::BufWriter::new(f), &ResultCache::from(self))
-                    .unwrap_or_else(|e| error!("Failed to write cache: {e}"));
+                let mut cache_buffer = io::BufWriter::new(f);
+                bincode::serialize_into(&mut cache_buffer, &ResultCache::from(self))
+                    .unwrap_or_else(|e| error!("Failed to serialize the cache: {e}"));
+                match cache_buffer.into_inner() {
+                    Err(e) => error!("Failed to flush the cache file: {e}"),
+                    Ok(f) => f
+                        .sync_all()
+                        .unwrap_or_else(|e| error!("Failed to sync the cache file to disk: {e}")),
+                }
             }
             Err(e) => error!("Failed to create cache file: {e}"),
         }

@@ -6,15 +6,18 @@ use prusti_interface::{
 };
 use prusti_pcs::{dump_pcs, vis_pcs_facts};
 use prusti_rustc_interface::{
+    borrowck::consumers,
+    data_structures::steal::Steal,
     driver::Compilation,
-    hir::def_id::LocalDefId,
+    hir::{def::DefKind, def_id::LocalDefId},
+    index::IndexVec,
     interface::{interface::Compiler, Config, Queries},
-    middle::ty::{
-        self,
-        query::{query_values::mir_borrowck, ExternProviders, Providers},
-        TyCtxt,
+    middle::{
+        mir::{self, BorrowCheckResult},
+        query::{ExternProviders, Providers},
+        ty::TyCtxt,
     },
-    session::Session,
+    session::{EarlyErrorHandler, Session},
 };
 
 #[derive(Default)]
@@ -24,14 +27,20 @@ pub struct PrustiCompilerCalls;
 // necessary; for crates which won't be verified or spec_fns it suffices to load just the fn body
 
 #[allow(clippy::needless_lifetimes)]
-fn mir_borrowck<'tcx>(tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> mir_borrowck<'tcx> {
-    // *Don't take MIR bodies with borrowck info if we won't need them*
-    if !is_spec_fn(tcx, def_id.to_def_id()) {
-        let body_with_facts =
-            prusti_rustc_interface::borrowck::consumers::get_body_with_borrowck_facts(
-                tcx,
-                ty::WithOptConstParam::unknown(def_id),
-            );
+#[tracing::instrument(level = "debug", skip(tcx))]
+fn mir_borrowck<'tcx>(tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> &BorrowCheckResult<'tcx> {
+    let def_kind = tcx.def_kind(def_id.to_def_id());
+    let is_anon_const = matches!(def_kind, DefKind::AnonConst);
+    // Anon Const bodies have already been stolen and so will result in a crash
+    // when calling `get_body_with_borrowck_facts`. TODO: figure out if we need
+    // (anon) const bodies at all, and if so, how to get them?
+    if !is_anon_const {
+        let consumer_opts = if is_spec_fn(tcx, def_id.to_def_id()) || config::no_verify() {
+            consumers::ConsumerOptions::RegionInferenceContext
+        } else {
+            consumers::ConsumerOptions::PoloniusOutputFacts
+        };
+        let body_with_facts = consumers::get_body_with_borrowck_facts(tcx, def_id, consumer_opts);
         // SAFETY: This is safe because we are feeding in the same `tcx` that is
         // going to be used as a witness when pulling out the data.
         unsafe {
@@ -44,45 +53,94 @@ fn mir_borrowck<'tcx>(tcx: TyCtxt<'tcx>, def_id: LocalDefId) -> mir_borrowck<'tc
     original_mir_borrowck(tcx, def_id)
 }
 
-fn override_queries(_session: &Session, local: &mut Providers, _external: &mut ExternProviders) {
-    local.mir_borrowck = mir_borrowck;
+#[allow(clippy::needless_lifetimes)]
+#[tracing::instrument(level = "debug", skip(tcx))]
+fn mir_promoted<'tcx>(
+    tcx: TyCtxt<'tcx>,
+    def_id: LocalDefId,
+) -> (
+    &'tcx Steal<mir::Body<'tcx>>,
+    &'tcx Steal<IndexVec<mir::Promoted, mir::Body<'tcx>>>,
+) {
+    let original_mir_promoted =
+        prusti_rustc_interface::interface::DEFAULT_QUERY_PROVIDERS.mir_promoted;
+    let result = original_mir_promoted(tcx, def_id);
+    // SAFETY: This is safe because we are feeding in the same `tcx` that is
+    // going to be used as a witness when pulling out the data.
+    unsafe {
+        mir_storage::store_promoted_mir_body(tcx, def_id, result.0.borrow().clone());
+    }
+    result
 }
 
 impl prusti_rustc_interface::driver::Callbacks for PrustiCompilerCalls {
     fn config(&mut self, config: &mut Config) {
-        // *Don't take MIR bodies with borrowck info if we won't need them*
-        if !config::no_verify() {
-            assert!(config.override_queries.is_none());
-            config.override_queries = Some(override_queries);
-        }
+        assert!(config.override_queries.is_none());
+        config.override_queries = Some(
+            |_session: &Session, providers: &mut Providers, _external: &mut ExternProviders| {
+                providers.mir_borrowck = mir_borrowck;
+                providers.mir_promoted = mir_promoted;
+            },
+        );
     }
+    #[tracing::instrument(level = "debug", skip_all)]
     fn after_expansion<'tcx>(
         &mut self,
         compiler: &Compiler,
         queries: &'tcx Queries<'tcx>,
     ) -> Compilation {
+        if compiler.session().is_rust_2015() {
+            compiler
+                .session()
+                .struct_warn(
+                    "Prusti specifications are supported only from 2018 edition. Please \
+                    specify the edition with adding a command line argument `--edition=2018` or \
+                    `--edition=2021`.",
+                )
+                .emit();
+        }
         compiler.session().abort_if_errors();
-        let (krate, _resolver, _lint_store) = &mut *queries.expansion().unwrap().peek_mut();
         if config::print_desugared_specs() {
-            prusti_rustc_interface::driver::pretty::print_after_parsing(
-                compiler.session(),
-                compiler.input(),
-                krate,
-                prusti_rustc_interface::session::config::PpMode::Source(
-                    prusti_rustc_interface::session::config::PpSourceMode::Normal,
-                ),
-                None,
-            );
+            // based on the implementation of rustc_driver::pretty::print_after_parsing
+            queries.global_ctxt().unwrap().enter(|tcx| {
+                let sess = compiler.session();
+                let krate = &tcx.resolver_for_lowering(()).borrow().1;
+                let src_name = sess.io.input.source_name();
+                let src = sess
+                    .source_map()
+                    .get_source_file(&src_name)
+                    .expect("get_source_file")
+                    .src
+                    .as_ref()
+                    .expect("src")
+                    .to_string();
+                print!(
+                    "{}",
+                    prusti_rustc_interface::ast_pretty::pprust::print_crate(
+                        sess.source_map(),
+                        krate,
+                        src_name,
+                        src,
+                        &prusti_rustc_interface::ast_pretty::pprust::state::NoAnn,
+                        false,
+                        sess.edition(),
+                        &sess.parse_sess.attr_id_generator,
+                    )
+                );
+            });
         }
         Compilation::Continue
     }
+
+    #[tracing::instrument(level = "debug", skip_all)]
     fn after_analysis<'tcx>(
         &mut self,
+        _error_handler: &EarlyErrorHandler,
         compiler: &Compiler,
         queries: &'tcx Queries<'tcx>,
     ) -> Compilation {
         compiler.session().abort_if_errors();
-        queries.global_ctxt().unwrap().peek_mut().enter(|tcx| {
+        queries.global_ctxt().unwrap().enter(|tcx| {
             let mut env = Environment::new(tcx, env!("CARGO_PKG_VERSION"));
             let spec_checker = specs::checker::SpecChecker::new();
             spec_checker.check(&env);
@@ -90,14 +148,13 @@ impl prusti_rustc_interface::driver::Callbacks for PrustiCompilerCalls {
 
             let hir = env.query.hir();
             let mut spec_collector = specs::SpecCollector::new(&mut env);
-            hir.walk_toplevel_module(&mut spec_collector);
-            hir.walk_attributes(&mut spec_collector);
+            spec_collector.collect_specs(hir);
 
             let mut def_spec = spec_collector.build_def_specs();
             // Do print_typeckd_specs prior to importing cross crate
             if config::print_typeckd_specs() {
                 for value in def_spec.all_values_debug(config::hide_uuids()) {
-                    println!("{}", value);
+                    println!("{value}");
                 }
             }
 

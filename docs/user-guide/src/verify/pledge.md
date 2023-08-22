@@ -4,7 +4,7 @@ Pledges are a construct that can be used to specify the behaviour of functions t
 
 As a full example, a wrapper around Rust `Vec<i32>` could be implemented as follows:
 
-```rust
+```rust,noplaypen,ignore
 use prusti_contracts::*;
 
 pub struct VecWrapperI32 {
@@ -44,10 +44,18 @@ impl VecWrapperI32 {
 }
 ```
 
-The syntax for a pledge is `#[after_expiry<reference>(condition)]` where
+The syntax for a pledge is `#[after_expiry(reference => condition)]` where
 `reference` is the reborrowing reference (defaults to `result`, which is
 currently the only thing one can write until we have support for
 reference fields) and `condition` is a [Prusti specification](../syntax.md) that specifies how the borrowed data
-structure will look once the borrow expires. To refer to the state that
+structure will look once the borrow expires. To refer in the condition to the state that
 a memory location pointed at by the reference has just before expiring,
 use `before_expiry(*reference)`.
+
+## Run assertions when reference expires
+
+In some cases, a condition must be checked at the point of expiry, like for example a type invariant.
+The syntax for this is `#[assert_on_expiry(condition, invariant)]`.
+This means that the `invariant` holds, given that `condition` is true when the reference expires.
+
+Note that for any assertion `A`, `after_expiry(A)` is equivalent to `assert_on_expiry(true, A)`.

@@ -4,7 +4,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-use log::trace;
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::fmt;
 use vir_crate::polymorphic::{Expr, PermAmount, Position, Type};
@@ -76,8 +75,8 @@ impl Perm {
         self.get_place().has_proper_prefix(other)
     }
 
+    #[tracing::instrument(level = "trace", skip_all, fields(self = %self, new_perm = %new_perm))]
     pub fn init_perm_amount(self, new_perm: PermAmount) -> Self {
-        trace!("[enter] init_perm_amount({}, {})", self, new_perm);
         assert!(new_perm.is_valid_for_specs());
         match self {
             Perm::Acc(_expr, PermAmount::Remaining) => unreachable!(),
@@ -110,8 +109,8 @@ impl Perm {
 impl fmt::Display for Perm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Perm::Acc(ref place, perm_amount) => write!(f, "Acc({}, {})", place, perm_amount),
-            Perm::Pred(ref place, perm_amount) => write!(f, "Pred({}, {})", place, perm_amount),
+            Perm::Acc(ref place, perm_amount) => write!(f, "Acc({place}, {perm_amount})"),
+            Perm::Pred(ref place, perm_amount) => write!(f, "Pred({place}, {perm_amount})"),
         }
     }
 }
@@ -119,8 +118,8 @@ impl fmt::Display for Perm {
 impl fmt::Debug for Perm {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Perm::Acc(ref place, perm_amount) => write!(f, "Acc({:?}, {})", place, perm_amount),
-            Perm::Pred(ref place, perm_amount) => write!(f, "Pred({:?}, {})", place, perm_amount),
+            Perm::Acc(ref place, perm_amount) => write!(f, "Acc({place:?}, {perm_amount})"),
+            Perm::Pred(ref place, perm_amount) => write!(f, "Pred({place:?}, {perm_amount})"),
         }
     }
 }
@@ -170,7 +169,7 @@ impl fmt::Display for PermSet {
                 write!(f, ", ")?;
             }
             first = false;
-            write!(f, "{}", perm)?;
+            write!(f, "{perm}")?;
         }
         write!(f, "}}")
     }
@@ -192,10 +191,8 @@ where
     fn group_by_label(&mut self) -> FxHashMap<Option<String>, Vec<Perm>> {
         let mut res_perms = FxHashMap::default();
         for perm in self {
-            res_perms
-                .entry(perm.get_label().cloned())
-                .or_insert_with(Vec::new)
-                .push(perm.clone());
+            let perms: &mut Vec<_> = res_perms.entry(perm.get_label().cloned()).or_default();
+            perms.push(perm.clone());
         }
         res_perms
     }
@@ -223,12 +220,8 @@ fn place_perm_difference(
 }
 
 /// Set difference that takes into account that removing `x.f` also removes any `x.f.g.h`
+#[tracing::instrument(level = "trace")]
 pub fn perm_difference(left: FxHashSet<Perm>, right: FxHashSet<Perm>) -> FxHashSet<Perm> {
-    trace!(
-        "[enter] perm_difference(left={:?}, right={:?})",
-        left,
-        right
-    );
     let left_acc = left.iter().filter(|x| x.is_acc()).cloned();
     let left_pred = left.iter().filter(|x| x.is_pred()).cloned();
     let right_acc = right.iter().filter(|x| x.is_acc()).cloned();

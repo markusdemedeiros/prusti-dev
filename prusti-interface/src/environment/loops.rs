@@ -11,7 +11,7 @@ use crate::{
 use log::{debug, trace};
 use prusti_rustc_interface::{
     data_structures::graph::dominators::Dominators,
-    index::vec::{Idx, IndexVec},
+    index::{Idx, IndexVec},
     middle::{mir, mir::visit::Visitor},
 };
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -23,6 +23,7 @@ pub enum LoopAnalysisError {
 }
 
 /// Walk up the CFG graph an collect all basic blocks that belong to the loop body.
+#[tracing::instrument(level = "debug", skip(real_edges, body))]
 fn collect_loop_body(
     head: BasicBlockIndex,
     back_edge_source: BasicBlockIndex,
@@ -31,8 +32,7 @@ fn collect_loop_body(
 ) {
     let mut work_queue = vec![back_edge_source];
     body.insert(back_edge_source);
-    while !work_queue.is_empty() {
-        let current = work_queue.pop().unwrap();
+    while let Some(current) = work_queue.pop() {
         for &predecessor in real_edges.predecessors(current).iter() {
             if body.contains(&predecessor) {
                 continue;
@@ -96,6 +96,7 @@ struct AccessCollector<'b, 'tcx> {
 }
 
 impl<'b, 'tcx> Visitor<'tcx> for AccessCollector<'b, 'tcx> {
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_place(
         &mut self,
         place: &mir::Place<'tcx>,
@@ -122,6 +123,9 @@ impl<'b, 'tcx> Visitor<'tcx> for AccessCollector<'b, 'tcx> {
                 NonMutatingUse(mir::visit::NonMutatingUseContext::Copy) => PlaceAccessKind::Read,
                 NonMutatingUse(mir::visit::NonMutatingUseContext::Move) => PlaceAccessKind::Move,
                 NonMutatingUse(mir::visit::NonMutatingUseContext::Inspect) => PlaceAccessKind::Read,
+                NonMutatingUse(mir::visit::NonMutatingUseContext::PlaceMention) => {
+                    PlaceAccessKind::Read
+                }
                 NonMutatingUse(mir::visit::NonMutatingUseContext::SharedBorrow) => {
                     PlaceAccessKind::SharedBorrow
                 }
@@ -253,13 +257,14 @@ pub type ReadAndWriteLeaves<'tcx> = (
 );
 
 impl ProcedureLoops {
+    #[tracing::instrument(name = "ProcedureLoops::new", level = "trace", skip(mir, real_edges))]
     pub fn new<'a, 'tcx: 'a>(mir: &'a mir::Body<'tcx>, real_edges: &RealEdges) -> ProcedureLoops {
-        let dominators = mir.basic_blocks.dominators();
+        let dominators = mir.basic_blocks.dominators().clone();
 
         let mut back_edges: FxHashSet<(_, _)> = FxHashSet::default();
         for bb in mir.basic_blocks.indices() {
             for successor in real_edges.successors(bb) {
-                if dominators.is_dominated_by(bb, *successor) {
+                if dominators.dominates(*successor, bb) {
                     back_edges.insert((bb, *successor));
                     debug!("Loop head: {:?}", successor);
                 }
@@ -268,7 +273,7 @@ impl ProcedureLoops {
 
         let mut loop_bodies = FxHashMap::default();
         for &(source, target) in back_edges.iter() {
-            let body = loop_bodies.entry(target).or_insert_with(FxHashSet::default);
+            let body = loop_bodies.entry(target).or_default();
             collect_loop_body(target, source, real_edges, body);
         }
 
@@ -276,9 +281,7 @@ impl ProcedureLoops {
             FxHashMap::default();
         for (&loop_head, loop_body) in loop_bodies.iter() {
             for &block in loop_body.iter() {
-                let heads_set = enclosing_loop_heads_set
-                    .entry(block)
-                    .or_insert_with(FxHashSet::default);
+                let heads_set = enclosing_loop_heads_set.entry(block).or_default();
                 heads_set.insert(loop_head);
             }
         }
@@ -292,7 +295,7 @@ impl ProcedureLoops {
         let mut enclosing_loop_heads = FxHashMap::default();
         for (&block, loop_heads) in enclosing_loop_heads_set.iter() {
             let mut heads: Vec<BasicBlockIndex> = loop_heads.iter().cloned().collect();
-            heads.sort_by_key(|bbi| loop_head_depths[bbi]);
+            heads.sort_unstable_by_key(|bbi| loop_head_depths[bbi]);
             enclosing_loop_heads.insert(block, heads);
         }
 
@@ -316,7 +319,7 @@ impl ProcedureLoops {
         let mut ordered_loop_bodies = FxHashMap::default();
         for (&loop_head, loop_body) in loop_bodies.iter() {
             let mut ordered_body: Vec<_> = loop_body.iter().cloned().collect();
-            ordered_body.sort_by_key(|bb| block_order[bb]);
+            ordered_body.sort_unstable_by_key(|bb| block_order[bb]);
             debug_assert_eq!(loop_head, ordered_body[0]);
             ordered_loop_bodies.insert(loop_head, ordered_body);
         }
@@ -475,7 +478,7 @@ impl ProcedureLoops {
 
     /// Check if ``block`` is inside a given loop.
     pub fn is_block_in_loop(&self, loop_head: BasicBlockIndex, block: BasicBlockIndex) -> bool {
-        self.dominators.is_dominated_by(block, loop_head)
+        self.dominators.dominates(loop_head, block)
     }
 
     /// Compute what paths that are accessed inside the loop.
@@ -500,6 +503,7 @@ impl ProcedureLoops {
 
     /// If `definitely_initalised_paths` is not `None`, returns only leaves that are
     /// definitely initialised.
+    #[tracing::instrument(level = "debug", skip(self, mir, definitely_initalised_paths))]
     pub fn compute_read_and_write_leaves<'a, 'tcx: 'a>(
         &self,
         loop_head: BasicBlockIndex,

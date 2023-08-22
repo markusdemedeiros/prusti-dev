@@ -4,7 +4,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #![feature(let_chains)]
-#![feature(option_result_contains)]
 
 use prusti_utils::{config, launch};
 use std::{env, fs, io, path::PathBuf, process::Command};
@@ -50,7 +49,8 @@ where
         .args(args)
         .env("RUST_TOOLCHAIN", launch::get_rust_toolchain_channel())
         .env("RUSTUP_TOOLCHAIN", launch::get_rust_toolchain_channel())
-        .env("RUSTC_WRAPPER", prusti_rustc_path)
+        .env("RUSTC", prusti_rustc_path)
+        .env("PRUSTI_CARGO", "")
         .env("CARGO_TARGET_DIR", &cargo_target)
         // Category B flags (update the docs if any more are added):
         .env("PRUSTI_BE_RUSTC", config::be_rustc().to_string())

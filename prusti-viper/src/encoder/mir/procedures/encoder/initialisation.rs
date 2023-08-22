@@ -4,7 +4,6 @@ use prusti_rustc_interface::{
         move_paths::MoveData,
         Analysis, MoveDataParamEnv, ResultsCursor,
     },
-    hir::def_id::DefId,
     middle::{mir, ty::TyCtxt},
 };
 
@@ -16,23 +15,20 @@ pub(super) struct InitializationData<'mir, 'tcx> {
 impl<'mir, 'tcx> InitializationData<'mir, 'tcx> {
     pub(super) fn new(
         tcx: TyCtxt<'tcx>,
-        body: &'mir mir::Body<'tcx>,
-        move_env: &'mir MoveDataParamEnv<'tcx>,
+        body: &'mir mut mir::Body<'tcx>,
+        env: &'mir MoveDataParamEnv<'tcx>,
     ) -> Self {
-        let dead_unwinds =
-            super::elaborate_drops::mir_transform::find_dead_unwinds(tcx, body, move_env);
+        super::elaborate_drops::mir_transform::remove_dead_unwinds(tcx, body, env);
 
-        let inits = MaybeInitializedPlaces::new(tcx, body, move_env)
+        let inits = MaybeInitializedPlaces::new(tcx, body, env)
             .into_engine(tcx, body)
-            .dead_unwinds(&dead_unwinds)
             .pass_name("elaborate_drops")
             .iterate_to_fixpoint()
             .into_results_cursor(body);
 
-        let uninits = MaybeUninitializedPlaces::new(tcx, body, move_env)
+        let uninits = MaybeUninitializedPlaces::new(tcx, body, env)
             .mark_inactive_variants_as_uninit()
             .into_engine(tcx, body)
-            .dead_unwinds(&dead_unwinds)
             .pass_name("elaborate_drops")
             .iterate_to_fixpoint()
             .into_results_cursor(body);
@@ -45,18 +41,23 @@ impl<'mir, 'tcx> InitializationData<'mir, 'tcx> {
     }
 }
 
-pub(super) fn create_move_data_param_env<'tcx>(
+pub(super) fn create_move_data_param_env_and_un_derefer<'tcx>(
     tcx: TyCtxt<'tcx>,
     body: &mir::Body<'tcx>,
-    def_id: DefId,
 ) -> MoveDataParamEnv<'tcx> {
+    let def_id = body.source.def_id();
     let param_env = tcx.param_env_reveal_all_normalized(def_id);
     let move_data = match MoveData::gather_moves(body, tcx, param_env) {
-        Ok((_, move_data)) => move_data,
-        Err((_, _)) => {
-            unreachable!();
+        Ok(move_data) => move_data,
+        Err((move_data, _)) => {
+            tcx.sess.delay_span_bug(
+                body.span,
+                "No `move_errors` should be allowed in MIR borrowck",
+            );
+            move_data
         }
     };
+
     MoveDataParamEnv {
         move_data,
         param_env,

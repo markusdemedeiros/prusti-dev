@@ -7,8 +7,8 @@
 //! Inliner of pure functions.
 
 use crate::vir::polymorphic_vir::{ast, cfg};
-use log::trace;
-use std::{collections::HashMap, mem};
+use rustc_hash::FxHashMap;
+use std::mem;
 
 /// Convert functions whose body does not depend on arguments such as
 ///
@@ -32,13 +32,13 @@ use std::{collections::HashMap, mem};
 /// And then inline them on call sites.
 ///
 /// The optimization is performed until a fix-point.
+#[tracing::instrument(level = "debug", skip_all)]
 pub fn inline_constant_functions(
     mut methods: Vec<cfg::CfgMethod>,
     mut functions: Vec<ast::Function>,
 ) -> (Vec<cfg::CfgMethod>, Vec<ast::Function>) {
-    trace!("[enter] purify_constant_functions");
     let mut non_pure_functions = Vec::new();
-    let mut pure_function_map = HashMap::new();
+    let mut pure_function_map = FxHashMap::default();
     let mut changed = true;
     while changed {
         changed = false;
@@ -62,8 +62,8 @@ pub fn inline_constant_functions(
 
 /// Try converting the function to pure by removing permissions from the
 /// precondition. Returns true if successful.
+#[tracing::instrument(level = "trace", skip_all, fields(name = %function.name))]
 fn try_purify(function: &mut ast::Function) -> Option<ast::Expr> {
-    trace!("[enter] try_purify(name={})", function.name);
     if function.has_constant_body()
         && function.pres.iter().all(|cond| cond.is_only_permissions())
         && function.posts.is_empty()
@@ -76,12 +76,12 @@ fn try_purify(function: &mut ast::Function) -> Option<ast::Expr> {
 
 /// Inline all calls to constant functions.
 struct ConstantFunctionInliner<'a> {
-    pure_function_map: &'a HashMap<String, ast::Expr>,
+    pure_function_map: &'a FxHashMap<String, ast::Expr>,
 }
 
 fn inline_into(
     mut function: ast::Function,
-    pure_function_map: &HashMap<String, ast::Expr>,
+    pure_function_map: &FxHashMap<String, ast::Expr>,
 ) -> ast::Function {
     function.body = function.body.map(|body| {
         let mut inliner = ConstantFunctionInliner { pure_function_map };
@@ -150,7 +150,7 @@ impl<'a> ast::ExprFolder for ConstantFunctionInliner<'a> {
 
 fn inline_into_methods(
     methods: Vec<cfg::CfgMethod>,
-    pure_function_map: HashMap<String, ast::Expr>,
+    pure_function_map: FxHashMap<String, ast::Expr>,
 ) -> Vec<cfg::CfgMethod> {
     let mut inliner = ConstantFunctionInliner {
         pure_function_map: &pure_function_map,

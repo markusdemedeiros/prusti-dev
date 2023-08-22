@@ -11,6 +11,7 @@ use crate::{
 };
 use log::{debug, trace};
 use prusti_rustc_interface::{
+    data_structures::fx::{FxHashMap, FxHashSet},
     hir::def_id,
     middle::{
         mir::{self, AggregateKind, BasicBlock, BasicBlockData, Body, Rvalue, StatementKind},
@@ -18,7 +19,6 @@ use prusti_rustc_interface::{
     },
     span::Span,
 };
-use std::collections::{HashMap, HashSet};
 
 /// Index of a Basic Block
 pub type BasicBlockIndex = mir::BasicBlock;
@@ -31,15 +31,15 @@ pub struct Procedure<'tcx> {
     mir: MirBody<'tcx>,
     real_edges: RealEdges,
     loop_info: loops::ProcedureLoops,
-    reachable_basic_blocks: HashSet<BasicBlock>,
-    nonspec_basic_blocks: HashSet<BasicBlock>,
+    reachable_basic_blocks: FxHashSet<BasicBlock>,
+    nonspec_basic_blocks: FxHashSet<BasicBlock>,
 }
 
 impl<'tcx> Procedure<'tcx> {
     /// Builds an implementation of the Procedure interface, given a typing context and the
     /// identifier of a procedure
+    #[tracing::instrument(name = "Procedure::new", level = "debug", skip(env))]
     pub fn new(env: &Environment<'tcx>, proc_def_id: ProcedureDefId) -> Self {
-        trace!("Encoding procedure {:?}", proc_def_id);
         let mir = env
             .body
             .get_impure_fn_body_identity(proc_def_id.expect_local());
@@ -66,7 +66,7 @@ impl<'tcx> Procedure<'tcx> {
 
     /// Returns all the types used in the procedure, and any types reachable from them
     pub fn get_declared_types(&self) -> Vec<Ty<'tcx>> {
-        let _types: HashSet<Ty> = HashSet::new();
+        let _types: FxHashSet<Ty> = FxHashSet::default();
         // for var in &self.mir.local_decls {
         //     for ty in var.ty.walk() {
         //         let declared_ty = ty;
@@ -200,14 +200,12 @@ impl<'tcx> Procedure<'tcx> {
 }
 
 /// Returns the set of basic blocks that are not used as part of the typechecking of Prusti specifications
-fn build_reachable_basic_blocks(mir: &Body, real_edges: &RealEdges) -> HashSet<BasicBlock> {
-    let mut reachable_basic_blocks: HashSet<BasicBlock> = HashSet::new();
-    let mut visited: HashSet<BasicBlock> = HashSet::new();
+fn build_reachable_basic_blocks(mir: &Body, real_edges: &RealEdges) -> FxHashSet<BasicBlock> {
+    let mut reachable_basic_blocks: FxHashSet<BasicBlock> = FxHashSet::default();
+    let mut visited: FxHashSet<BasicBlock> = FxHashSet::default();
     let mut to_visit: Vec<BasicBlock> = vec![mir.basic_blocks.indices().next().unwrap()];
 
-    while !to_visit.is_empty() {
-        let source = to_visit.pop().unwrap();
-
+    while let Some(source) = to_visit.pop() {
         if visited.contains(&source) {
             continue;
         }
@@ -236,7 +234,7 @@ pub fn is_marked_specification_block(env_query: EnvQuery, bb_data: &BasicBlockDa
             Rvalue::Aggregate(box AggregateKind::Closure(def_id, _), _),
         )) = &stmt.kind
         {
-            if is_spec_closure(env_query, def_id.to_def_id()) {
+            if is_spec_closure(env_query, *def_id) {
                 return true;
             }
         }
@@ -249,7 +247,7 @@ pub fn get_loop_invariant<'tcx>(
     bb_data: &BasicBlockData<'tcx>,
 ) -> Option<(
     ProcedureDefId,
-    prusti_rustc_interface::middle::ty::subst::SubstsRef<'tcx>,
+    prusti_rustc_interface::middle::ty::GenericArgsRef<'tcx>,
 )> {
     for stmt in &bb_data.statements {
         if let StatementKind::Assign(box (
@@ -257,13 +255,13 @@ pub fn get_loop_invariant<'tcx>(
             Rvalue::Aggregate(box AggregateKind::Closure(def_id, substs), _),
         )) = &stmt.kind
         {
-            if is_spec_closure(env_query, def_id.to_def_id())
+            if is_spec_closure(env_query, *def_id)
                 && crate::utils::has_prusti_attr(
-                    env_query.get_attributes(def_id.to_def_id()),
+                    env_query.get_attributes(def_id),
                     "loop_body_invariant_spec",
                 )
             {
-                return Some((def_id.to_def_id(), substs));
+                return Some((*def_id, substs));
             }
         }
     }
@@ -293,8 +291,8 @@ fn is_spec_block_kind(env_query: EnvQuery, bb_data: &BasicBlockData, kind: &str)
             Rvalue::Aggregate(box AggregateKind::Closure(def_id, _), _),
         )) = &stmt.kind
         {
-            if is_spec_closure(env_query, def_id.to_def_id())
-                && crate::utils::has_prusti_attr(env_query.get_attributes(def_id.to_def_id()), kind)
+            if is_spec_closure(env_query, *def_id)
+                && crate::utils::has_prusti_attr(env_query.get_attributes(def_id), kind)
             {
                 return true;
             }
@@ -305,19 +303,20 @@ fn is_spec_block_kind(env_query: EnvQuery, bb_data: &BasicBlockData, kind: &str)
 
 #[derive(Debug)]
 struct BasicBlockNode {
-    successors: HashSet<BasicBlock>,
-    predecessors: HashSet<BasicBlock>,
+    successors: FxHashSet<BasicBlock>,
+    predecessors: FxHashSet<BasicBlock>,
 }
 
+#[tracing::instrument(level = "debug", skip_all)]
 fn _blocks_definitely_leading_to<'a>(
-    bb_graph: &'a HashMap<BasicBlock, BasicBlockNode>,
+    bb_graph: &'a FxHashMap<BasicBlock, BasicBlockNode>,
     target: BasicBlock,
-    blocks: &'a mut HashSet<BasicBlock>,
-) -> &'a mut HashSet<BasicBlock> {
+    blocks: &'a mut FxHashSet<BasicBlock>,
+) -> &'a mut FxHashSet<BasicBlock> {
     for pred in bb_graph[&target].predecessors.iter() {
-        debug!("target: {:#?}, pred: {:#?}", target, pred);
+        debug!("target: {target:#?}, pred: {pred:#?}");
         if bb_graph[pred].successors.len() == 1 {
-            debug!("pred {:#?} has 1 successor", pred);
+            debug!("pred {pred:#?} has 1 successor");
             blocks.insert(*pred);
             _blocks_definitely_leading_to(bb_graph, *pred, blocks);
         }
@@ -326,41 +325,42 @@ fn _blocks_definitely_leading_to<'a>(
 }
 
 fn blocks_definitely_leading_to(
-    bb_graph: &HashMap<BasicBlock, BasicBlockNode>,
+    bb_graph: &FxHashMap<BasicBlock, BasicBlockNode>,
     target: BasicBlock,
-) -> HashSet<BasicBlock> {
-    let mut blocks = HashSet::new();
+) -> FxHashSet<BasicBlock> {
+    let mut blocks = FxHashSet::default();
     _blocks_definitely_leading_to(bb_graph, target, &mut blocks);
     blocks
 }
 
-fn blocks_dominated_by(mir: &Body, dominator: BasicBlock) -> HashSet<BasicBlock> {
+fn blocks_dominated_by(mir: &Body, dominator: BasicBlock) -> FxHashSet<BasicBlock> {
     let dominators = mir.basic_blocks.dominators();
-    let mut blocks = HashSet::new();
+    let mut blocks = FxHashSet::default();
     for bb in mir.basic_blocks.indices() {
-        if dominators.is_dominated_by(bb, dominator) {
+        if dominators.dominates(dominator, bb) {
             blocks.insert(bb);
         }
     }
     blocks
 }
 
+#[tracing::instrument(level = "trace", skip_all)]
 fn get_nonspec_basic_blocks(
     env_query: EnvQuery,
-    bb_graph: HashMap<BasicBlock, BasicBlockNode>,
+    bb_graph: FxHashMap<BasicBlock, BasicBlockNode>,
     mir: &Body,
-) -> HashSet<BasicBlock> {
-    let mut spec_basic_blocks: HashSet<BasicBlock> = HashSet::new();
+) -> FxHashSet<BasicBlock> {
+    let mut spec_basic_blocks: FxHashSet<BasicBlock> = FxHashSet::default();
     for (bb, _) in bb_graph.iter() {
         if is_marked_specification_block(env_query, &mir[*bb]) {
             spec_basic_blocks.insert(*bb);
-            spec_basic_blocks.extend(blocks_definitely_leading_to(&bb_graph, *bb).into_iter());
-            spec_basic_blocks.extend(blocks_dominated_by(mir, *bb).into_iter());
+            spec_basic_blocks.extend(blocks_definitely_leading_to(&bb_graph, *bb));
+            spec_basic_blocks.extend(blocks_dominated_by(mir, *bb));
         }
     }
-    debug!("spec basic blocks: {:#?}", spec_basic_blocks);
+    debug!("spec basic blocks: {spec_basic_blocks:#?}");
 
-    let all_basic_blocks: HashSet<BasicBlock> = bb_graph.keys().cloned().collect();
+    let all_basic_blocks: FxHashSet<BasicBlock> = bb_graph.keys().cloned().collect();
     all_basic_blocks
         .difference(&spec_basic_blocks)
         .cloned()
@@ -372,40 +372,38 @@ fn build_nonspec_basic_blocks(
     env_query: EnvQuery,
     mir: &Body,
     real_edges: &RealEdges,
-) -> HashSet<BasicBlock> {
+) -> FxHashSet<BasicBlock> {
     let dominators = mir.basic_blocks.dominators();
-    let mut loop_heads: HashSet<BasicBlock> = HashSet::new();
+    let mut loop_heads: FxHashSet<BasicBlock> = FxHashSet::default();
 
     for source in mir.basic_blocks.indices() {
         for &target in real_edges.successors(source) {
-            if dominators.is_dominated_by(source, target) {
+            if dominators.dominates(target, source) {
                 loop_heads.insert(target);
             }
         }
     }
 
-    let mut visited: HashSet<BasicBlock> = HashSet::new();
+    let mut visited: FxHashSet<BasicBlock> = FxHashSet::default();
     let mut to_visit: Vec<BasicBlock> = vec![mir.basic_blocks.indices().next().unwrap()];
 
-    let mut bb_graph: HashMap<BasicBlock, BasicBlockNode> = HashMap::new();
+    let mut bb_graph: FxHashMap<BasicBlock, BasicBlockNode> = FxHashMap::default();
 
-    while !to_visit.is_empty() {
-        let source = to_visit.pop().unwrap();
-
+    while let Some(source) = to_visit.pop() {
         if visited.contains(&source) {
             continue;
         }
 
         bb_graph.entry(source).or_insert_with(|| BasicBlockNode {
-            successors: HashSet::new(),
-            predecessors: HashSet::new(),
+            successors: FxHashSet::default(),
+            predecessors: FxHashSet::default(),
         });
 
         visited.insert(source);
 
         let is_loop_head = loop_heads.contains(&source);
         if is_loop_head {
-            trace!("MIR block {:?} is a loop head", source);
+            trace!("MIR block {source:?} is a loop head");
         }
         for &target in real_edges.successors(source) {
             if !visited.contains(&target) {
@@ -413,8 +411,8 @@ fn build_nonspec_basic_blocks(
             }
 
             bb_graph.entry(target).or_insert_with(|| BasicBlockNode {
-                successors: HashSet::new(),
-                predecessors: HashSet::new(),
+                successors: FxHashSet::default(),
+                predecessors: FxHashSet::default(),
             });
             bb_graph
                 .get_mut(&target)

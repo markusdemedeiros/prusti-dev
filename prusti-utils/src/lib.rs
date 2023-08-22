@@ -5,10 +5,13 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #![feature(box_patterns)]
-#![feature(box_syntax)]
 #![deny(unused_must_use)]
+#![warn(clippy::disallowed_types)]
 
+// Cannot remove collections::HashMap here, it is required by the `config` crate
+#[allow(clippy::disallowed_types)]
 pub mod config;
+
 pub mod launch;
 pub mod report;
 mod stopwatch;

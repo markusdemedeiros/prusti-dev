@@ -49,7 +49,7 @@ impl<'a, 'p, 'v, 'tcx> GhostChecker<'a, 'p, 'v, 'tcx> {
     }
     fn is_ghost_local(&self, local: &mir::Local) -> bool {
         let ty = &self.p.mir.local_decls[*local].ty;
-        let ty_str = format!("{:?}", ty);
+        let ty_str = format!("{ty:?}");
 
         let ghost_tys = ["Ghost", "Int", "Seq", "Map"];
 
@@ -79,6 +79,7 @@ impl<'a, 'p, 'v, 'tcx> GhostChecker<'a, 'p, 'v, 'tcx> {
 }
 
 impl<'a, 'p, 'v, 'tcx> Visitor<'tcx> for GhostChecker<'a, 'p, 'v, 'tcx> {
+    #[tracing::instrument(level = "debug", skip(self))]
     fn visit_local(&mut self, local: mir::Local, context: PlaceContext, location: mir::Location) {
         let is_ghost = self.is_ghost_place(location) || self.is_ghost_local(&local);
         if !is_ghost && context.is_use() {

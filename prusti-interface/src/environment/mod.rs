@@ -6,30 +6,8 @@
 
 //! This module defines the interface provided to a verifier.
 
-use log::{debug, trace};
-use prusti_rustc_interface::{
-    errors::{DiagnosticBuilder, EmissionGuarantee, MultiSpan},
-    hir::{
-        def_id::{DefId, LocalDefId},
-        hir_id::HirId,
-    },
-    middle::{
-        mir,
-        ty::{
-            self,
-            subst::{SubstsRef},
-            TyCtxt,
-        },
-    },
-    span::{symbol::Symbol, Span},
-    trait_selection::infer::{InferCtxtExt, TyCtxtInferExt},
-};
-use std::{
-    cell::RefCell,
-    collections::{HashMap, HashSet},
-    path::PathBuf,
-    rc::Rc,
-};
+use prusti_rustc_interface::middle::ty::{self, TyCtxt};
+use rustc_middle::ty::GenericArgsRef;
 
 pub mod body;
 pub mod borrowck;
@@ -50,7 +28,6 @@ mod name;
 pub mod polonius_info;
 mod procedure;
 mod query;
-mod traits;
 
 pub use self::{
     body::EnvBody,
@@ -69,7 +46,6 @@ use self::{
     collect_prusti_spec_visitor::CollectPrustiSpecVisitor,
 };
 use crate::data::ProcedureDefId;
-pub use crate::environment::polonius_info::graphviz;
 
 /// Facade to the Rust compiler.
 pub struct Environment<'tcx> {
@@ -112,6 +88,7 @@ impl<'tcx> Environment<'tcx> {
     }
 
     /// Get ids of Rust procedures that are annotated with a Prusti specification
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn get_annotated_procedures_and_types(&self) -> (Vec<ProcedureDefId>, Vec<ty::Ty<'tcx>>) {
         let mut visitor = CollectPrustiSpecVisitor::new(self);
         visitor.visit_all_item_likes();
@@ -162,18 +139,22 @@ impl<'tcx> Environment<'tcx> {
         &self,
         caller_def_id: ProcedureDefId,
         called_def_id: ProcedureDefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> bool {
         if called_def_id == caller_def_id {
             true
         } else {
             let param_env = self.tcx().param_env(caller_def_id);
-            if let Some(instance) =
-                traits::resolve_instance(self.tcx(), param_env.and((called_def_id, call_substs)))
-                    .unwrap()
+            if let Some(_instance) = self
+                .tcx()
+                .resolve_instance(param_env.and((called_def_id, call_substs)))
+                .unwrap()
             {
-                self.tcx()
-                    .mir_callgraph_reachable((instance, caller_def_id.expect_local()))
+                // FIXME: This call panics due to stolen MIR. Therefore, we
+                // unsoundly assume that the callee is not reachable.
+                // self.tcx()
+                //     .mir_callgraph_reachable((instance, caller_def_id.expect_local()))
+                false
             } else {
                 true
             }

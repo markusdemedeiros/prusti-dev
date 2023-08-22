@@ -1,5 +1,4 @@
 use crate::encoder::mir::specifications::specs::Specifications;
-use log::trace;
 use prusti_interface::{
     specs::{
         typed,
@@ -7,7 +6,7 @@ use prusti_interface::{
     },
     utils::has_spec_only_attr,
 };
-use prusti_rustc_interface::{hir::def_id::DefId, middle::ty::subst::SubstsRef, span::Span};
+use prusti_rustc_interface::{hir::def_id::DefId, middle::ty::GenericArgsRef, span::Span};
 use std::{cell::RefCell, hash::Hash};
 
 pub(crate) struct SpecificationsState<'tcx> {
@@ -26,16 +25,16 @@ impl<'tcx> SpecificationsState<'tcx> {
 pub(super) struct FunctionCallEncodingQuery<'tcx> {
     pub called_def_id: DefId,
     pub caller_def_id: DefId,
-    pub call_substs: SubstsRef<'tcx>,
+    pub call_substs: GenericArgsRef<'tcx>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
 pub(super) enum SpecQuery<'tcx> {
-    FunctionDefEncoding(DefId, SubstsRef<'tcx>),
+    FunctionDefEncoding(DefId, GenericArgsRef<'tcx>),
     FunctionCallEncoding(FunctionCallEncodingQuery<'tcx>),
     /// For determining the [ProcedureSpecificationKind] of a procedure, e.g.
     /// for a check whether the function is pure or impure
-    GetProcKind(DefId, SubstsRef<'tcx>),
+    GetProcKind(DefId, GenericArgsRef<'tcx>),
     FetchSpan(DefId),
 }
 
@@ -52,7 +51,7 @@ impl<'tcx> SpecQuery<'tcx> {
         }
     }
 
-    pub fn adapt_to(&self, new_def_id: DefId, new_substs: SubstsRef<'tcx>) -> Self {
+    pub fn adapt_to(&self, new_def_id: DefId, new_substs: GenericArgsRef<'tcx>) -> Self {
         use SpecQuery::*;
         match self {
             FunctionDefEncoding(_, _) => FunctionDefEncoding(new_def_id, new_substs),
@@ -71,19 +70,19 @@ impl<'tcx> SpecQuery<'tcx> {
 
 pub(crate) trait SpecificationsInterface<'tcx> {
     // TODO abstract-predicates: Maybe this should be deleted (and ProcedureSpecificationKind::is_pure)
-    fn is_pure(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool;
+    fn is_pure(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool;
 
     fn get_proc_kind(
         &self,
         def_id: DefId,
-        substs: Option<SubstsRef<'tcx>>,
+        substs: Option<GenericArgsRef<'tcx>>,
     ) -> ProcedureSpecificationKind;
 
-    fn is_trusted(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool;
+    fn is_trusted(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool;
 
-    fn get_predicate_body(&self, def_id: DefId, substs: SubstsRef<'tcx>) -> Option<DefId>;
+    fn get_predicate_body(&self, def_id: DefId, substs: GenericArgsRef<'tcx>) -> Option<DefId>;
 
-    fn terminates(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool;
+    fn terminates(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool;
 
     /// Get the loop invariant attached to a function with a
     /// `prusti::loop_body_invariant_spec` attribute.
@@ -98,6 +97,9 @@ pub(crate) trait SpecificationsInterface<'tcx> {
     /// Get the prusti assumption
     fn get_prusti_assumption(&self, def_id: DefId) -> Option<typed::PrustiAssumption>;
 
+    /// Get the prusti refutation
+    fn get_prusti_refutation(&self, def_id: DefId) -> Option<typed::PrustiRefutation>;
+
     /// Get the begin marker of the ghost block
     fn get_ghost_begin(&self, def_id: DefId) -> Option<typed::GhostBegin>;
 
@@ -108,7 +110,7 @@ pub(crate) trait SpecificationsInterface<'tcx> {
     fn get_procedure_specs(
         &self,
         def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> Option<typed::ProcedureSpecification>;
 
     /// Get the specifications attached to a function for a function call.
@@ -116,7 +118,7 @@ pub(crate) trait SpecificationsInterface<'tcx> {
         &self,
         called_def_id: DefId,
         caller_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> Option<typed::ProcedureSpecification>;
 
     /// Is the closure specified with the `def_id` spec only?
@@ -128,7 +130,8 @@ pub(crate) trait SpecificationsInterface<'tcx> {
 }
 
 impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encoder<'v, 'tcx> {
-    fn is_pure(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool {
+    #[tracing::instrument(level = "trace", skip(self), ret)]
+    fn is_pure(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool {
         let kind = self.get_proc_kind(def_id, substs);
         let mut pure = matches!(
             kind,
@@ -143,15 +146,13 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
         {
             pure = true;
         }
-
-        trace!("is_pure {:?} = {}", def_id, pure);
         pure
     }
 
     fn get_proc_kind(
         &self,
         def_id: DefId,
-        substs: Option<SubstsRef<'tcx>>,
+        substs: Option<GenericArgsRef<'tcx>>,
     ) -> ProcedureSpecificationKind {
         let substs = substs.unwrap_or_else(|| self.env().query.identity_substs(def_id));
         let query = SpecQuery::GetProcKind(def_id, substs);
@@ -164,37 +165,34 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
             .unwrap_or(ProcedureSpecificationKind::Impure)
     }
 
-    fn is_trusted(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool {
+    #[tracing::instrument(level = "trace", skip(self), ret)]
+    fn is_trusted(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool {
         let substs = substs.unwrap_or_else(|| self.env().query.identity_substs(def_id));
         let query = SpecQuery::GetProcKind(def_id, substs);
-        let result = self
-            .specifications_state
+        self.specifications_state
             .specs
             .borrow_mut()
             .get_and_refine_proc_spec(self.env(), query)
             .and_then(|spec| spec.trusted.extract_with_selective_replacement().copied())
-            .unwrap_or(false);
-        trace!("is_trusted {:?} = {}", query, result);
-        result
+            .unwrap_or(false)
     }
 
-    fn get_predicate_body(&self, def_id: DefId, substs: SubstsRef<'tcx>) -> Option<DefId> {
+    #[tracing::instrument(level = "trace", skip(self), ret)]
+    fn get_predicate_body(&self, def_id: DefId, substs: GenericArgsRef<'tcx>) -> Option<DefId> {
         let query = SpecQuery::FunctionDefEncoding(def_id, substs);
         let mut specs = self.specifications_state.specs.borrow_mut();
-        let result = specs
+        specs
             .get_and_refine_proc_spec(self.env(), query)
             // In case of error -> It is emitted in get_and_refine_proc_spec
-            .map(|spec| spec.kind.get_predicate_body().unwrap_or(None))
-            .unwrap_or(None);
-        trace!("get_predicate_body {:?} = {:?}", query, result);
-        result.cloned()
+            .and_then(|spec| spec.kind.get_predicate_body().unwrap_or(None))
+            .cloned()
     }
 
-    fn terminates(&self, def_id: DefId, substs: Option<SubstsRef<'tcx>>) -> bool {
+    #[tracing::instrument(level = "trace", skip(self), ret)]
+    fn terminates(&self, def_id: DefId, substs: Option<GenericArgsRef<'tcx>>) -> bool {
         let substs = substs.unwrap_or_else(|| self.env().query.identity_substs(def_id));
         let query = SpecQuery::GetProcKind(def_id, substs);
-        let result = self
-            .specifications_state
+        self.specifications_state
             .specs
             .borrow_mut()
             .get_and_refine_proc_spec(self.env(), query)
@@ -204,9 +202,7 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
                     .copied()
             })
             .unwrap_or(None)
-            .is_some();
-        trace!("terminates {:?} = {}", query, result);
-        result
+            .is_some()
     }
 
     fn get_loop_specs(&self, def_id: DefId) -> Option<typed::LoopSpecification> {
@@ -241,6 +237,14 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
             .cloned()
     }
 
+    fn get_prusti_refutation(&self, def_id: DefId) -> Option<typed::PrustiRefutation> {
+        self.specifications_state
+            .specs
+            .borrow()
+            .get_refutation(&def_id)
+            .cloned()
+    }
+
     fn get_ghost_begin(&self, def_id: DefId) -> Option<typed::GhostBegin> {
         self.specifications_state
             .specs
@@ -260,7 +264,7 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
     fn get_procedure_specs(
         &self,
         def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> Option<typed::ProcedureSpecification> {
         let query = SpecQuery::FunctionDefEncoding(def_id, substs);
         let mut specs = self.specifications_state.specs.borrow_mut();
@@ -272,7 +276,7 @@ impl<'v, 'tcx: 'v> SpecificationsInterface<'tcx> for super::super::super::Encode
         &self,
         called_def_id: DefId,
         caller_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> Option<ProcedureSpecification> {
         let query = SpecQuery::FunctionCallEncoding(FunctionCallEncodingQuery {
             called_def_id,

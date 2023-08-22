@@ -11,7 +11,7 @@ use crate::encoder::foldunfold::{action::Action, perm::Perm, FoldUnfoldError};
 use log::trace;
 use prusti_common::utils::to_string::ToString;
 use rustc_hash::FxHashMap;
-use std::{cmp::Ordering, rc::Rc, sync::RwLock};
+use std::{cmp::Ordering, fmt::Write, rc::Rc, sync::RwLock};
 use vir_crate::polymorphic as vir;
 
 // Note: Now every PathCtxt has its own EventLog, because a Borrow no longer unique
@@ -58,12 +58,8 @@ impl EventLog {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip_all, fields(block_index = %block_index, action = %action))]
     pub fn log_prejoin_action(&mut self, block_index: vir::CfgBlockIndex, action: Action) {
-        trace!(
-            "[enter] log_prejoin_action(block_index={}, action={})",
-            block_index,
-            action
-        );
         let entry_rc = self
             .prejoin_actions
             .entry(block_index)
@@ -104,22 +100,22 @@ impl EventLog {
         perm: vir::Expr,
         original_place: vir::Expr,
     ) {
-        let entry = self.duplicated_reads.entry(borrow).or_insert_with(Vec::new);
+        let entry = self.duplicated_reads.entry(borrow).or_default();
         entry.push((perm, original_place, self.id_generator));
         self.id_generator += 1;
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn get_duplicated_read_permissions(
         &self,
         borrow: vir::borrows::Borrow,
     ) -> Vec<(vir::Expr, vir::Expr)> {
-        trace!("[enter] get_duplicated_read_permissions({:?})", borrow);
         let mut result = self
             .duplicated_reads
             .get(&borrow)
             .cloned()
             .unwrap_or_default();
-        result.sort_by(
+        result.sort_unstable_by(
             |(access1, _, id1), (access2, _, id2)| match (access1, access2) {
                 (
                     vir::Expr::PredicateAccessPredicate(..),
@@ -149,12 +145,12 @@ impl EventLog {
             },
         );
         trace!(
-            "[enter] get_duplicated_read_permissions({:?}) = {}",
+            "[exit] get_duplicated_read_permissions({:?}) = {}",
             borrow,
-            result
-                .iter()
-                .map(|(a, p, id)| format!("({}, {}, {}), ", a, p, id))
-                .collect::<String>()
+            result.iter().fold(String::new(), |mut output, (a, p, id)| {
+                let _ = write!(output, "({a}, {p}, {id}), ");
+                output
+            })
         );
         result
             .into_iter()
@@ -165,10 +161,7 @@ impl EventLog {
     /// `perm` is an instance of either `PredicateAccessPredicate` or `FieldAccessPredicate`.
     pub fn log_convertion_to_read(&mut self, borrow: vir::borrows::Borrow, perm: vir::Expr) {
         assert!(perm.get_perm_amount() == vir::PermAmount::Remaining);
-        let entry = self
-            .converted_to_read_places
-            .entry(borrow)
-            .or_insert_with(Vec::new);
+        let entry = self.converted_to_read_places.entry(borrow).or_default();
         entry.push(perm);
     }
 

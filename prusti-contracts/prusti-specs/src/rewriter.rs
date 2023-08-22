@@ -14,12 +14,12 @@ pub(crate) struct AstRewriter {
     spec_id_generator: SpecificationIdGenerator,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub enum SpecItemType {
     Precondition,
     Postcondition,
     Pledge,
-    Predicate,
+    Predicate(TokenStream),
     Termination,
 }
 
@@ -29,7 +29,7 @@ impl std::fmt::Display for SpecItemType {
             SpecItemType::Precondition => write!(f, "pre"),
             SpecItemType::Postcondition => write!(f, "post"),
             SpecItemType::Pledge => write!(f, "pledge"),
-            SpecItemType::Predicate => write!(f, "pred"),
+            SpecItemType::Predicate(_) => write!(f, "pred"),
             SpecItemType::Termination => write!(f, "term"),
         }
     }
@@ -105,24 +105,21 @@ impl AstRewriter {
         // - `item_span` is set to `expr.span()` so that any errors reported
         //   for the spec item will be reported on the span of the expression
         //   written by the user
-        // - `((#expr) : bool)` syntax is used to report type errors in the
+        // - `let ...: bool = #expr` syntax is used to report type errors in the
         //   expression with the correct error message, i.e. that the expected
         //   type is `bool`, not that the expected *return* type is `bool`
-        // - `!!(...)` is used to fix an edge-case when the expression consists
-        //   of a single identifier; without the double negation, the `Return`
-        //   terminator in MIR has a span set to the one character just after
-        //   the identifier
-        let (return_type, return_modifier) = if spec_type == SpecItemType::Termination {
-            (quote_spanned! {item_span => Int}, quote_spanned! {item_span => Int::new(0) + })
-        } else {
-            (quote_spanned! {item_span => bool}, quote_spanned! {item_span => !!})
+        let return_type = match &spec_type {
+            SpecItemType::Termination => quote_spanned! {item_span => Int},
+            SpecItemType::Predicate(return_type) => return_type.clone(),
+            _ => quote_spanned! {item_span => bool},
         };
         let mut spec_item: syn::ItemFn = parse_quote_spanned! {item_span=>
-            #[allow(unused_must_use, unused_parens, unused_variables, dead_code)]
+            #[allow(unused_must_use, unused_parens, unused_variables, dead_code, non_snake_case)]
             #[prusti::spec_only]
             #[prusti::spec_id = #spec_id_str]
             fn #item_name() -> #return_type {
-                #return_modifier ((#expr) : #return_type)
+                let prusti_result: #return_type = #expr;
+                prusti_result
             }
         };
 
@@ -162,6 +159,30 @@ impl AstRewriter {
             parse_prusti_pledge(tokens)?,
             item,
         )
+    }
+
+    pub fn process_pure_refinement(
+        &mut self,
+        spec_id: SpecificationId,
+        item: &untyped::AnyFnItem,
+    ) -> syn::Result<syn::Item> {
+        let item_span = item.span();
+        let item_name = syn::Ident::new(
+            &format!("prusti_pure_ghost_item_{}", item.sig().ident),
+            item_span,
+        );
+
+        let spec_id_str = spec_id.to_string();
+        let mut spec_item: syn::ItemFn = parse_quote_spanned! {item_span=>
+            #[allow(unused_must_use, unused_parens, unused_variables, dead_code)]
+            #[prusti::spec_only]
+            #[prusti::spec_id = #spec_id_str]
+            fn #item_name() {} // we only need this for attaching constraints to (to evaluate when the function is pure)
+        };
+
+        spec_item.sig.generics = item.sig().generics.clone();
+        spec_item.sig.inputs = item.sig().inputs.clone();
+        Ok(syn::Item::Fn(spec_item))
     }
 
     /// Parse a pledge with lhs into a Rust expression
@@ -223,6 +244,15 @@ impl AstRewriter {
         tokens: TokenStream,
     ) -> syn::Result<TokenStream> {
         self.process_prusti_expression(quote! {prusti_assumption}, spec_id, tokens)
+    }
+
+    /// Parse a prusti refute into a Rust expression
+    pub fn process_prusti_refutation(
+        &mut self,
+        spec_id: SpecificationId,
+        tokens: TokenStream,
+    ) -> syn::Result<TokenStream> {
+        self.process_prusti_expression(quote! {prusti_refutation}, spec_id, tokens)
     }
 
     fn process_prusti_expression(

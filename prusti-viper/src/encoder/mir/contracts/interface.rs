@@ -2,10 +2,11 @@ use super::{
     borrows::BorrowInfoCollectingVisitor,
     contracts::{ProcedureContract, ProcedureContractGeneric, ProcedureContractMirDef},
 };
-use crate::encoder::{
-    errors::{EncodingError, EncodingResult},
-    mir::specifications::SpecificationsInterface,
-    places, Encoder,
+use crate::{
+    encoder::{
+        errors::EncodingResult, mir::specifications::SpecificationsInterface, places, Encoder,
+    },
+    error_unsupported,
 };
 use log::trace;
 use prusti_interface::specs::typed;
@@ -13,7 +14,7 @@ use prusti_rustc_interface::{
     hir::{def_id::DefId, Mutability},
     middle::{
         mir, ty,
-        ty::{subst::SubstsRef, FnSig},
+        ty::{FnSig, GenericArgsRef},
     },
 };
 use rustc_hash::FxHashMap;
@@ -25,14 +26,14 @@ pub(crate) trait ContractsEncoderInterface<'tcx> {
     fn get_mir_procedure_contract_for_def(
         &self,
         proc_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContractMirDef<'tcx>>;
 
     fn get_mir_procedure_contract_for_call(
         &self,
         caller_def_id: DefId,
         called_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContractMirDef<'tcx>>;
 
     /// Get a contract for a procedure's definition site, using the
@@ -41,7 +42,7 @@ pub(crate) trait ContractsEncoderInterface<'tcx> {
     fn get_procedure_contract_for_def(
         &self,
         proc_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContract<'tcx>>;
 
     /// Get a contract for a call to a procedure, with particular argument and
@@ -52,7 +53,7 @@ pub(crate) trait ContractsEncoderInterface<'tcx> {
         called_def_id: DefId,
         args: &[places::Local],
         target: places::Local,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContract<'tcx>>;
 }
 
@@ -65,7 +66,7 @@ impl<'v, 'tcx: 'v> ContractsEncoderInterface<'tcx> for super::super::super::Enco
     fn get_mir_procedure_contract_for_def(
         &self,
         proc_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContractMirDef<'tcx>> {
         self.contracts_encoder_state
             .encoded_contracts
@@ -84,7 +85,7 @@ impl<'v, 'tcx: 'v> ContractsEncoderInterface<'tcx> for super::super::super::Enco
         &self,
         caller_def_id: DefId,
         called_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContractMirDef<'tcx>> {
         let (called_def_id, call_substs) =
             self.env()
@@ -97,10 +98,11 @@ impl<'v, 'tcx: 'v> ContractsEncoderInterface<'tcx> for super::super::super::Enco
         Ok(contract)
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     fn get_procedure_contract_for_def(
         &self,
         proc_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContract<'tcx>> {
         self.get_mir_procedure_contract_for_def(proc_def_id, substs)
             .as_ref()
@@ -108,13 +110,14 @@ impl<'v, 'tcx: 'v> ContractsEncoderInterface<'tcx> for super::super::super::Enco
             .map_err(|err| err.clone())
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     fn get_procedure_contract_for_call(
         &self,
         caller_def_id: DefId,
         called_def_id: DefId,
         args: &[places::Local],
         target: places::Local,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
     ) -> EncodingResult<ProcedureContract<'tcx>> {
         let (called_def_id, call_substs) =
             self.env()
@@ -128,16 +131,14 @@ impl<'v, 'tcx: 'v> ContractsEncoderInterface<'tcx> for super::super::super::Enco
     }
 }
 
+#[tracing::instrument(level = "debug", skip(encoder, specification))]
 fn get_procedure_contract<'p, 'v: 'p, 'tcx: 'v>(
     encoder: &'p Encoder<'v, 'tcx>,
     specification: typed::ProcedureSpecification,
     proc_def_id: DefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> EncodingResult<ProcedureContractMirDef<'tcx>> {
     let env = encoder.env();
-
-    trace!("[get_procedure_contract] enter name={:?}", proc_def_id);
-
     let args_ty: Vec<(mir::Local, ty::Ty<'tcx>)>;
     let return_ty;
 
@@ -146,9 +147,7 @@ fn get_procedure_contract<'p, 'v: 'p, 'tcx: 'v>(
         // FIXME: Replace with FakeMirEncoder.
         let fn_sig: FnSig = env.query.get_fn_sig(proc_def_id, substs).skip_binder();
         if fn_sig.c_variadic {
-            return Err(EncodingError::unsupported(
-                "variadic functions are not supported",
-            ));
+            error_unsupported!("variadic functions are not supported");
         }
         args_ty = (0usize..fn_sig.inputs().len())
             .map(|i| (mir::Local::from_usize(i + 1), fn_sig.inputs()[i]))

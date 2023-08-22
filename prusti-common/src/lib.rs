@@ -5,9 +5,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 #![feature(box_patterns)]
-#![feature(box_syntax)]
-
 #![deny(unused_must_use)]
+#![warn(clippy::disallowed_types)]
 
 pub mod vir;
 pub use prusti_utils::*;

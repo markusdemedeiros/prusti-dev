@@ -28,11 +28,15 @@ pub fn ty_to_string(typ: &ty::TyKind) -> String {
         &ty::TyKind::FnPtr(_) => "function pointer",
         &ty::TyKind::Dynamic(..) => "trait object",
         &ty::TyKind::Closure(_, _) => "closures",
-        &ty::TyKind::Generator(..) | &ty::TyKind::GeneratorWitness(..) => "generator",
+        &ty::TyKind::Generator(..)
+        | &ty::TyKind::GeneratorWitness(..)
+        | &ty::TyKind::GeneratorWitnessMIR(..) => "generator",
         &ty::TyKind::Never => "never type",
         &ty::TyKind::Tuple(_) => "tuple",
-        &ty::TyKind::Projection(_) => "projection",
-        &ty::TyKind::Opaque(_, _) => "opaque type",
+        &ty::TyKind::Alias(ty::AliasKind::Projection, _) => "projection",
+        &ty::TyKind::Alias(ty::AliasKind::Opaque, _) => "opaque type",
+        &ty::TyKind::Alias(ty::AliasKind::Inherent, _) => "inherent alias type",
+        &ty::TyKind::Alias(ty::AliasKind::Weak, _) => "weak alias type",
         &ty::TyKind::Param(_) => "type parameter",
         &ty::TyKind::Bound(_, _) => "bound type variable",
         &ty::TyKind::Placeholder(_) => "placeholder type",

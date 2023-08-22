@@ -14,29 +14,33 @@ use crate::{
         Program,
     },
 };
-use log::{info, trace};
-use std::collections::HashMap;
+use log::info;
+use rustc_hash::FxHashMap;
 use viper::{self, AstFactory};
 use vir::common::identifier::WithIdentifier;
 
 impl<'v> ToViper<'v, viper::Program<'v>> for Program {
+    #[tracing::instrument(name = "Program::to_viper", level = "debug", skip_all)]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Program<'v> {
-        let domains = self.domains.to_viper(context, ast);
+        let mut domains = self.domains.to_viper(context, ast);
+        domains.extend(self.backend_types.to_viper(context, ast));
         let fields = self.fields.to_viper(context, ast);
 
-        let mut viper_methods: Vec<_> = self
-            .methods
-            .iter()
-            .map(|m| m.to_viper(context, ast))
-            .collect();
-        viper_methods.extend(
-            self.builtin_methods
+        let viper_methods = if config::verify_only_preamble() {
+            Vec::new()
+        } else {
+            let mut tmp: Vec<_> = self
+                .methods
                 .iter()
-                .map(|m| m.to_viper(context, ast)),
-        );
-        if config::verify_only_preamble() {
-            viper_methods = Vec::new();
-        }
+                .map(|m| m.to_viper(context, ast))
+                .collect();
+            tmp.extend(
+                self.builtin_methods
+                    .iter()
+                    .map(|m| m.to_viper(context, ast)),
+            );
+            tmp
+        };
 
         let mut viper_functions: Vec<_> = self
             .functions
@@ -85,14 +89,14 @@ impl<'v> ToViper<'v, viper::Program<'v>> for Program {
 }
 
 impl<'v> ToViper<'v, viper::Position<'v>> for Position {
+    #[tracing::instrument(name = "Position::to_viper", level = "trace", skip_all, fields(
+        line = %self.line(), column = %self.column(), id = %self.id()
+    ))]
     fn to_viper(&self, _context: Context, ast: &AstFactory<'v>) -> viper::Position<'v> {
-        trace!(
-            "Generating Viper position: line {} column {} id {}",
-            self.line(),
-            self.column(),
-            self.id()
-        );
-        ast.identifier_position(self.line(), self.column(), self.id().to_string())
+        // The line and column of a vir::Position refer to the source Rust program.
+        // Line and columns in Viper positions have a different semantics, because Silicon
+        // deduplicates error messages based on them.
+        ast.identifier_position(self.id() as i32, 0, self.id().to_string())
     }
 }
 
@@ -103,7 +107,7 @@ impl<'v> ToViper<'v, viper::Type<'v>> for Type {
             Type::Bool => ast.bool_type(),
             Type::Ref | Type::TypedRef(_) => ast.ref_type(),
             Type::Domain(ref name) => ast.domain_type(name, &[], &[]),
-            Type::Snapshot(ref name) => ast.domain_type(&format!("Snap${}", name), &[], &[]),
+            Type::Snapshot(ref name) => ast.domain_type(&format!("Snap${name}"), &[], &[]),
             Type::Seq(ref elem_ty) => ast.seq_type(elem_ty.to_viper(_context, ast)),
             Type::Map(ref key_type, ref val_type) => ast.map_type(
                 key_type.to_viper(_context, ast),
@@ -158,8 +162,8 @@ impl<'v> ToViper<'v, viper::Field<'v>> for Field {
 }
 
 impl<'v> ToViper<'v, viper::Stmt<'v>> for Stmt {
+    #[tracing::instrument(name = "Stmt::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Stmt<'v> {
-        trace!("Generating Viper statement: {}", self);
         match self {
             Stmt::Comment(ref comment) => ast.comment(comment),
             Stmt::Label(ref label) => ast.label(label, &[]),
@@ -171,11 +175,14 @@ impl<'v> ToViper<'v, viper::Stmt<'v>> for Stmt {
                 )
             }
             Stmt::Exhale(ref expr, ref pos) => {
-                assert!(!pos.is_default(), "stmt with default pos: {}", self);
+                assert!(!pos.is_default(), "stmt with default pos: {self}");
                 ast.exhale(expr.to_viper(context, ast), pos.to_viper(context, ast))
             }
             Stmt::Assert(ref expr, ref pos) => {
                 ast.assert(expr.to_viper(context, ast), pos.to_viper(context, ast))
+            }
+            Stmt::Refute(ref expr, ref pos) => {
+                ast.refute(expr.to_viper(context, ast), pos.to_viper(context, ast))
             }
             Stmt::MethodCall(ref method_name, ref args, ref targets) => {
                 let fake_position = Position::default();
@@ -309,7 +316,9 @@ impl<'v> ToViper<'v, viper::Stmt<'v>> for Stmt {
                 )
             }
             Stmt::ApplyMagicWand(ref wand, ref pos) => {
-                let Expr::MagicWand(_, _, Some(borrow), _) = wand else { unreachable!() };
+                let Expr::MagicWand(_, _, Some(borrow), _) = wand else {
+                    unreachable!()
+                };
                 let borrow: usize = borrow_id(*borrow);
                 let borrow: Expr = borrow.into();
                 let inhale = ast.inhale(
@@ -319,8 +328,7 @@ impl<'v> ToViper<'v, viper::Stmt<'v>> for Stmt {
                     ),
                     pos.to_viper(context, ast),
                 );
-                let position =
-                    ast.identifier_position(pos.line(), pos.column(), &pos.id().to_string());
+                let position = pos.to_viper(context, ast);
                 let apply = ast.apply(wand.to_viper(context, ast), position);
                 ast.seqn(&[inhale, apply], &[])
             }
@@ -355,6 +363,7 @@ impl<'v> ToViper<'v, viper::Expr<'v>> for PermAmount {
 }
 
 impl<'v> ToViper<'v, viper::Expr<'v>> for Expr {
+    #[tracing::instrument(name = "Expr::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Expr<'v> {
         let expr = match self {
             Expr::Local(ref local_var, ref pos) => (local_var, pos).to_viper(context, ast),
@@ -611,7 +620,9 @@ impl<'v> ToViper<'v, viper::Expr<'v>> for Expr {
                 ContainerOpKind::SeqLen => ast.seq_length(left.to_viper(context, ast)),
             },
             Expr::Seq(ty, elems, _pos) => {
-                let Type::Seq(box elem_ty) = ty else { unreachable!() };
+                let Type::Seq(box elem_ty) = ty else {
+                    unreachable!()
+                };
                 let viper_elem_ty = elem_ty.to_viper(context, ast);
                 if elems.is_empty() {
                     ast.empty_seq(viper_elem_ty)
@@ -624,7 +635,9 @@ impl<'v> ToViper<'v, viper::Expr<'v>> for Expr {
                 }
             }
             Expr::Map(ty, elems, _pos) => {
-                let Type::Map(box key_ty, box val_ty) = ty else { unreachable!() };
+                let Type::Map(box key_ty, box val_ty) = ty else {
+                    unreachable!()
+                };
                 let viper_key_ty = key_ty.to_viper(context, ast);
                 let viper_val_ty = val_ty.to_viper(context, ast);
                 if elems.is_empty() {
@@ -802,6 +815,7 @@ impl<'v, 'a, 'b> ToViper<'v, viper::Expr<'v>> for (&'a Const, &'b Position) {
 }
 
 impl<'v> ToViper<'v, viper::Predicate<'v>> for Predicate {
+    #[tracing::instrument(name = "Predicate::to_viper", level = "debug", skip_all)]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Predicate<'v> {
         match self {
             Predicate::Struct(p) => p.to_viper(context, ast),
@@ -814,6 +828,11 @@ impl<'v> ToViper<'v, viper::Predicate<'v>> for Predicate {
 }
 
 impl<'v> ToViper<'v, viper::Predicate<'v>> for StructPredicate {
+    #[tracing::instrument(
+        name = "StructPredicate::to_viper",
+        level = "trace",
+        skip(context, ast)
+    )]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Predicate<'v> {
         ast.predicate(
             &self.name,
@@ -824,6 +843,7 @@ impl<'v> ToViper<'v, viper::Predicate<'v>> for StructPredicate {
 }
 
 impl<'v> ToViper<'v, viper::Predicate<'v>> for EnumPredicate {
+    #[tracing::instrument(name = "EnumPredicate::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Predicate<'v> {
         ast.predicate(
             &self.name,
@@ -834,6 +854,7 @@ impl<'v> ToViper<'v, viper::Predicate<'v>> for EnumPredicate {
 }
 
 impl<'a, 'v> ToViper<'v, viper::Method<'v>> for &'a BodylessMethod {
+    #[tracing::instrument(name = "BodylessMethod::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Method<'v> {
         ast.method(
             &self.name,
@@ -847,6 +868,7 @@ impl<'a, 'v> ToViper<'v, viper::Method<'v>> for &'a BodylessMethod {
 }
 
 impl<'a, 'v> ToViper<'v, viper::Function<'v>> for &'a Function {
+    #[tracing::instrument(name = "Function::to_viper", level = "debug", skip_all)]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Function<'v> {
         ast.function(
             &self.get_identifier(),
@@ -861,6 +883,7 @@ impl<'a, 'v> ToViper<'v, viper::Function<'v>> for &'a Function {
 }
 
 impl<'a, 'v> ToViper<'v, viper::Domain<'v>> for &'a Domain {
+    #[tracing::instrument(name = "Domain::to_viper", level = "debug", skip_all)]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Domain<'v> {
         ast.domain(
             &self.name,
@@ -872,6 +895,7 @@ impl<'a, 'v> ToViper<'v, viper::Domain<'v>> for &'a Domain {
 }
 
 impl<'a, 'v> ToViper<'v, viper::DomainFunc<'v>> for &'a DomainFunc {
+    #[tracing::instrument(name = "DomainFunc::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::DomainFunc<'v> {
         ast.domain_func(
             &self.get_identifier(),
@@ -884,11 +908,43 @@ impl<'a, 'v> ToViper<'v, viper::DomainFunc<'v>> for &'a DomainFunc {
 }
 
 impl<'a, 'v> ToViper<'v, viper::NamedDomainAxiom<'v>> for &'a DomainAxiom {
+    #[tracing::instrument(name = "DomainAxiom::to_viper", level = "trace", skip(context, ast))]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::NamedDomainAxiom<'v> {
-        ast.named_domain_axiom(
+        if let Some(comment) = &self.comment {
+            ast.named_domain_axiom_with_comment(
+                &self.name,
+                self.expr.to_viper(context, ast),
+                &self.domain_name,
+                comment,
+            )
+        } else {
+            ast.named_domain_axiom(
+                &self.name,
+                self.expr.to_viper(context, ast),
+                &self.domain_name,
+            )
+        }
+    }
+}
+
+impl<'a, 'v> ToViper<'v, viper::Domain<'v>> for &'a BackendType {
+    fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Domain<'v> {
+        ast.backend_type(
             &self.name,
-            self.expr.to_viper(context, ast),
+            &self.functions.to_viper(context, ast),
+            &self.interpretations,
+        )
+    }
+}
+
+impl<'a, 'v> ToViper<'v, viper::DomainFunc<'v>> for &'a BackendFuncDecl {
+    fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::DomainFunc<'v> {
+        ast.backend_func(
+            &self.get_identifier(),
+            &self.formal_args.to_viper_decl(context, ast),
+            self.return_type.to_viper(context, ast),
             &self.domain_name,
+            &self.interpretation,
         )
     }
 }
@@ -947,6 +1003,18 @@ impl<'v> ToViper<'v, Vec<viper::NamedDomainAxiom<'v>>> for Vec<DomainAxiom> {
     }
 }
 
+impl<'v> ToViper<'v, Vec<viper::Domain<'v>>> for Vec<BackendType> {
+    fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> Vec<viper::Domain<'v>> {
+        self.iter().map(|x| x.to_viper(context, ast)).collect()
+    }
+}
+
+impl<'v> ToViper<'v, Vec<viper::DomainFunc<'v>>> for Vec<BackendFuncDecl> {
+    fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> Vec<viper::DomainFunc<'v>> {
+        self.iter().map(|x| x.to_viper(context, ast)).collect()
+    }
+}
+
 impl<'v> ToViper<'v, Vec<viper::Type<'v>>> for Vec<Type> {
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> Vec<viper::Type<'v>> {
         self.iter().map(|x| x.to_viper(context, ast)).collect()
@@ -972,6 +1040,7 @@ impl<'v> ToViper<'v, Vec<viper::Predicate<'v>>> for Vec<Predicate> {
 }
 
 impl<'a, 'v> ToViper<'v, viper::Method<'v>> for &'a CfgMethod {
+    #[tracing::instrument(name = "CfgMethod::to_viper", level = "debug", skip_all)]
     fn to_viper(&self, context: Context, ast: &AstFactory<'v>) -> viper::Method<'v> {
         let mut blocks_ast: Vec<viper::Stmt> = vec![];
         let mut declarations: Vec<viper::Declaration> = vec![];
@@ -1045,7 +1114,7 @@ fn cfg_method_convert_basic_block_path<'v>(
     declarations: &mut Vec<viper::Declaration<'v>>,
 ) {
     path.reverse();
-    let mut remaining_blocks: HashMap<_, _> = cfg_method
+    let mut remaining_blocks: FxHashMap<_, _> = cfg_method
         .basic_blocks
         .iter()
         .enumerate()
@@ -1087,9 +1156,7 @@ fn cfg_method_convert_basic_block_path<'v>(
             current_label = next_label;
             assert!(
                 successors.contains(&current_label),
-                "successors: {:?} next_label: {:?}",
-                successors,
-                current_label
+                "successors: {successors:?} next_label: {current_label:?}"
             );
         } else {
             break;
@@ -1176,7 +1243,11 @@ fn block_to_viper<'a>(
     index: usize,
 ) -> viper::Stmt<'a> {
     let label = &basic_block_labels[index];
-    let mut stmts: Vec<viper::Stmt> = vec![ast.label(label, &[])];
+    let mut stmts: Vec<viper::Stmt> = vec![
+        // To put a bit of white space between blocks.
+        ast.comment(""),
+        ast.label(label, &[]),
+    ];
     stmts.extend(block.stmts.to_viper(context, ast));
     stmts.push(successor_to_viper(
         context,

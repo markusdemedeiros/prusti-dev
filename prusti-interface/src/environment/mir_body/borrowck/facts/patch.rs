@@ -178,7 +178,7 @@ pub fn apply_patch_to_borrowck<'tcx>(
                 }
                 mir::TerminatorKind::Drop { target, unwind, .. } => {
                     let mut target_points = vec![lt_patcher.start_point(target.index(), 0)];
-                    if let Some(unwind) = unwind {
+                    if let mir::UnwindAction::Cleanup(unwind) = unwind {
                         target_points.push(lt_patcher.start_point(unwind.index(), 0));
                     }
                     assert!(cfg_edges
@@ -366,15 +366,11 @@ impl<'a> LocationTablePatcher<'a> {
                 .locations
                 .insert(point, location)
                 .is_none(),
-            "location: {:?} point: {:?}",
-            location,
-            point
+            "location: {location:?} point: {point:?}"
         );
         assert!(
             self.location_table.points.insert(location, point).is_none(),
-            "location: {:?} point: {:?}",
-            location,
-            point
+            "location: {location:?} point: {point:?}"
         );
     }
 

@@ -5,10 +5,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 use prusti_common::{config, vir::program::Program};
-use std::{
-    collections::hash_map::DefaultHasher,
-    hash::{Hash, Hasher},
-};
+use rustc_hash::FxHasher;
+use std::hash::{Hash, Hasher};
 use viper::{self, VerificationBackend};
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Hash)]
@@ -19,7 +17,7 @@ pub struct VerificationRequest {
 
 impl VerificationRequest {
     pub(crate) fn get_hash(&self) -> u64 {
-        let mut hasher = DefaultHasher::new();
+        let mut hasher = FxHasher::default();
         self.hash(&mut hasher);
         hasher.finish()
     }
@@ -39,6 +37,10 @@ impl ViperBackendConfig {
         let mut verifier_args = config::extra_verifier_args();
         match backend {
             VerificationBackend::Silicon => {
+                verifier_args.push(format!(
+                    "--numberOfErrorsToReport={}",
+                    config::num_errors_per_function()
+                ));
                 if config::use_more_complete_exhale() {
                     verifier_args.push("--enableMoreCompleteExhale".to_string());
                 }
@@ -52,6 +54,7 @@ impl ViperBackendConfig {
                 }
 
                 verifier_args.extend(vec![
+                    "--disableTerminationPlugin".to_string(),
                     "--assertTimeout".to_string(),
                     config::assert_timeout().to_string(),
                     "--proverConfigArgs".to_string(),

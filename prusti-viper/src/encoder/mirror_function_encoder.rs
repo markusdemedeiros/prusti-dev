@@ -76,7 +76,7 @@ impl MirrorEncoder {
         // add postcondition to the original function
         // [result == mirror(args), true]
         function.posts.push(vir::Expr::InhaleExhale( vir::InhaleExhale {
-            inhale_expr: box vir::Expr::eq_cmp(
+            inhale_expr: Box::new(vir::Expr::eq_cmp(
                 vir::Expr::local(
                     vir::LocalVar::new("__result", function.return_type.clone()),
                 ),
@@ -87,8 +87,8 @@ impl MirrorEncoder {
                         .map(vir::Expr::local)
                         .collect(),
                 ),
-            ),
-            exhale_expr: box true.into(),
+            )),
+            exhale_expr: Box::new(true.into()),
             position: vir::Position::default(),
         }));
 
@@ -239,6 +239,7 @@ fn encode_definitional_axiom(
     let pre_conds_and_valid = vir::Expr::and(pre_conds, valids_anded);
     let axiom_body = vir::Expr::implies(pre_conds_and_valid, rhs);
     let definitional_axiom = vir::DomainAxiom {
+        comment: None,
         name: format!("{}$axiom", function.get_identifier()),
         expr: vir::Expr::forall(domain_function.formal_args.clone(), triggers.clone(), axiom_body),
         domain_name: mirror_function_domain.name.clone(),
@@ -269,6 +270,7 @@ fn encode_nat_axiom(
     let function_call_without_succ = vir::Expr::domain_func_app(domain_function, args_without_succ);
     let axiom_body = vir::Expr::eq_cmp(function_call_without_succ, function_call_with_succ);
     let axiom = vir::DomainAxiom {
+        comment: None,
         name: format!("{}$nat_axiom", function.get_identifier()),
         expr: vir::Expr::forall(formal_args, triggers.clone(), axiom_body),
         domain_name: mirror_function_domain.name.clone(),

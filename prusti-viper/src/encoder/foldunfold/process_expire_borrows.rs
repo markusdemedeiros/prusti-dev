@@ -12,6 +12,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
     /// Generates Viper statements that expire all the borrows from the given `dag`. The
     /// `surrounding_pctxt` will be modified to reflect the path context after the borrows have
     /// been expired.
+    #[tracing::instrument(level = "debug", skip(self, surrounding_pctxt, new_cfg))]
     pub(super) fn process_expire_borrows(
         &mut self,
         dag: &vir::borrows::DAG,
@@ -20,8 +21,6 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
         new_cfg: &vir::CfgMethod,
         label: Option<&str>,
     ) -> Result<Vec<vir::Stmt>, FoldUnfoldError> {
-        debug!("[enter] process_expire_borrows dag=[{:?}]", dag);
-
         let mut cfg = build_initial_cfg(dag);
 
         let mut final_pctxt: Vec<Option<PathCtxt>> = vec![None; cfg.basic_blocks.len()];
@@ -115,6 +114,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
         })
     }
 
+    #[tracing::instrument(level = "trace", skip_all)]
     fn construct_initial_pctxt_no_predecessors(
         &self,
         dag: &vir::borrows::DAG,
@@ -147,7 +147,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
                 dropped_permissions
             );
             for perm in &dropped_permissions {
-                let comment = format!("restored (from log): {}", perm);
+                let comment = format!("restored (from log): {perm}");
                 curr_block_pre_statements.push(vir::Stmt::comment(comment));
             }
             pctxt
@@ -158,6 +158,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[tracing::instrument(level = "trace", skip_all)]
     fn construct_initial_pctxt_with_predecessors(
         &self,
         dag: &vir::borrows::DAG,
@@ -194,9 +195,9 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
                     dropped_permissions.iter().to_string()
                 );
                 for perm in &dropped_permissions {
-                    let comment = format!("restored (from log): {}", perm);
+                    let comment = format!("restored (from log): {perm}");
                     let key = (predecessor, curr_block_index);
-                    let entry = cfg.edges.entry(key).or_insert_with(Vec::new);
+                    let entry = cfg.edges.entry(key).or_default();
                     entry.push(vir::Stmt::comment(comment));
                 }
                 pctxt
@@ -219,8 +220,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
                             && perm.get_perm_amount() != vir::PermAmount::Read
                         {
                             let comment = vir::Stmt::comment(format!(
-                                "restored (in branch merge): {} ({})",
-                                perm, missing_perm
+                                "restored (in branch merge): {perm} ({missing_perm})"
                             ));
                             stmts_to_add.push(comment);
                             pctxt.mut_state().restore_dropped_perm(perm.clone())?;
@@ -228,7 +228,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
                     }
                 }
                 let key = (src_index, curr_block_index);
-                let entry = cfg.edges.entry(key).or_insert_with(Vec::new);
+                let entry = cfg.edges.entry(key).or_default();
                 entry.extend(stmts_to_add);
             }
         }
@@ -236,6 +236,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
     }
 
     #[allow(clippy::too_many_arguments)]
+    #[tracing::instrument(level = "trace", skip_all, fields(curr_node = ?curr_block.node))]
     fn process_node(
         &mut self,
         surrounding_pctxt: &mut PathCtxt<'p>,
@@ -248,7 +249,6 @@ impl<'p, 'v: 'p, 'tcx: 'v> FoldUnfold<'p, 'v, 'tcx> {
         method_pos: vir::Position,
     ) -> Result<(), FoldUnfoldError> {
         let curr_node = &curr_block.node;
-        trace!("process_node: {:?}", curr_node);
         for s in &curr_node.stmts {
             trace!("stmt: {}", s);
         }
@@ -375,7 +375,7 @@ fn construct_final_pctxt<'p>(
                         && perm.get_perm_amount() != vir::PermAmount::Read
                     {
                         let comment =
-                            format!("restored (in branch merge): {} ({})", perm, missing_perm);
+                            format!("restored (in branch merge): {perm} ({missing_perm})");
                         stmts_to_add.push(vir::Stmt::comment(comment));
                         final_pctxt.mut_state().restore_dropped_perm(perm.clone())?;
                     }
@@ -517,11 +517,11 @@ fn patch_places(stmts: &[vir::Stmt], maybe_label: Option<&str>) -> Vec<vir::Stmt
 }
 
 /// Restore `Write` permissions that were converted to `Read` due to borrowing.
+#[tracing::instrument(level = "trace", skip(pctxt))]
 fn restore_write_permissions(
     borrow: vir::borrows::Borrow,
     pctxt: &mut PathCtxt,
 ) -> Result<Vec<vir::Stmt>, FoldUnfoldError> {
-    trace!("[enter] restore_write_permissions({:?})", borrow);
     let mut stmts = Vec::new();
     for access in pctxt.log().get_converted_to_read_places(borrow) {
         trace!("restore_write_permissions access={}", access);
@@ -566,6 +566,7 @@ fn restore_write_permissions(
     Ok(stmts)
 }
 
+#[tracing::instrument(level = "trace", skip_all)]
 fn build_initial_cfg(dag: &vir::borrows::DAG) -> borrows::CFG {
     let mut cfg = borrows::CFG::new();
     for node in dag.iter() {

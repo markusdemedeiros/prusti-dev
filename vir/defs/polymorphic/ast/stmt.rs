@@ -10,7 +10,7 @@ use super::super::{
 };
 use crate::polymorphic::ast::*;
 use rustc_hash::FxHashMap;
-use std::fmt;
+use std::fmt::{self, Write};
 
 // TODO: Fix by boxing all `Expr`s.
 #[allow(clippy::large_enum_variant)]
@@ -21,6 +21,7 @@ pub enum Stmt {
     Inhale(Inhale),
     Exhale(Exhale),
     Assert(Assert),
+    Refute(Refute),
     /// MethodCall: method_name, args, targets
     MethodCall(MethodCall),
     /// Target, source, kind
@@ -73,6 +74,7 @@ impl fmt::Display for Stmt {
             Stmt::Inhale(inhale) => inhale.fmt(f),
             Stmt::Exhale(exhale) => exhale.fmt(f),
             Stmt::Assert(assert) => assert.fmt(f),
+            Stmt::Refute(refute) => refute.fmt(f),
             Stmt::MethodCall(method_call) => method_call.fmt(f),
             Stmt::Assign(assign) => assign.fmt(f),
             Stmt::Fold(fold) => fold.fmt(f),
@@ -161,9 +163,21 @@ pub struct Assert {
     pub position: Position,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+pub struct Refute {
+    pub expr: Expr,
+    pub position: Position,
+}
+
 impl fmt::Display for Assert {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "assert {}", self.expr)
+    }
+}
+
+impl fmt::Display for Refute {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "refute {}", self.expr)
     }
 }
 
@@ -457,6 +471,10 @@ impl Stmt {
         Stmt::Inhale(Inhale { expr })
     }
 
+    pub fn exhale(expr: Expr, position: Position) -> Self {
+        Stmt::Exhale(Exhale { expr, position })
+    }
+
     pub fn package_magic_wand(
         lhs: Expr,
         rhs: Expr,
@@ -542,6 +560,7 @@ pub trait StmtFolder {
             Stmt::Inhale(inhale) => self.fold_inhale(inhale),
             Stmt::Exhale(exhale) => self.fold_exhale(exhale),
             Stmt::Assert(assert) => self.fold_assert(assert),
+            Stmt::Refute(refute) => self.fold_refute(refute),
             Stmt::MethodCall(method_call) => self.fold_method_call(method_call),
             Stmt::Assign(assign) => self.fold_assign(assign),
             Stmt::Fold(fold) => self.fold_fold(fold),
@@ -590,6 +609,14 @@ pub trait StmtFolder {
     fn fold_assert(&mut self, statement: Assert) -> Stmt {
         let Assert { expr, position } = statement;
         Stmt::Assert(Assert {
+            expr: self.fold_expr(expr),
+            position,
+        })
+    }
+
+    fn fold_refute(&mut self, statement: Refute) -> Stmt {
+        let Refute { expr, position } = statement;
+        Stmt::Refute(Refute {
             expr: self.fold_expr(expr),
             position,
         })
@@ -746,6 +773,7 @@ pub trait FallibleStmtFolder {
             Stmt::Inhale(inhale) => self.fallible_fold_inhale(inhale),
             Stmt::Exhale(exhale) => self.fallible_fold_exhale(exhale),
             Stmt::Assert(assert) => self.fallible_fold_assert(assert),
+            Stmt::Refute(refute) => self.fallible_fold_refute(refute),
             Stmt::MethodCall(method_call) => self.fallible_fold_method_call(method_call),
             Stmt::Assign(assign) => self.fallible_fold_assign(assign),
             Stmt::Fold(fold) => self.fallible_fold_fold(fold),
@@ -798,6 +826,14 @@ pub trait FallibleStmtFolder {
     fn fallible_fold_assert(&mut self, statement: Assert) -> Result<Stmt, Self::Error> {
         let Assert { expr, position } = statement;
         Ok(Stmt::Assert(Assert {
+            expr: self.fallible_fold_expr(expr)?,
+            position,
+        }))
+    }
+
+    fn fallible_fold_refute(&mut self, statement: Refute) -> Result<Stmt, Self::Error> {
+        let Refute { expr, position } = statement;
+        Ok(Stmt::Refute(Refute {
             expr: self.fallible_fold_expr(expr)?,
             position,
         }))
@@ -983,6 +1019,7 @@ pub trait StmtWalker {
             Stmt::Inhale(inhale) => self.walk_inhale(inhale),
             Stmt::Exhale(exhale) => self.walk_exhale(exhale),
             Stmt::Assert(assert) => self.walk_assert(assert),
+            Stmt::Refute(refute) => self.walk_refute(refute),
             Stmt::MethodCall(method_call) => self.walk_method_call(method_call),
             Stmt::Assign(assign) => self.walk_assign(assign),
             Stmt::Fold(fold) => self.walk_fold(fold),
@@ -1021,6 +1058,11 @@ pub trait StmtWalker {
 
     fn walk_assert(&mut self, statement: &Assert) {
         let Assert { expr, .. } = statement;
+        self.walk_expr(expr);
+    }
+
+    fn walk_refute(&mut self, statement: &Refute) {
+        let Refute { expr, .. } = statement;
         self.walk_expr(expr);
     }
 
@@ -1133,6 +1175,7 @@ pub trait FallibleStmtWalker {
             Stmt::Inhale(inhale) => self.fallible_walk_inhale(inhale),
             Stmt::Exhale(exhale) => self.fallible_walk_exhale(exhale),
             Stmt::Assert(assert) => self.fallible_walk_assert(assert),
+            Stmt::Refute(refute) => self.fallible_walk_refute(refute),
             Stmt::MethodCall(method_call) => self.fallible_walk_method_call(method_call),
             Stmt::Assign(assign) => self.fallible_walk_assign(assign),
             Stmt::Fold(fold) => self.fallible_walk_fold(fold),
@@ -1185,6 +1228,12 @@ pub trait FallibleStmtWalker {
 
     fn fallible_walk_assert(&mut self, statement: &Assert) -> Result<(), Self::Error> {
         let Assert { expr, .. } = statement;
+        self.fallible_walk_expr(expr)?;
+        Ok(())
+    }
+
+    fn fallible_walk_refute(&mut self, statement: &Refute) -> Result<(), Self::Error> {
+        let Refute { expr, .. } = statement;
         self.fallible_walk_expr(expr)?;
         Ok(())
     }
@@ -1323,8 +1372,8 @@ pub trait FallibleStmtWalker {
 }
 
 pub fn stmts_to_str(stmts: &[Stmt]) -> String {
-    stmts
-        .iter()
-        .map(|stmt| format!("{}\n", stmt))
-        .collect::<String>()
+    stmts.iter().fold(String::new(), |mut output, stmt| {
+        let _ = writeln!(output, "{stmt}");
+        output
+    })
 }

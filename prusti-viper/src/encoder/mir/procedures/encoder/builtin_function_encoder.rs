@@ -8,26 +8,27 @@ pub(super) trait BuiltinFuncAppEncoder<'p, 'v, 'tcx> {
         location: mir::Location,
         span: Span,
         called_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
         args: &[mir::Operand<'tcx>],
         destination: mir::Place<'tcx>,
         target: &Option<mir::BasicBlock>,
-        cleanup: &Option<mir::BasicBlock>,
+        unwind: mir::UnwindAction,
     ) -> SpannedEncodingResult<bool>;
 }
 
 impl<'p, 'v, 'tcx> BuiltinFuncAppEncoder<'p, 'v, 'tcx> for super::ProcedureEncoder<'p, 'v, 'tcx> {
+    #[tracing::instrument(level = "debug", skip_all, fields(called_def_id = ?called_def_id))]
     fn try_encode_builtin_call(
         &mut self,
         block_builder: &mut BasicBlockBuilder,
         location: mir::Location,
         span: Span,
         called_def_id: DefId,
-        call_substs: SubstsRef<'tcx>,
+        call_substs: GenericArgsRef<'tcx>,
         args: &[mir::Operand<'tcx>],
         destination: mir::Place<'tcx>,
         target: &Option<mir::BasicBlock>,
-        cleanup: &Option<mir::BasicBlock>,
+        unwind: mir::UnwindAction,
     ) -> SpannedEncodingResult<bool> {
         let full_called_function_name = self
             .encoder
@@ -180,7 +181,7 @@ impl<'p, 'v, 'tcx> BuiltinFuncAppEncoder<'p, 'v, 'tcx> for super::ProcedureEncod
                 let panic_message = format!("{:?}", args[0]);
                 let panic_cause = self.encoder.encode_panic_cause(span)?;
                 if self.check_panics {
-                    block_builder.add_comment(format!("Rust panic - {}", panic_message));
+                    block_builder.add_comment(format!("Rust panic - {panic_message}"));
                     block_builder.add_statement(self.encoder.set_statement_error_ctxt(
                         vir_high::Statement::assert_no_pos(false.into()),
                         span,
@@ -191,9 +192,9 @@ impl<'p, 'v, 'tcx> BuiltinFuncAppEncoder<'p, 'v, 'tcx> for super::ProcedureEncod
                     debug!("Absence of panic will not be checked")
                 }
                 assert!(target.is_none());
-                if let Some(cleanup) = cleanup {
+                if let mir::UnwindAction::Cleanup(cleanup) = unwind {
                     let successor =
-                        vir_high::Successor::Goto(self.encode_basic_block_label(*cleanup));
+                        vir_high::Successor::Goto(self.encode_basic_block_label(cleanup));
                     block_builder.set_successor_jump(successor);
                 } else {
                     unimplemented!();
@@ -268,7 +269,8 @@ impl<'p, 'v, 'tcx> BuiltinFuncAppEncoder<'p, 'v, 'tcx> for super::ProcedureEncod
                 if matches!(
                     lhs.get_type(),
                     vir_high::Type::Reference(vir_high::ty::Reference {
-                        target_type: box vir_high::Type::Int(vir_high::ty::Int::Unbounded)
+                        target_type:
+                            box vir_high::Type::Int(vir_high::ty::Int::Unbounded)
                             | box vir_high::Type::Sequence(..)
                             | box vir_high::Type::Map(..),
                         ..

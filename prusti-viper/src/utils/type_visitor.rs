@@ -6,11 +6,10 @@
 
 use prusti_rustc_interface::hir::Mutability;
 use prusti_rustc_interface::middle::ty::{
-    AdtDef, FieldDef, List, ParamTy, ProjectionTy, Region, Ty, TyCtxt,
-    TypeFlags, TyKind, IntTy, UintTy, FloatTy, VariantDef, subst::SubstsRef, Const
+    AdtDef, FieldDef, List, ParamTy, Region, AliasKind, AliasTy, Ty, TyCtxt,
+    TypeFlags, TyKind, IntTy, UintTy, FloatTy, VariantDef, GenericArgsRef, Const
 };
 use prusti_rustc_interface::hir::def_id::DefId;
-use log::trace;
 
 pub trait TypeVisitor<'tcx>: Sized {
     type Error;
@@ -19,14 +18,14 @@ pub trait TypeVisitor<'tcx>: Sized {
 
     fn unsupported<S: ToString>(&self, _msg: S) -> Self::Error;
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_ty(&mut self, ty: Ty<'tcx>) -> Result<(), Self::Error> {
-        trace!("visit_ty({:?})", ty);
         self.visit_sty(ty.kind())?;
         self.visit_flags(ty.flags())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_sty(&mut self, sty: &TyKind<'tcx>) -> Result<(), Self::Error> {
-        trace!("visit_sty({:?})", sty);
         match *sty {
             TyKind::Bool => {
                 self.visit_bool()
@@ -61,8 +60,8 @@ pub trait TypeVisitor<'tcx>: Sized {
             TyKind::Param(param) => {
                 self.visit_param(param)
             }
-            TyKind::Projection(data) => {
-                self.visit_projection(data)
+            TyKind::Alias(AliasKind::Projection, alias_ty) => {
+                self.visit_projection(alias_ty)
             }
             TyKind::Closure(def_id, substs) => {
                 self.visit_closure(def_id, substs)
@@ -118,102 +117,102 @@ pub trait TypeVisitor<'tcx>: Sized {
 
     fn visit_projection(
         &mut self,
-        _data: ProjectionTy<'tcx>
+        _data: AliasTy<'tcx>
     ) -> Result<(), Self::Error> {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_adt(
         &mut self,
         adt_def: AdtDef<'tcx>,
-        substs: SubstsRef<'tcx>
+        substs: GenericArgsRef<'tcx>
     ) -> Result<(), Self::Error> {
-        trace!("visit_adt({:?})", adt_def);
         walk_adt(self, adt_def, substs)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_adt_variant(
         &mut self,
         adt: AdtDef<'tcx>,
         idx: prusti_rustc_interface::target::abi::VariantIdx,
         variant: &VariantDef,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     )  -> Result<(), Self::Error> {
-        trace!("visit_adt_variant({:?}, {:?}, {:?})", adt, idx, variant);
         walk_adt_variant(self, variant, substs)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_field(
         &mut self,
         index: usize,
         field: &FieldDef,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> Result<(), Self::Error> {
-        trace!("visit_field({}, {:?})", index, field);
         walk_field(self, field, substs)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_ref(
         &mut self,
         region: Region<'tcx>,
         ty: Ty<'tcx>,
         mutability: Mutability
     ) -> Result<(), Self::Error> {
-        trace!("visit_ref({:?}, {:?}, {:?})", region, ty, mutability);
         walk_ref(self, region, ty, mutability)
     }
 
     #[allow(dead_code)]
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_ref_type(
         &mut self,
         ty: Ty<'tcx>,
         mutability: Mutability
     ) -> Result<(), Self::Error> {
-        trace!("visit_ref_type({:?}, {:?})", ty, mutability);
         walk_ref_type(self, ty, mutability)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_tuple(
         &mut self,
         types: &'tcx List<Ty<'tcx>>
     ) -> Result<(), Self::Error> {
-        trace!("visit_tuple({:?})", types);
         walk_tuple(self, types)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_raw_ptr(
         &mut self,
         ty: Ty<'tcx>,
         mutability: Mutability
     ) -> Result<(), Self::Error> {
-        trace!("visit_raw_ptr({:?}, {:?})", ty, mutability);
         walk_raw_ptr(self, ty, mutability)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_closure(
         &mut self,
         def_id: DefId,
-        substs: SubstsRef<'tcx>
+        substs: GenericArgsRef<'tcx>
     ) -> Result<(), Self::Error> {
-        trace!("visit_closure({:?})", def_id);
         walk_closure(self, def_id, substs)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_fndef(
         &mut self,
         def_id: DefId,
-        substs: SubstsRef<'tcx>
+        substs: GenericArgsRef<'tcx>
     ) -> Result<(), Self::Error> {
-        trace!("visit_fndef({:?})", def_id);
         walk_fndef(self, def_id, substs)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_array(
         &mut self,
         ty: Ty<'tcx>,
         len: Const<'tcx>,
     ) -> Result<(), Self::Error> {
-        trace!("visit_array({:?}, {:?})", ty, len);
         walk_array(self, ty, len)
     }
 }
@@ -221,7 +220,7 @@ pub trait TypeVisitor<'tcx>: Sized {
 pub fn walk_adt<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     visitor: &mut V,
     adt_def: AdtDef<'tcx>,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> Result<(), E> {
     for (idx, variant) in adt_def.variants().iter_enumerated() {
         visitor.visit_adt_variant(adt_def, idx, variant, substs)?;
@@ -232,7 +231,7 @@ pub fn walk_adt<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
 pub fn walk_adt_variant<'a, 'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     visitor: &mut V,
     variant: &VariantDef,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> Result<(), E> {
     for (index, field) in variant.fields.iter().enumerate() {
         visitor.visit_field(index, field, substs)?;
@@ -243,7 +242,7 @@ pub fn walk_adt_variant<'a, 'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
 pub fn walk_field<'a, 'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     visitor: &mut V,
     field: &FieldDef,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> Result<(), E> {
     let ty = field.ty(visitor.tcx(), substs);
     visitor.visit_ty(ty)
@@ -287,7 +286,7 @@ pub fn walk_raw_ptr<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
 pub fn walk_closure<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     visitor: &mut V,
     _def_id: DefId,
-    substs: SubstsRef<'tcx>
+    substs: GenericArgsRef<'tcx>
 ) -> Result<(), E> {
     let cl_substs = substs.as_closure();
     // TODO: when are there bound typevars? can type visitor deal with generics?
@@ -304,7 +303,7 @@ pub fn walk_closure<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
 pub fn walk_fndef<'tcx, E, V: TypeVisitor<'tcx, Error = E>>(
     visitor: &mut V,
     _def_id: DefId,
-    substs: SubstsRef<'tcx>
+    substs: GenericArgsRef<'tcx>
 ) -> Result<(), E> {
     for ty in substs.types() {
         visitor.visit_ty(ty)?;

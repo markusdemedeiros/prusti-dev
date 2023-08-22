@@ -10,7 +10,7 @@ use super::super::{
 };
 use crate::legacy::ast::*;
 use std::{
-    fmt,
+    fmt::{self, Write},
     hash::{Hash, Hasher},
     mem::discriminant,
     ops::Deref,
@@ -23,6 +23,7 @@ pub enum Stmt {
     Inhale(Expr),
     Exhale(Expr, Position),
     Assert(Expr, Position),
+    Refute(Expr, Position),
     /// MethodCall: method_name, args, targets
     MethodCall(String, Vec<Expr>, Vec<LocalVar>),
     /// Target, source, kind
@@ -74,7 +75,7 @@ pub enum Stmt {
 }
 
 // This preserves `Stmt == Stmt ==> hash(Stmt) == hash(Stmt)`
-#[allow(clippy::derive_hash_xor_eq)]
+#[allow(clippy::derived_hash_with_manual_eq)]
 impl Hash for Stmt {
     /// Hash ignoring Comments and ExpireBorrows
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -84,6 +85,7 @@ impl Hash for Stmt {
             Stmt::Inhale(e) => e.hash(state),
             Stmt::Exhale(e, p) => (e, p).hash(state),
             Stmt::Assert(e, p) => (e, p).hash(state),
+            Stmt::Refute(e, p) => (e, p).hash(state),
             Stmt::MethodCall(s, v1, v2) => (s, v1, v2).hash(state),
             Stmt::Assign(e1, e2, ak) => (e1, e2, ak).hash(state),
             Stmt::Fold(s, v, pa, mevi, p) => (s, v, pa, mevi, p).hash(state),
@@ -124,14 +126,17 @@ pub enum AssignKind {
 impl fmt::Display for Stmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Stmt::Comment(ref comment) => write!(f, "// {}", comment),
-            Stmt::Label(ref label) => write!(f, "label {}", label),
+            Stmt::Comment(ref comment) => write!(f, "// {comment}"),
+            Stmt::Label(ref label) => write!(f, "label {label}"),
             Stmt::Inhale(ref expr) => {
-                write!(f, "inhale {}", expr)
+                write!(f, "inhale {expr}")
             }
-            Stmt::Exhale(ref expr, _) => write!(f, "exhale {}", expr),
+            Stmt::Exhale(ref expr, _) => write!(f, "exhale {expr}"),
             Stmt::Assert(ref expr, _) => {
-                write!(f, "assert {}", expr)
+                write!(f, "assert {expr}")
+            }
+            Stmt::Refute(ref expr, _) => {
+                write!(f, "refute {expr}")
             }
             Stmt::MethodCall(ref name, ref args, ref vars) => write!(
                 f,
@@ -147,22 +152,22 @@ impl fmt::Display for Stmt {
                     .join(", "),
             ),
             Stmt::Assign(ref lhs, ref rhs, kind) => match kind {
-                AssignKind::Move => write!(f, "{} := move {}", lhs, rhs),
-                AssignKind::Copy => write!(f, "{} := copy {}", lhs, rhs),
+                AssignKind::Move => write!(f, "{lhs} := move {rhs}"),
+                AssignKind::Copy => write!(f, "{lhs} := copy {rhs}"),
                 AssignKind::MutableBorrow(borrow) => {
-                    write!(f, "{} := mut borrow {} // {:?}", lhs, rhs, borrow)
+                    write!(f, "{lhs} := mut borrow {rhs} // {borrow:?}")
                 }
                 AssignKind::SharedBorrow(borrow) => {
-                    write!(f, "{} := borrow {} // {:?}", lhs, rhs, borrow)
+                    write!(f, "{lhs} := borrow {rhs} // {borrow:?}")
                 }
-                AssignKind::Ghost => write!(f, "{} := ghost {}", lhs, rhs),
+                AssignKind::Ghost => write!(f, "{lhs} := ghost {rhs}"),
             },
 
             Stmt::Fold(ref pred_name, ref args, perm, ref variant, _) => write!(
                 f,
                 "fold acc({}({}), {})",
                 if let Some(variant_index) = variant {
-                    format!("{}<variant {}>", pred_name, variant_index)
+                    format!("{pred_name}<variant {variant_index}>")
                 } else {
                     pred_name.to_string()
                 },
@@ -177,7 +182,7 @@ impl fmt::Display for Stmt {
                 f,
                 "unfold acc({}({}), {})",
                 if let Some(variant_index) = variant {
-                    format!("{}<variant {}>", pred_name, variant_index)
+                    format!("{pred_name}<variant {variant_index}>")
                 } else {
                     pred_name.to_string()
                 },
@@ -188,17 +193,15 @@ impl fmt::Display for Stmt {
                 perm,
             ),
 
-            Stmt::Obtain(ref expr, _) => write!(f, "obtain {}", expr),
+            Stmt::Obtain(ref expr, _) => write!(f, "obtain {expr}"),
 
             Stmt::BeginFrame => write!(f, "begin frame"),
 
             Stmt::EndFrame => write!(f, "end frame"),
 
-            Stmt::TransferPerm(ref lhs, ref rhs, unchecked) => write!(
-                f,
-                "transfer perm {} --> {} // unchecked: {}",
-                lhs, rhs, unchecked
-            ),
+            Stmt::TransferPerm(ref lhs, ref rhs, unchecked) => {
+                write!(f, "transfer perm {lhs} --> {rhs} // unchecked: {unchecked}")
+            }
 
             Stmt::PackageMagicWand(
                 ref magic_wand,
@@ -208,10 +211,10 @@ impl fmt::Display for Stmt {
                 _position,
             ) => {
                 if let Expr::MagicWand(ref lhs, ref rhs, None, _) = magic_wand {
-                    writeln!(f, "package[{}] {}", label, lhs)?;
-                    writeln!(f, "    --* {}", rhs)?;
+                    writeln!(f, "package[{label}] {lhs}")?;
+                    writeln!(f, "    --* {rhs}")?;
                 } else {
-                    writeln!(f, "package[{}] {}", label, magic_wand)?;
+                    writeln!(f, "package[{label}] {magic_wand}")?;
                 }
                 write!(f, "{{")?;
                 if !package_stmts.is_empty() {
@@ -224,18 +227,18 @@ impl fmt::Display for Stmt {
             }
 
             Stmt::ApplyMagicWand(Expr::MagicWand(ref lhs, ref rhs, Some(borrow), _), _) => {
-                writeln!(f, "apply[{:?}] {} --* {}", borrow, lhs, rhs)
+                writeln!(f, "apply[{borrow:?}] {lhs} --* {rhs}")
             }
 
             Stmt::ApplyMagicWand(ref magic_wand, _) => {
                 if let Expr::MagicWand(ref lhs, ref rhs, Some(borrow), _) = magic_wand {
-                    writeln!(f, "apply[{:?}] {} --* {}", borrow, lhs, rhs)
+                    writeln!(f, "apply[{borrow:?}] {lhs} --* {rhs}")
                 } else {
-                    writeln!(f, "apply {}", magic_wand)
+                    writeln!(f, "apply {magic_wand}")
                 }
             }
 
-            Stmt::ExpireBorrows(dag) => writeln!(f, "expire_borrows {:?}", dag),
+            Stmt::ExpireBorrows(dag) => writeln!(f, "expire_borrows {dag:?}"),
 
             Stmt::If(ref guard, ref then_stmts, ref else_stmts) => {
                 fn write_stmt(f: &mut fmt::Formatter, stmt: &Stmt) -> fmt::Result {
@@ -251,13 +254,13 @@ impl fmt::Display for Stmt {
                     }
                     write!(f, "}}")
                 }
-                write!(f, "if {} ", guard)?;
+                write!(f, "if {guard} ")?;
                 write_block(f, then_stmts)?;
                 write!(f, " else ")?;
                 write_block(f, else_stmts)
             }
 
-            Stmt::Downcast(e, v) => writeln!(f, "downcast {} to {}", e, v),
+            Stmt::Downcast(e, v) => writeln!(f, "downcast {e} to {v}"),
         }
     }
 }
@@ -284,7 +287,7 @@ impl Stmt {
         pos: Position,
     ) -> Self {
         Stmt::PackageMagicWand(
-            Expr::MagicWand(box lhs, box rhs, None, pos),
+            Expr::MagicWand(Box::new(lhs), Box::new(rhs), None, pos),
             stmts,
             label,
             vars,
@@ -300,6 +303,7 @@ impl Stmt {
         match self {
             Stmt::Exhale(_, ref p)
             | Stmt::Assert(_, ref p)
+            | Stmt::Refute(_, ref p)
             | Stmt::Fold(_, _, _, _, ref p)
             | Stmt::Obtain(_, ref p)
             | Stmt::PackageMagicWand(_, _, _, _, ref p)
@@ -312,6 +316,7 @@ impl Stmt {
         match self {
             Stmt::Exhale(_, ref mut p)
             | Stmt::Assert(_, ref mut p)
+            | Stmt::Refute(_, ref mut p)
             | Stmt::Fold(_, _, _, _, ref mut p)
             | Stmt::Obtain(_, ref mut p)
             | Stmt::PackageMagicWand(_, _, _, _, ref mut p)
@@ -381,6 +386,7 @@ pub trait StmtFolder {
             Stmt::Inhale(expr) => self.fold_inhale(expr),
             Stmt::Exhale(e, p) => self.fold_exhale(e, p),
             Stmt::Assert(expr, pos) => self.fold_assert(expr, pos),
+            Stmt::Refute(expr, pos) => self.fold_refute(expr, pos),
             Stmt::MethodCall(s, ve, vv) => self.fold_method_call(s, ve, vv),
             Stmt::Assign(p, e, k) => self.fold_assign(p, e, k),
             Stmt::Fold(s, ve, perm, variant, p) => self.fold_fold(s, ve, perm, variant, p),
@@ -419,6 +425,10 @@ pub trait StmtFolder {
 
     fn fold_assert(&mut self, expr: Expr, pos: Position) -> Stmt {
         Stmt::Assert(self.fold_expr(expr), pos)
+    }
+
+    fn fold_refute(&mut self, expr: Expr, pos: Position) -> Stmt {
+        Stmt::Refute(self.fold_expr(expr), pos)
     }
 
     fn fold_method_call(&mut self, name: String, args: Vec<Expr>, targets: Vec<LocalVar>) -> Stmt {
@@ -529,6 +539,7 @@ pub trait FallibleStmtFolder {
             Stmt::Inhale(expr) => self.fallible_fold_inhale(expr),
             Stmt::Exhale(e, p) => self.fallible_fold_exhale(e, p),
             Stmt::Assert(expr, pos) => self.fallible_fold_assert(expr, pos),
+            Stmt::Refute(expr, pos) => self.fallible_fold_refute(expr, pos),
             Stmt::MethodCall(s, ve, vv) => self.fallible_fold_method_call(s, ve, vv),
             Stmt::Assign(p, e, k) => self.fallible_fold_assign(p, e, k),
             Stmt::Fold(s, ve, perm, variant, p) => self.fallible_fold_fold(s, ve, perm, variant, p),
@@ -569,6 +580,10 @@ pub trait FallibleStmtFolder {
 
     fn fallible_fold_assert(&mut self, expr: Expr, pos: Position) -> Result<Stmt, Self::Error> {
         Ok(Stmt::Assert(self.fallible_fold_expr(expr)?, pos))
+    }
+
+    fn fallible_fold_refute(&mut self, expr: Expr, pos: Position) -> Result<Stmt, Self::Error> {
+        Ok(Stmt::Refute(self.fallible_fold_expr(expr)?, pos))
     }
 
     fn fallible_fold_method_call(
@@ -721,6 +736,7 @@ pub trait StmtWalker {
             Stmt::Inhale(expr) => self.walk_inhale(expr),
             Stmt::Exhale(e, p) => self.walk_exhale(e, p),
             Stmt::Assert(expr, pos) => self.walk_assert(expr, pos),
+            Stmt::Refute(expr, pos) => self.walk_refute(expr, pos),
             Stmt::MethodCall(s, ve, vv) => self.walk_method_call(s, ve, vv),
             Stmt::Assign(p, e, k) => self.walk_assign(p, e, k),
             Stmt::Fold(s, ve, perm, variant, pos) => self.walk_fold(s, ve, perm, variant, pos),
@@ -754,6 +770,10 @@ pub trait StmtWalker {
     }
 
     fn walk_assert(&mut self, expr: &Expr, _pos: &Position) {
+        self.walk_expr(expr);
+    }
+
+    fn walk_refute(&mut self, expr: &Expr, _pos: &Position) {
         self.walk_expr(expr);
     }
 
@@ -856,8 +876,8 @@ pub trait StmtWalker {
 }
 
 pub fn stmts_to_str(stmts: &[Stmt]) -> String {
-    stmts
-        .iter()
-        .map(|stmt| format!("{}\n", stmt))
-        .collect::<String>()
+    stmts.iter().fold(String::new(), |mut output, stmt| {
+        let _ = writeln!(output, "{stmt}");
+        output
+    })
 }

@@ -26,6 +26,7 @@ fn main() {
             let fname = deps_dir.path().join("asm.jar");
             let mut dest = File::create(fname.clone()).unwrap();
             copy(&mut response.into_reader(), &mut dest).unwrap();
+            dest.sync_all().unwrap();
             fname.to_str().unwrap().to_string()
         }
     };
@@ -34,14 +35,14 @@ fn main() {
     println!("cargo:rerun-if-env-changed=VIPER_HOME");
     let viper_home = env::var("VIPER_HOME").expect("failed to get VIPER_HOME");
     let mut viper_jars: Vec<String> = fs::read_dir(&viper_home)
-        .unwrap_or_else(|_| panic!("Could not open VIPER_HOME='{}'", viper_home))
+        .unwrap_or_else(|_| panic!("Could not open VIPER_HOME='{viper_home}'"))
         .map(|x| x.unwrap().path().to_str().unwrap().to_string())
         .collect();
 
     // Rebuild whenever a Viper jar changes
-    println!("cargo:rerun-if-changed={}", viper_home);
+    println!("cargo:rerun-if-changed={viper_home}");
     for viper_jar in &viper_jars {
-        println!("cargo:rerun-if-changed={}", viper_jar);
+        println!("cargo:rerun-if-changed={viper_jar}");
     }
 
     WrapperGenerator::new()
@@ -90,7 +91,7 @@ fn main() {
                 method!("wrapRefArray"),
             ]),
             java_class!("scala.math.BigInt", vec![
-                constructor!(),
+                constructor!("(Ljava/math/BigInteger;)V"),
             ]),
             java_class!("scala.collection.mutable.ArrayBuffer", vec![
                 constructor!("(I)V"),
@@ -129,14 +130,20 @@ fn main() {
                 method!("apply"),
             ]),
             // Silicon
-            java_class!("viper.silicon.Silicon", vec![
-                constructor!("(Lviper/silver/reporter/Reporter;Lscala/collection/immutable/Seq;)V"),
+            java_class!("viper.silicon.SiliconFrontendAPI", vec![
+                constructor!("(Lviper/silver/reporter/Reporter;)V"),
             ]),
             // Carbon
-            java_class!("viper.carbon.CarbonVerifier", vec![
-                constructor!("(Lviper/silver/reporter/Reporter;Lscala/collection/immutable/Seq;)V"),
+            java_class!("viper.carbon.CarbonFrontendAPI", vec![
+                constructor!("(Lviper/silver/reporter/Reporter;)V"),
             ]),
             // Silver
+            java_class!("viper.silver.frontend.ViperFrontendAPI", vec![
+                method!("initialize"),
+                method!("verify"),
+                method!("stop"),
+                method!("verifier"),
+            ]),
             java_class!("viper.silver.reporter.CSVReporter", vec![
                 constructor!("(Ljava/lang/String;Ljava/lang/String;)V"),
             ]),
@@ -146,10 +153,16 @@ fn main() {
             java_class!("viper.silver.verifier.Verifier", vec![
                 method!("name"),
                 method!("buildVersion"),
-                method!("parseCommandLine"),
-                method!("start"),
-                method!("stop"),
-                method!("verify"),
+            ]),
+            java_class!("viper.silver.frontend.DefaultStates", vec![
+                method!("ConsistencyCheck"),
+            ]),
+            java_class!("viper.silver.logger.SilentLogger$", vec![
+                object_getter!(),
+                method!("apply"),
+            ]),
+            java_class!("viper.silver.logger.ViperLogger", vec![
+                method!("get"),
             ]),
             java_class!("viper.silver.ast.pretty.FastPrettyPrinter$", vec![
                 object_getter!(),
@@ -170,6 +183,9 @@ fn main() {
             ]),
             java_class!("viper.silver.ast.AndOp$", vec![
                 object_getter!(),
+            ]),
+            java_class!("viper.silver.ast.AnnotationInfo", vec![
+                constructor!(),
             ]),
             java_class!("viper.silver.ast.AnySetContains", vec![
                 constructor!(),
@@ -196,6 +212,9 @@ fn main() {
                 constructor!(),
             ]),
             java_class!("viper.silver.ast.Assert", vec![
+                constructor!(),
+            ]),
+            java_class!("viper.silver.plugin.standard.refute.Refute", vec![
                 constructor!(),
             ]),
             java_class!("viper.silver.ast.Bool$", vec![
@@ -268,15 +287,15 @@ fn main() {
             java_class!("viper.silver.ast.BackendType$", vec![
                 object_getter!(),
             ]),
-            java_class!("viper.silver.ast.BackendFunc", vec![
-                constructor!(),
+            java_class!("viper.silver.ast.BackendFunc$", vec![
+                object_getter!(),
             ]),
             java_class!("viper.silver.ast.BackendFuncApp", vec![
                 constructor!(),
             ]),
             java_class!("viper.silver.ast.BackendFuncApp$", vec![
                 object_getter!(),
-                method!("apply", "(Lviper/silver/ast/BackendFunc;Lscala/collection/immutable/Seq;Lviper/silver/ast/Position;Lviper/silver/ast/Info;Lviper/silver/ast/ErrorTrafo;)Lviper/silver/ast/BackendFuncApp;"),
+                method!("apply", "(Lviper/silver/ast/DomainFunc;Lscala/collection/immutable/Seq;Lviper/silver/ast/Position;Lviper/silver/ast/Info;Lviper/silver/ast/ErrorTrafo;)Lviper/silver/ast/BackendFuncApp;"),
             ]),
             java_class!("viper.silver.ast.CondExp", vec![
                 constructor!(),

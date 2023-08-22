@@ -17,7 +17,7 @@ use crate::encoder::{
 use prusti_common::config;
 use prusti_rustc_interface::{
     hir::def_id::DefId,
-    middle::{ty, ty::subst::SubstsRef},
+    middle::{ty, ty::GenericArgsRef},
     span::Span,
 };
 use vir_crate::{
@@ -39,12 +39,12 @@ pub(super) fn inline_closure_high<'tcx>(
     cl_expr: vir_high::Expression,
     args: Vec<vir_high::VariableDecl>,
     parent_def_id: DefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> SpannedEncodingResult<vir_high::Expression> {
     let mir = encoder
         .env()
         .body
-        .get_closure_body(def_id.expect_local(), substs, parent_def_id);
+        .get_closure_body(def_id, substs, parent_def_id);
     assert_eq!(mir.arg_count, args.len() + 1);
     let mut body_replacements = vec![];
     for (arg_idx, arg_local) in mir.args_iter().enumerate() {
@@ -73,7 +73,7 @@ pub(super) fn inline_spec_item_high<'tcx>(
     target_return: Option<&vir_high::Expression>,
     targets_are_values: bool,
     parent_def_id: DefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> SpannedEncodingResult<vir_high::Expression> {
     let mir = encoder
         .env()
@@ -82,8 +82,7 @@ pub(super) fn inline_spec_item_high<'tcx>(
     assert_eq!(
         mir.arg_count,
         target_args.len() + usize::from(target_return.is_some()),
-        "def_id: {:?}",
-        def_id
+        "def_id: {def_id:?}"
     );
     let mir_encoder = MirEncoder::new(encoder, &mir, def_id);
     let mut body_replacements = vec![];
@@ -121,7 +120,7 @@ pub(super) fn encode_quantifier_high<'tcx>(
     encoded_args: Vec<vir_high::Expression>,
     is_exists: bool,
     parent_def_id: DefId,
-    substs: ty::subst::SubstsRef<'tcx>,
+    substs: ty::GenericArgsRef<'tcx>,
 ) -> SpannedEncodingResult<vir_high::Expression> {
     // Quantifiers are encoded as:
     //   forall(
@@ -167,12 +166,12 @@ pub(super) fn encode_quantifier_high<'tcx>(
             let (trigger_def_id, trigger_substs, _, _, _) =
                 extract_closure_from_ty(encoder.env().query, ty_trigger);
             let set_field = vir_high::FieldDecl::new(
-                format!("tuple_{}", trigger_set_idx),
+                format!("tuple_{trigger_set_idx}"),
                 trigger_set_idx,
                 encoder.encode_type_high(ty_trigger_set)?,
             );
             let trigger_field = vir_high::FieldDecl::new(
-                format!("tuple_{}", trigger_idx),
+                format!("tuple_{trigger_idx}"),
                 trigger_idx,
                 encoder.encode_type_high(ty_trigger)?,
             );

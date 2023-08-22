@@ -11,8 +11,9 @@ use self::commandline::CommandLine;
 use crate::launch::{find_viper_home, get_current_executable_dir};
 use config::{Config, Environment, File};
 use log::warn;
+use rustc_hash::FxHashSet;
 use serde::Deserialize;
-use std::{collections::HashSet, env, path::PathBuf, sync::RwLock};
+use std::{env, path::PathBuf, sync::RwLock};
 
 #[derive(Debug, PartialEq, Eq)]
 pub struct Optimizations {
@@ -79,12 +80,13 @@ lazy_static::lazy_static! {
         settings.set_default("check_foldunfold_state", false).unwrap();
         settings.set_default("check_overflows", true).unwrap();
         settings.set_default("check_panics", true).unwrap();
-        settings.set_default("encode_unsigned_num_constraint", false).unwrap();
+        settings.set_default("encode_unsigned_num_constraint", true).unwrap();
         settings.set_default("encode_bitvectors", false).unwrap();
         settings.set_default("simplify_encoding", true).unwrap();
         settings.set_default("log", "").unwrap();
         settings.set_default("log_style", "auto").unwrap();
         settings.set_default("log_dir", "log").unwrap();
+        settings.set_default("log_tracing", false).unwrap();
         settings.set_default("cache_path", "").unwrap();
         settings.set_default("dump_debug_info", false).unwrap();
         settings.set_default("dump_debug_info_during_fold", false).unwrap();
@@ -107,6 +109,7 @@ lazy_static::lazy_static! {
         settings.set_default("allow_unreachable_unsupported_code", false).unwrap();
         settings.set_default("no_verify", false).unwrap();
         settings.set_default("no_verify_deps", false).unwrap();
+        settings.set_default("opt_in_verification", false).unwrap();
         settings.set_default("full_compilation", false).unwrap();
         settings.set_default("json_communication", false).unwrap();
         settings.set_default("optimizations", "all").unwrap();
@@ -126,6 +129,7 @@ lazy_static::lazy_static! {
         settings.set_default("use_new_encoder", true).unwrap();
         settings.set_default::<Option<u8>>("number_of_parallel_verifiers", None).unwrap();
         settings.set_default::<Option<String>>("min_prusti_version", None).unwrap();
+        settings.set_default("num_errors_per_function", 1).unwrap();
         settings.set_default("dump_operational_pcs", false).unwrap();
         settings.set_default("vis_pcs_facts", false).unwrap();
 
@@ -140,7 +144,6 @@ lazy_static::lazy_static! {
         settings.set_default::<Option<String>>("dump_fold_unfold_state_of_blocks", None).unwrap();
         settings.set_default("print_hash", false).unwrap();
         settings.set_default("enable_cache", true).unwrap();
-        settings.set_default("enable_ghost_constraints", false).unwrap();
 
         settings.set_default("cargo_path", "cargo").unwrap();
         settings.set_default("cargo_command", "check").unwrap();
@@ -193,13 +196,13 @@ lazy_static::lazy_static! {
         settings.merge(
             Environment::with_prefix("DEFAULT_PRUSTI").ignore_empty(true)
         ).unwrap();
-        check_keys(&settings, &allowed_keys, "default environment variables");
+        check_keys(&settings, &allowed_keys, "the `DEFAULT_PRUSTI_*` environment variables");
 
         // 2. Override with an optional "Prusti.toml" file in manifest dir
         let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap_or_else(|_| ".".to_string());
         let file = PathBuf::from(manifest_dir).join("Prusti.toml");
         settings.merge(File::from(file.as_path()).required(false)).unwrap();
-        check_keys(&settings, &allowed_keys, &format!("{} file", file.to_string_lossy()));
+        check_keys(&settings, &allowed_keys, &format!("the file `{}`", file.to_string_lossy()));
 
         // 3. Override with env variables (`PRUSTI_VIPER_BACKEND`, ...)
         settings.merge(
@@ -212,19 +215,19 @@ lazy_static::lazy_static! {
                 .with_list_parse_key("verify_only_basic_block_path")
                 .list_separator(" ")
         ).unwrap();
-        check_keys(&settings, &allowed_keys, "environment variables");
+        check_keys(&settings, &allowed_keys, "the `PRUSTI_*` environment variables");
 
         // 4. Override with command-line arguments -P<arg>=<val>
         settings.merge(
             CommandLine::with_prefix("-P").ignore_invalid(true)
         ).unwrap();
-        check_keys(&settings, &allowed_keys, "command line arguments");
+        check_keys(&settings, &allowed_keys, "the `-P` command line arguments");
 
         settings
     });
 }
 
-fn get_keys(settings: &Config) -> HashSet<String> {
+fn get_keys(settings: &Config) -> FxHashSet<String> {
     settings
         .cache
         .clone()
@@ -234,11 +237,11 @@ fn get_keys(settings: &Config) -> HashSet<String> {
         .collect()
 }
 
-fn check_keys(settings: &Config, allowed_keys: &HashSet<String>, source: &str) {
+fn check_keys(settings: &Config, allowed_keys: &FxHashSet<String>, source: &str) {
     for key in settings.cache.clone().into_table().unwrap().keys() {
         assert!(
             allowed_keys.contains(key),
-            "{source} contains unknown configuration flag: “{key}”",
+            "Found an unknown configuration flag `{key}` in {source}",
         );
     }
 }
@@ -256,7 +259,7 @@ pub fn dump() -> String {
     let map = config::Source::collect(&*settings).unwrap();
     let mut pairs: Vec<_> = map
         .iter()
-        .map(|(key, value)| format!("{}={:#?}", key, value))
+        .map(|(key, value)| format!("{key}={value:#?}"))
         .collect();
     pairs.sort();
     pairs.join("\n\n")
@@ -277,7 +280,7 @@ where
         .read()
         .unwrap()
         .get(name)
-        .unwrap_or_else(|e| panic!("Failed to read setting {} due to {}", name, e))
+        .unwrap_or_else(|e| panic!("Failed to read setting {name} due to {e}"))
 }
 
 fn write_setting<T: Into<config::Value>>(key: &'static str, value: T) {
@@ -285,7 +288,7 @@ fn write_setting<T: Into<config::Value>>(key: &'static str, value: T) {
         .write()
         .unwrap()
         .set(key, value)
-        .unwrap_or_else(|e| panic!("Failed to write setting {} due to {}", key, e));
+        .unwrap_or_else(|e| panic!("Failed to write setting {key} due to {e}"));
 }
 
 // The following methods are all convenience wrappers for the actual call to
@@ -321,14 +324,14 @@ pub fn viper_backend() -> String {
 /// configuration flag to the correct path to Z3.
 pub fn smt_solver_path() -> String {
     read_setting::<Option<String>>("smt_solver_path")
-        .expect("please set the smt_solver_path configuration flag")
+        .expect("Please set the smt_solver_path configuration flag")
 }
 
 /// The path to the SMT solver wrapper. `prusti-rustc` is expected to set this
 /// configuration flag to the correct path.
 pub fn smt_solver_wrapper_path() -> String {
     read_setting::<Option<String>>("smt_solver_wrapper_path")
-        .expect("please set the smt_solver_wrapper_path configuration flag")
+        .expect("Please set the smt_solver_wrapper_path configuration flag")
 }
 
 /// The path to the Boogie executable. `prusti-rustc` is expected to set this
@@ -358,7 +361,7 @@ pub fn viper_home() -> String {
 /// configuration flag to the correct path.
 pub fn java_home() -> String {
     read_setting::<Option<String>>("java_home")
-        .expect("please set the java_home configuration flag")
+        .expect("Please set the java_home configuration flag")
 }
 
 /// When enabled, Prusti will check for an absence of `panic!`s.
@@ -438,6 +441,11 @@ pub fn log_style() -> String {
 /// Path to directory in which log files and dumped output will be stored.
 pub fn log_dir() -> PathBuf {
     PathBuf::from(read_setting::<String>("log_dir"))
+}
+
+/// When enabled, trace using tracing_chrome crate.
+pub fn log_tracing() -> bool {
+    read_setting("log_tracing")
 }
 
 /// Path to a cache file, where verification cache will be loaded from and
@@ -745,7 +753,7 @@ pub fn verification_deadline() -> Option<u64> {
     read_setting::<Option<i64>>("verification_deadline").map(|value| {
         value
             .try_into()
-            .expect("verification_deadline must be a valid u64")
+            .expect("Verification_deadline must be a valid u64")
     })
 }
 
@@ -761,8 +769,7 @@ fn read_smt_wrapper_dependent_bool(name: &'static str) -> bool {
     if value {
         assert!(
             use_smt_wrapper(),
-            "use_smt_wrapper must be true to use {}",
-            name
+            "use_smt_wrapper must be true to use {name}"
         );
     }
     value
@@ -773,8 +780,7 @@ fn read_smt_wrapper_dependent_option(name: &'static str) -> Option<u64> {
     if value.is_some() {
         assert!(
             use_smt_wrapper(),
-            "use_smt_wrapper must be true to use {}",
-            name
+            "use_smt_wrapper must be true to use {name}"
         );
     }
     value
@@ -986,6 +992,12 @@ pub fn no_verify_deps() -> bool {
     read_setting("no_verify_deps")
 }
 
+/// When enabled, verification is skipped for functions
+/// that do not have the `#[verified]` attribute.
+pub fn opt_in_verification() -> bool {
+    read_setting("opt_in_verification")
+}
+
 /// When enabled, compilation will continue and a binary will be generated
 /// after Prusti terminates.
 pub fn full_compilation() -> bool {
@@ -995,18 +1007,6 @@ pub fn full_compilation() -> bool {
 /// When enabled, Viper identifiers are interned to shorten them when possible.
 pub fn intern_names() -> bool {
     read_setting("intern_names")
-}
-
-/// When enabled, ghost constraints can be used in Prusti specifications.
-///
-/// Ghost constraints allow for specifications which are only active if a
-/// certain "constraint" (i.e. a trait bound on a generic type parameter) is
-/// satisfied.
-///
-/// **This is an experimental feature**, because it is currently possible to
-/// introduce unsound verification behavior.
-pub fn enable_ghost_constraints() -> bool {
-    read_setting("enable_ghost_constraints")
 }
 
 /// Determines which cargo `cargo-prusti` should run (e.g. if "cargo" isn't in
@@ -1025,6 +1025,12 @@ pub fn cargo_command() -> String {
 /// `#[invariant(...)]` attribute.
 pub fn enable_type_invariants() -> bool {
     read_setting("enable_type_invariants")
+}
+
+/// The maximum number of verification errors to report per function. This is only used by the
+/// Silicon backend. A value of 0 means no limit.
+pub fn num_errors_per_function() -> u32 {
+    read_setting("num_errors_per_function")
 }
 
 /// When enabled, dump operational PCS summary instead of verifying

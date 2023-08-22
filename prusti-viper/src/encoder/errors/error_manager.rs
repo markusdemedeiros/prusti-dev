@@ -4,15 +4,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+use std::fmt::Debug;
+
 use vir_crate::polymorphic::Position;
 use rustc_hash::FxHashMap;
 use prusti_rustc_interface::span::source_map::SourceMap;
 use prusti_rustc_interface::errors::MultiSpan;
 use viper::VerificationError;
 use prusti_interface::PrustiError;
-use log::{debug, trace};
+use log::debug;
 use super::PositionManager;
 use prusti_interface::data::ProcedureDefId;
+
+const ASSERTION_TIMEOUT_HELP_MESSAGE: &str = "This could be caused by too small assertion timeout. \
+Try increasing it by setting the configuration parameter \
+ASSERT_TIMEOUT to a larger value.";
 
 
 /// The cause of a panic!()
@@ -24,6 +30,8 @@ pub enum PanicCause {
     Panic,
     /// Caused by an assert!()
     Assert,
+    /// Caused by an refute!()
+    Refute,
     /// Caused by an debug_assert!()
     DebugAssert,
     /// Caused by an unreachable!()
@@ -204,7 +212,7 @@ impl<'tcx> ErrorManager<'tcx> {
     }
 
     /// Register a new VIR position.
-    pub fn register_span<T: Into<MultiSpan>>(&mut self, def_id: ProcedureDefId, span: T) -> Position {
+    pub fn register_span<T: Into<MultiSpan> + Debug>(&mut self, def_id: ProcedureDefId, span: T) -> Position {
         self.position_manager.register_span(def_id, span)
     }
 
@@ -214,8 +222,8 @@ impl<'tcx> ErrorManager<'tcx> {
     }
 
     /// Register the ErrorCtxt on an existing VIR position.
+    #[tracing::instrument(level = "trace", skip(self))]
     pub fn set_error(&mut self, pos: Position, error_ctxt: ErrorCtxt) {
-        trace!("Register error {:?} at position id {:?}", error_ctxt, pos.id());
         assert_ne!(pos, Position::default(), "Trying to register an error on a default position");
         if let Some(existing_error_ctxt) = self.error_contexts.get(&pos.id()) {
             debug_assert_eq!(
@@ -244,7 +252,7 @@ impl<'tcx> ErrorManager<'tcx> {
 
     /// Register a new VIR position with the given ErrorCtxt.
     /// Equivalent to calling `set_error` on the output of `register_span`.
-    pub fn register_error<T: Into<MultiSpan>>(&mut self, span: T, error_ctxt: ErrorCtxt, def_id: ProcedureDefId) -> Position {
+    pub fn register_error<T: Into<MultiSpan> + Debug>(&mut self, span: T, error_ctxt: ErrorCtxt, def_id: ProcedureDefId) -> Position {
         let pos = self.register_span(def_id, span);
         self.set_error(pos, error_ctxt);
         pos
@@ -256,8 +264,8 @@ impl<'tcx> ErrorManager<'tcx> {
             .and_then(|id| self.position_manager.def_id.get(&id).copied())
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn translate_verification_error(&self, ver_error: &VerificationError) -> PrustiError {
-        debug!("Verification error: {:?}", ver_error);
         let opt_pos_id: Option<u64> = match ver_error.offending_pos_id {
             Some(ref viper_pos_id) => {
                 match viper_pos_id.parse() {
@@ -265,8 +273,7 @@ impl<'tcx> ErrorManager<'tcx> {
                     Err(err) => {
                         return PrustiError::internal(
                             format!(
-                                "unexpected Viper position '{}': {}",
-                                viper_pos_id, err
+                                "unexpected Viper position '{viper_pos_id}': {err}"
                             ),
                             MultiSpan::new()
                         );
@@ -282,8 +289,7 @@ impl<'tcx> ErrorManager<'tcx> {
                     Err(err) => {
                         return PrustiError::internal(
                             format!(
-                                "unexpected Viper reason position '{}': {}",
-                                viper_reason_pos_id, err
+                                "unexpected Viper reason position '{viper_reason_pos_id}': {err}"
                             ),
                             MultiSpan::new()
                         );
@@ -329,11 +335,7 @@ impl<'tcx> ErrorManager<'tcx> {
                             ver_error.full_id, pos_id, ver_error.message
                         ),
                         error_span
-                    ).set_help(
-                        "This could be caused by too small assertion timeout. \
-                        Try increasing it by setting the configuration parameter \
-                        ASSERT_TIMEOUT to a larger value."
-                    )
+                    ).set_help(ASSERTION_TIMEOUT_HELP_MESSAGE)
                 }
                 None => {
                     PrustiError::internal(
@@ -342,16 +344,13 @@ impl<'tcx> ErrorManager<'tcx> {
                             ver_error.full_id, ver_error.message
                         ),
                         error_span
-                    ).set_help(
-                        "This could be caused by too small assertion timeout. \
-                        Try increasing it by setting the configuration parameter \
-                        ASSERT_TIMEOUT to a larger value."
-                    )
+                    ).set_help(ASSERTION_TIMEOUT_HELP_MESSAGE)
                 }
             }
         }
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     fn translate_verification_error_with_context(
         &self,
         ver_error: &VerificationError,
@@ -387,7 +386,7 @@ impl<'tcx> ErrorManager<'tcx> {
             }
 
             ("assert.failed:assertion.false", ErrorCtxt::AssertTerminator(ref message)) => {
-                PrustiError::verification(format!("assertion might fail with \"{}\"", message), error_span)
+                PrustiError::verification(format!("assertion might fail with \"{message}\""), error_span)
                     .set_failing_assertion(opt_cause_span)
             }
 
@@ -542,7 +541,7 @@ impl<'tcx> ErrorManager<'tcx> {
                 ErrorCtxt::PureFunctionAssertTerminator(ref message),
             ) => {
                 PrustiError::disabled_verification(
-                    format!("assertion might fail with \"{}\"", message),
+                    format!("assertion might fail with \"{message}\""),
                     error_span
                 ).set_failing_assertion(opt_cause_span)
             },
@@ -626,7 +625,7 @@ impl<'tcx> ErrorManager<'tcx> {
 
             ("assert.failed:assertion.false", ErrorCtxt::Unsupported(ref reason)) => {
                 PrustiError::unsupported(
-                    format!("an unsupported Rust feature might be reachable: {}.", reason),
+                    format!("an unsupported Rust feature might be reachable: {reason}."),
                     error_span
                 ).set_failing_assertion(opt_cause_span)
             }
@@ -699,6 +698,13 @@ impl<'tcx> ErrorManager<'tcx> {
                 )
             }
 
+            ("refute.failed:refutation.true", ErrorCtxt::Panic(PanicCause::Refute)) => {
+                PrustiError::verification(
+                    "the refuted expression holds in all cases or could not be reached",
+                    error_span,
+                )
+            }
+
             (full_err_id, ErrorCtxt::Unexpected) => {
                 PrustiError::internal(
                     format!(
@@ -708,11 +714,7 @@ impl<'tcx> ErrorManager<'tcx> {
                     error_span,
                 ).set_failing_assertion(
                     opt_cause_span
-                ).set_help(
-                    "This could be caused by too small assertion timeout. \
-                    Try increasing it by setting the configuration parameter \
-                    ASSERT_TIMEOUT to a larger value."
-                )
+                ).set_help(ASSERTION_TIMEOUT_HELP_MESSAGE)
             },
 
             _ => {
@@ -728,11 +730,7 @@ impl<'tcx> ErrorManager<'tcx> {
                     error_span,
                 ).set_failing_assertion(
                     opt_cause_span
-                ).set_help(
-                    "This could be caused by too small assertion timeout. \
-                    Try increasing it by setting the configuration parameter \
-                    ASSERT_TIMEOUT to a larger value."
-                )
+                ).set_help(ASSERTION_TIMEOUT_HELP_MESSAGE)
             }
         }
     }

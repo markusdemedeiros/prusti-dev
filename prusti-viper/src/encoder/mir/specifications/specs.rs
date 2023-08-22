@@ -5,13 +5,13 @@ use crate::encoder::{
         interface::{FunctionCallEncodingQuery, SpecQuery},
     },
 };
-use log::{debug, trace};
+use log::debug;
 use prusti_interface::{
     environment::Environment,
     specs::typed::{
         DefSpecificationMap, GhostBegin, GhostEnd, LoopSpecification, ProcedureSpecification,
         ProcedureSpecificationKind, ProcedureSpecificationKindError, PrustiAssertion,
-        PrustiAssumption, Refinable, SpecificationItem, TypeSpecification,
+        PrustiAssumption, PrustiRefutation, Refinable, SpecificationItem, TypeSpecification,
     },
     PrustiError,
 };
@@ -57,8 +57,8 @@ pub(super) struct Specifications<'tcx> {
     user_typed_specs: DefSpecificationMap,
 
     /// A refinement can be different based on the query.
-    /// The query can resolve to different [ProcedureSpecification]s due to ghost constraints.
-    /// Since Prusti does currently not support refinements of ghost constraints, we
+    /// The query can resolve to different [ProcedureSpecification]s due to type-conditional spec refinements.
+    /// Since Prusti does currently not support refinements of type-conditional spec refinements, we
     /// store different refined versions for different queries.
     refined_specs: FxHashMap<SpecQuery<'tcx>, ProcedureSpecification>,
 }
@@ -71,43 +71,47 @@ impl<'tcx> Specifications<'tcx> {
         }
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_loop_spec(&self, def_id: &DefId) -> Option<&LoopSpecification> {
-        trace!("Get loop specs of {:?}", def_id);
         self.user_typed_specs.get_loop_spec(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_type_spec(&self, def_id: &DefId) -> Option<&TypeSpecification> {
-        trace!("Get type specs of {:?}", def_id);
         self.user_typed_specs.get_type_spec(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_assertion(&self, def_id: &DefId) -> Option<&PrustiAssertion> {
-        trace!("Get assertion specs of {:?}", def_id);
         self.user_typed_specs.get_assertion(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_assumption(&self, def_id: &DefId) -> Option<&PrustiAssumption> {
-        trace!("Get assumption specs of {:?}", def_id);
         self.user_typed_specs.get_assumption(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
+    pub(super) fn get_refutation(&self, def_id: &DefId) -> Option<&PrustiRefutation> {
+        self.user_typed_specs.get_refutation(def_id)
+    }
+
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_ghost_begin(&self, def_id: &DefId) -> Option<&GhostBegin> {
-        trace!("Get begin ghost block specs of {:?}", def_id);
         self.user_typed_specs.get_ghost_begin(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     pub(super) fn get_ghost_end(&self, def_id: &DefId) -> Option<&GhostEnd> {
-        trace!("Get end ghost block specs of {:?}", def_id);
         self.user_typed_specs.get_ghost_end(def_id)
     }
 
+    #[tracing::instrument(level = "trace", skip(self, env))]
     pub(super) fn get_and_refine_proc_spec<'a, 'env: 'a>(
         &'a mut self,
         env: &'env Environment<'tcx>,
         query: SpecQuery<'tcx>,
     ) -> Option<&'a ProcedureSpecification> {
-        trace!("Get procedure specs of {:?}", query);
-
         if self.is_refined(&query) {
             return self.get_proc_spec(env, &query);
         }
@@ -121,8 +125,7 @@ impl<'tcx> Specifications<'tcx> {
                 );
                 assert!(
                     refined.is_some(),
-                    "Could not perform refinement for {:?}",
-                    query
+                    "Could not perform refinement for {query:?}"
                 );
                 refined
             }
@@ -130,17 +133,13 @@ impl<'tcx> Specifications<'tcx> {
         }
     }
 
+    #[tracing::instrument(level = "debug", skip(self, env))]
     fn perform_proc_spec_refinement<'a, 'env: 'a>(
         &'a mut self,
         env: &'env Environment<'tcx>,
         impl_query: &SpecQuery<'tcx>,
         trait_query: &SpecQuery<'tcx>,
     ) -> Option<&'a ProcedureSpecification> {
-        debug!(
-            "Refining specs of {:?} with specs of {:?}",
-            impl_query, trait_query
-        );
-
         let impl_spec = self
             .get_proc_spec(env, impl_query)
             .cloned()
@@ -203,37 +202,26 @@ impl<'tcx> Specifications<'tcx> {
                 let impl_method_name = env.name.get_absolute_item_name(impl_proc_def_id);
 
                 PrustiError::incorrect(
-                    format!(
-                        "Invalid specification kind for procedure '{}'",
-                        impl_method_name
-                    ),
+                    format!("Invalid specification kind for procedure '{impl_method_name}'"),
                     MultiSpan::from_span(impl_method_span),
                 )
                 .add_note("Procedures can be predicates, pure or impure", None)
                 .add_note(
-                    format!("This procedure is of kind '{}'", refined_kind).as_str(),
+                    format!("This procedure is of kind '{refined_kind}'").as_str(),
                     None,
                 )
                 .add_note(
-                    format!(
-                        "This procedure refines a function declared on '{}'",
-                        trait_name
-                    )
-                    .as_str(),
+                    format!("This procedure refines a function declared on '{trait_name}'")
+                        .as_str(),
                     Some(trait_span),
                 )
                 .add_note(
-                    format!(
-                        "However, '{}' is of kind '{}'",
-                        trait_method_name, base_kind
-                    )
-                    .as_str(),
+                    format!("However, '{trait_method_name}' is of kind '{base_kind}'").as_str(),
                     None,
                 )
                 .add_note(
                     format!(
-                        "Try to convert '{}' into a procedure of kind '{}'",
-                        impl_method_name, base_kind
+                        "Try to convert '{impl_method_name}' into a procedure of kind '{base_kind}'"
                     ),
                     Some(impl_method_span),
                 )

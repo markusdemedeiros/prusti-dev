@@ -22,6 +22,7 @@ pub(crate) trait MirProcedureEncoderInterface<'tcx> {
 }
 
 impl<'v, 'tcx: 'v> MirProcedureEncoderInterface<'tcx> for super::super::super::Encoder<'v, 'tcx> {
+    #[tracing::instrument(level = "debug", skip(self))]
     fn encode_procedure_core_proof_high(
         &mut self,
         proc_def_id: DefId,
@@ -34,8 +35,7 @@ impl<'v, 'tcx: 'v> MirProcedureEncoderInterface<'tcx> for super::super::super::E
                 .encoded_procedure_def_ids
                 .insert(procedure.name.clone(), (proc_def_id, check_mode))
                 .is_none(),
-            "The procedure was encoed twice: {:?}",
-            proc_def_id
+            "The procedure was encoed twice: {proc_def_id:?}"
         );
         Ok(procedure)
     }

@@ -12,10 +12,10 @@ use log::{debug, trace};
 use crate::encoder::snapshot::interface::SnapshotEncoderInterface;
 
 /// Replaces shared references to pure Viper variables.
+#[tracing::instrument(level = "debug", skip(encoder, method), fields(method = method.name()))]
 pub fn purify_method(encoder: &Encoder, method: &mut vir::CfgMethod) {
     // A set of candidate references to be purified.
     let mut candidates = FxHashSet::default();
-    debug!("method: {}", method.name());
     for var in &method.local_vars {
         match var.typ {
             vir::Type::TypedRef(ref typed_ref) if typed_ref.label.starts_with("ref$") => {
@@ -170,14 +170,14 @@ impl StmtWalker for VarDependencyCollector {
             let entry = self
                 .dependencies
                 .entry(dependent.clone())
-                .or_insert_with(FxHashSet::default);
+                .or_default();
             entry.extend(dependencies.iter().cloned());
         }
         for dependency in dependencies {
             let entry = self
                 .dependents
                 .entry(dependency)
-                .or_insert_with(FxHashSet::default);
+                .or_default();
             entry.extend(dependents.iter().cloned());
         }
         match kind {
@@ -489,7 +489,7 @@ impl ExprFolder for Purifier<'_, '_, '_> {
                 }
                 if function_name.ends_with("$$discriminant$$") {
                     let predicate_name = formal_arguments[0].typ.name();
-                    let domain_name = format!("Snap${}", predicate_name);
+                    let domain_name = format!("Snap${predicate_name}");
                     let arg_dom_expr = vir::Expr::Local(vir::Local {
                         variable: local_var.clone(),
                         position: *local_pos,

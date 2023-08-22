@@ -4,15 +4,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#[cfg(target_family = "unix")]
-use nix::unistd::{setpgid, Pid};
 use prusti_utils::launch;
-use std::{
-    env,
-    io::Write,
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::{env, io::Write, path::PathBuf, process::Command};
 
 fn main() {
     if let Err(code) = process(std::env::args().skip(1).collect()) {
@@ -21,6 +14,8 @@ fn main() {
 }
 
 fn process(mut args: Vec<String>) -> Result<(), i32> {
+    let _setup = launch::job::setup().unwrap(); // Kill all subprocesses on kill or Ctrl-C
+
     let prusti_home = launch::get_current_executable_dir();
 
     let mut prusti_driver_path = prusti_home.join("prusti-driver");
@@ -43,20 +38,13 @@ fn process(mut args: Vec<String>) -> Result<(), i32> {
     let compiler_lib = prusti_sysroot.join("lib");
 
     let mut cmd = Command::new(&prusti_driver_path);
+    cmd.arg("--cfg=prusti");
 
     launch::add_to_loader_path(vec![compiler_lib, compiler_bin, libjvm_path], &mut cmd);
 
     launch::set_environment_settings(&mut cmd, &prusti_home, &java_home);
 
-    // Setting RUSTC_WRAPPER causes Cargo to pass 'rustc' as the first argument.
-    // We're invoking the compiler programmatically, so we ignore this
-    let rustc_pos = args
-        .iter()
-        .position(|arg| Path::new(arg).file_stem() == Some("rustc".as_ref()));
-    let cargo_invoked = rustc_pos.is_some();
-    if let Some(rustc_pos) = rustc_pos {
-        args.drain(0..=rustc_pos);
-    }
+    let cargo_invoked = env::var("PRUSTI_CARGO").is_ok();
 
     // No need to check if we happen to be running on e.g. the `prusti-contracts` crate since this
     // should always be with `cargo` anyway (i.e. cargo_invoked == true)
@@ -120,17 +108,12 @@ fn process(mut args: Vec<String>) -> Result<(), i32> {
     // cmd.arg("-Zreport-delayed-bugs");
     // cmd.arg("-Ztreat-err-as-bug=1");
 
-    // Move process to group leader if it isn't
-    #[cfg(target_family = "unix")]
-    let _ = setpgid(Pid::this(), Pid::this());
-    // Register the SIGINT handler; CTRL_C_EVENT or CTRL_BREAK_EVENT on Windows
-    ctrlc::set_handler(launch::sigint_handler).expect("Error setting Ctrl-C handler");
-
     if let Ok(path) = env::var("PRUSTI_RUSTC_LOG_ARGS") {
         let mut file = std::fs::File::create(path).unwrap();
         for arg in cmd.get_args() {
             writeln!(file, "{}", arg.to_str().unwrap()).unwrap();
         }
+        file.sync_all().unwrap();
     }
     if let Ok(path) = env::var("PRUSTI_RUSTC_LOG_ENV") {
         let mut file = std::fs::File::create(path).unwrap();
@@ -143,11 +126,12 @@ fn process(mut args: Vec<String>) -> Result<(), i32> {
             )
             .unwrap();
         }
+        file.sync_all().unwrap();
     }
 
-    let exit_status = cmd
-        .status()
-        .unwrap_or_else(|_| panic!("failed to execute prusti-driver ({:?})", prusti_driver_path));
+    let exit_status = cmd.status().unwrap_or_else(|e| {
+        panic!("failed to execute prusti-driver ({prusti_driver_path:?}): {e}")
+    });
 
     if exit_status.success() {
         Ok(())

@@ -41,6 +41,12 @@ pub enum ItemWrapperSpec {
         signature: Option<String>,
         suffix: Option<String>,
     },
+    FieldGetterSetter {
+        field_name: String,
+    },
+    TraitFieldGetterSetter {
+        field_name: String,
+    },
 }
 
 #[macro_export]
@@ -103,6 +109,24 @@ macro_rules! method {
             name: $name.into(),
             signature: Some($signature.into()),
             suffix: Some($suffix.into()),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! field {
+    ($name:expr) => {
+        ItemWrapperSpec::FieldGetterSetter {
+            field_name: $name.into(),
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! trait_field {
+    ($name:expr) => {
+        ItemWrapperSpec::TraitFieldGetterSetter {
+            field_name: $name.into(),
         }
     };
 }

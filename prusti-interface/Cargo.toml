@@ -17,16 +17,17 @@ analysis = { path = "../analysis" }
 prusti-specs = { path = "../prusti-contracts/prusti-specs" }
 prusti-common = { path = "../prusti-common" }
 prusti-rustc-interface = { path = "../prusti-rustc-interface" }
+tracing = { path = "../tracing" }
 log = { version = "0.4", features = ["release_max_level_info"] }
 lazy_static = "1.4.0"
 csv = "1"
 serde = { version = "1.0", features = ["derive"] }
-regex = "1.5"
+regex = "1.7"
 config = "0.13"
 rustc-hash = "1.1.0"
 datafrog = "2.0.1"
 vir = { path = "../vir" }
-version-compare = "0.1.0"
+version-compare = "0.1"
 
 [package.metadata.rust-analyzer]
 # This crate uses #[feature(rustc_private)]

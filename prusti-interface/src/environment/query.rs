@@ -1,3 +1,5 @@
+use std::fmt::Debug;
+
 use crate::data::ProcedureDefId;
 use log::debug;
 use prusti_rustc_interface::{
@@ -5,10 +7,7 @@ use prusti_rustc_interface::{
     hir::hir_id::HirId,
     middle::{
         hir::map::Map,
-        ty::{
-            self, subst::SubstsRef, Binder, BoundConstness, ImplPolarity, ParamEnv, TraitPredicate,
-            TraitRef, TyCtxt,
-        },
+        ty::{self, GenericArgsRef, ImplPolarity, ParamEnv, TraitPredicate, TyCtxt},
     },
     span::{
         def_id::{DefId, LocalDefId},
@@ -126,7 +125,11 @@ impl<'tcx> EnvQuery<'tcx> {
 
     /// If the given DefId describes an item belonging to a trait, returns the DefId
     /// of the trait that the trait item belongs to; otherwise, returns None.
-    pub fn get_trait_of_item(self, def_id: impl IntoParam<ProcedureDefId>) -> Option<DefId> {
+    #[tracing::instrument(level = "trace", skip(self))]
+    pub fn get_trait_of_item(
+        self,
+        def_id: impl IntoParam<ProcedureDefId> + Debug,
+    ) -> Option<DefId> {
         self.tcx.trait_of_item(def_id.into_param())
     }
 
@@ -140,7 +143,10 @@ impl<'tcx> EnvQuery<'tcx> {
 
     /// Returns true iff `def_id` is an unsafe function.
     pub fn is_unsafe_function(self, def_id: impl IntoParam<ProcedureDefId>) -> bool {
-        self.tcx.fn_sig(def_id.into_param()).unsafety()
+        self.tcx
+            .fn_sig(def_id.into_param())
+            .instantiate_identity()
+            .unsafety()
             == prusti_rustc_interface::hir::Unsafety::Unsafe
     }
 
@@ -148,22 +154,22 @@ impl<'tcx> EnvQuery<'tcx> {
     pub fn get_fn_sig(
         self,
         def_id: impl IntoParam<ProcedureDefId>,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> ty::PolyFnSig<'tcx> {
         let def_id = def_id.into_param();
         let sig = if self.tcx.is_closure(def_id) {
-            substs.as_closure().sig()
+            ty::EarlyBinder::bind(substs.as_closure().sig())
         } else {
             self.tcx.fn_sig(def_id)
         };
-        ty::EarlyBinder(sig).subst(self.tcx, substs)
+        sig.instantiate(self.tcx, substs)
     }
 
     /// Computes the signature of the function with subst applied and associated types resolved.
     pub fn get_fn_sig_resolved(
         self,
         def_id: impl IntoParam<ProcedureDefId>,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
         caller_def_id: impl IntoParam<ProcedureDefId>,
     ) -> ty::PolyFnSig<'tcx> {
         let def_id = def_id.into_param();
@@ -197,11 +203,11 @@ impl<'tcx> EnvQuery<'tcx> {
     pub fn find_trait_method_substs(
         self,
         impl_method_def_id: impl IntoParam<ProcedureDefId>, // what are we calling?
-        impl_method_substs: SubstsRef<'tcx>,                // what are the substs on the call?
-    ) -> Option<(ProcedureDefId, SubstsRef<'tcx>)> {
+        impl_method_substs: GenericArgsRef<'tcx>,           // what are the substs on the call?
+    ) -> Option<(ProcedureDefId, GenericArgsRef<'tcx>)> {
         let impl_method_def_id = impl_method_def_id.into_param();
         let impl_def_id = self.tcx.impl_of_method(impl_method_def_id)?;
-        let trait_ref = self.tcx.impl_trait_ref(impl_def_id)?;
+        let trait_ref = self.tcx.impl_trait_ref(impl_def_id)?.skip_binder();
 
         // At this point, we know that the given method:
         // - belongs to an impl block and
@@ -246,9 +252,9 @@ impl<'tcx> EnvQuery<'tcx> {
         // more precisely. We can do this directly with `impl_method_substs`
         // because they contain the substs for the `impl` block as a prefix.
         let call_trait_substs =
-            ty::EarlyBinder(trait_ref.substs).subst(self.tcx, impl_method_substs);
+            ty::EarlyBinder::bind(trait_ref.args).instantiate(self.tcx, impl_method_substs);
         let impl_substs = self.identity_substs(impl_def_id);
-        let trait_method_substs = self.tcx.mk_substs(
+        let trait_method_substs = self.tcx.mk_args_from_iter(
             call_trait_substs
                 .iter()
                 .chain(impl_method_substs.iter().skip(impl_substs.len())),
@@ -263,10 +269,11 @@ impl<'tcx> EnvQuery<'tcx> {
 
     /// Given some procedure `proc_def_id` which is called, this method returns the actual method which will be executed when `proc_def_id` is defined on a trait.
     /// Returns `None` if this method can not be found or the provided `proc_def_id` is no trait item.
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn find_impl_of_trait_method_call(
         self,
-        proc_def_id: impl IntoParam<ProcedureDefId>,
-        substs: SubstsRef<'tcx>,
+        proc_def_id: impl IntoParam<ProcedureDefId> + Debug,
+        substs: GenericArgsRef<'tcx>,
     ) -> Option<ProcedureDefId> {
         // TODO(tymap): remove this method?
         let proc_def_id = proc_def_id.into_param();
@@ -274,18 +281,16 @@ impl<'tcx> EnvQuery<'tcx> {
             debug!("Fetching implementations of method '{:?}' defined in trait '{}' with substs '{:?}'", proc_def_id, self.tcx.def_path_str(trait_id), substs);
             let infcx = self.tcx.infer_ctxt().build();
             let mut sc = SelectionContext::new(&infcx);
+            let trait_ref = ty::TraitRef::new(self.tcx, trait_id, substs);
             let obligation = Obligation::new(
+                self.tcx,
                 ObligationCause::dummy(),
                 // TODO(tymap): don't use reveal_all
                 ParamEnv::reveal_all(),
-                Binder::dummy(TraitPredicate {
-                    trait_ref: TraitRef {
-                        def_id: trait_id,
-                        substs,
-                    },
-                    constness: BoundConstness::NotConst,
+                TraitPredicate {
+                    trait_ref,
                     polarity: ImplPolarity::Positive,
-                }),
+                },
             );
             let result = sc.select(&obligation);
             match result {
@@ -319,24 +324,30 @@ impl<'tcx> EnvQuery<'tcx> {
         self,
         caller_def_id: impl IntoParam<ProcedureDefId>, // where are we calling from?
         called_def_id: impl IntoParam<ProcedureDefId>, // what are we calling?
-        call_substs: SubstsRef<'tcx>,
-    ) -> (ProcedureDefId, SubstsRef<'tcx>) {
-        use prusti_rustc_interface::middle::ty::TypeVisitable;
+        call_substs: GenericArgsRef<'tcx>,
+    ) -> (ProcedureDefId, GenericArgsRef<'tcx>) {
         let called_def_id = called_def_id.into_param();
 
-        // avoids a compiler-internal panic
-        if call_substs.needs_infer() {
-            return (called_def_id, call_substs);
-        }
+        (|| {
+            // trait resolution does not depend on lifetimes, and in fact fails in the presence of uninferred regions
+            let clean_substs = self.tcx.erase_regions(call_substs);
 
-        let param_env = self.tcx.param_env(caller_def_id.into_param());
-        super::traits::resolve_instance(self.tcx, param_env.and((called_def_id, call_substs)))
-            .map(|opt_instance| {
-                opt_instance
-                    .map(|instance| (instance.def_id(), instance.substs))
-                    .unwrap_or((called_def_id, call_substs))
-            })
-            .unwrap_or((called_def_id, call_substs))
+            let param_env = self.tcx.param_env(caller_def_id.into_param());
+            let instance = self
+                .tcx
+                .resolve_instance(param_env.and((called_def_id, clean_substs)))
+                .ok()??;
+            let resolved_def_id = instance.def_id();
+            let resolved_substs = if resolved_def_id == called_def_id {
+                // if no trait resolution occurred, we can keep the non-erased substs
+                call_substs
+            } else {
+                instance.args
+            };
+
+            Some((resolved_def_id, resolved_substs))
+        })()
+        .unwrap_or((called_def_id, call_substs))
     }
 
     /// Checks whether `ty` is copy.
@@ -369,7 +380,7 @@ impl<'tcx> EnvQuery<'tcx> {
         ty: ty::Ty<'tcx>,
         param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>>,
     ) -> bool {
-        self.type_implements_trait_with_trait_substs(trait_def_id, ty, ty::List::empty(), param_env)
+        self.type_implements_trait_with_trait_substs(trait_def_id, [ty], param_env)
     }
 
     /// Checks whether the given type implements the trait with the given DefId.
@@ -380,22 +391,19 @@ impl<'tcx> EnvQuery<'tcx> {
     pub fn type_implements_trait_with_trait_substs(
         self,
         trait_def_id: DefId,
-        ty: ty::Ty<'tcx>,
-        trait_substs: ty::subst::SubstsRef<'tcx>,
+        trait_substs: impl IntoIterator<Item = impl Into<ty::GenericArg<'tcx>>>,
         param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>>,
     ) -> bool {
         assert!(self.tcx.is_trait(trait_def_id));
         let infcx = self.tcx.infer_ctxt().build();
-        // If `ty` has any inference variables (e.g. a region variable), then using it with
-        // the freshly-created `InferCtxt` (i.e. `tcx.infer_ctxt().enter(..)`) will cause
-        // a panic, since those inference variables don't exist in the new `InferCtxt`.
-        // See: https://rust-lang.zulipchat.com/#narrow/stream/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20Panic.20in.20is_copy_modulo_regions
-        let fresh_ty = infcx.freshen(ty);
         infcx
             .type_implements_trait(
                 trait_def_id,
-                fresh_ty,
-                trait_substs,
+                // If `ty` has any inference variables (e.g. a region variable), then using it with
+                // the freshly-created `InferCtxt` (i.e. `tcx.infer_ctxt().enter(..)`) will cause
+                // a panic, since those inference variables don't exist in the new `InferCtxt`.
+                // See: https://rust-lang.zulipchat.com/#narrow/stream/182449-t-compiler.2Fhelp/topic/.E2.9C.94.20Panic.20in.20is_copy_modulo_regions
+                trait_substs.into_iter().map(|ty| infcx.freshen(ty.into())),
                 param_env.into_param(self.tcx),
             )
             .must_apply_considering_regions()
@@ -403,7 +411,7 @@ impl<'tcx> EnvQuery<'tcx> {
 
     /// Return the default substitutions for a particular item, i.e. where each
     /// generic maps to itself.
-    pub fn identity_substs(self, def_id: impl IntoParam<ProcedureDefId>) -> SubstsRef<'tcx> {
+    pub fn identity_substs(self, def_id: impl IntoParam<ProcedureDefId>) -> GenericArgsRef<'tcx> {
         ty::List::identity_for_item(self.tcx, def_id.into_param())
     }
 
@@ -413,14 +421,14 @@ impl<'tcx> EnvQuery<'tcx> {
     /// The `param_env` should be passed as a `ProcedureDefId` which is
     /// then used to calculate the param env; i.e. the set of
     /// where-clauses that are in scope at this particular point.
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn evaluate_predicate(
         self,
         predicate: ty::Predicate<'tcx>,
-        param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>>,
+        param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>> + Debug,
     ) -> bool {
-        debug!("Evaluating predicate {:?}", predicate);
-
         let obligation = Obligation::new(
+            self.tcx,
             ObligationCause::dummy(),
             param_env.into_param(self.tcx),
             predicate,
@@ -438,10 +446,11 @@ impl<'tcx> EnvQuery<'tcx> {
     /// The `param_env` should be passed as a `ProcedureDefId` which is
     /// then used to calculate the param env; i.e. the set of
     /// where-clauses that are in scope at this particular point.
-    pub fn resolve_assoc_types<T: ty::TypeFoldable<'tcx> + std::fmt::Debug + Copy>(
+    #[tracing::instrument(level = "debug", skip(self))]
+    pub fn resolve_assoc_types<T: ty::TypeFoldable<TyCtxt<'tcx>> + Debug + Copy>(
         self,
         normalizable: T,
-        param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>>,
+        param_env: impl IntoParamTcx<'tcx, ParamEnv<'tcx>> + Debug,
     ) -> T {
         let param_env = param_env.into_param(self.tcx);
         let norm_res = self
@@ -528,8 +537,8 @@ mod sealed {
     }
     impl<'tcx> IntoParamTcx<'tcx, LocalDefId> for HirId {
         #[inline(always)]
-        fn into_param(self, tcx: TyCtxt<'tcx>) -> LocalDefId {
-            tcx.hir().local_def_id(self)
+        fn into_param(self, _tcx: TyCtxt<'tcx>) -> LocalDefId {
+            self.owner.def_id
         }
     }
     impl<'tcx> IntoParamTcx<'tcx, ParamEnv<'tcx>> for DefId {

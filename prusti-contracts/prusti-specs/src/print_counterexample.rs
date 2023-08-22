@@ -54,10 +54,9 @@ impl std::convert::From<TypeCounterexampleError> for syn::Error {
             TypeCounterexampleError::InvalidName(span) => {
                 syn::Error::new(span, "Invalid argument name")
             }
-            TypeCounterexampleError::InvalidArgument(span, name, arg) => syn::Error::new(
-                span,
-                format!("`{}` does not have a field named {}", name, arg),
-            ),
+            TypeCounterexampleError::InvalidArgument(span, name, arg) => {
+                syn::Error::new(span, format!("`{name}` does not have a field named {arg}"))
+            }
             TypeCounterexampleError::WrongNumberOfArguemnts(span) => {
                 syn::Error::new(span, "Number of arguments are incorrect")
             }
@@ -98,7 +97,11 @@ fn rewrite_internal_struct(
     if !args2.empty_or_trailing() {
         args2.push_punct(<syn::Token![,]>::default());
     }
+
+    // clippy false positive (https://github.com/rust-lang/rust-clippy/issues/10577)
+    #[allow(clippy::redundant_clone)]
     let typ = item_struct.ident.clone();
+
     let spec_item = match item_struct.fields {
         Fields::Named(_) => {
             let spec_item: syn::ItemFn = parse_quote_spanned! {item_span=>

@@ -8,10 +8,9 @@ use crate::{
     encoder::errors::{EncodingError, EncodingResult},
     utils::type_visitor::{self, TypeVisitor},
 };
-use log::trace;
 use prusti_rustc_interface::{
+    abi::FieldIdx,
     hir::{self as hir, Mutability},
-    index::vec::Idx,
     middle::{
         mir,
         ty::{self, Ty, TyCtxt, TyKind},
@@ -45,17 +44,17 @@ impl<P: fmt::Debug> fmt::Display for BorrowInfo<P> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let lifetime = match self.region {
             None => "static".to_string(),
-            Some(ty::BoundRegionKind::BrAnon(id)) => format!("#{}", id),
+            Some(ty::BoundRegionKind::BrAnon(_)) => "anon".to_string(),
             Some(ty::BoundRegionKind::BrNamed(_, name)) => name.to_string(),
             _ => unimplemented!(),
         };
-        writeln!(f, "BorrowInfo<{}> {{", lifetime)?;
+        writeln!(f, "BorrowInfo<{lifetime}> {{")?;
         for path in self.blocking_paths.iter() {
-            writeln!(f, "  {:?}", path)?;
+            writeln!(f, "  {path:?}")?;
         }
         writeln!(f, "  --*")?;
         for path in self.blocked_paths.iter() {
-            writeln!(f, "  {:?}", path)?;
+            writeln!(f, "  {path:?}")?;
         }
         writeln!(f, "}}")
     }
@@ -141,8 +140,7 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
 
     fn visit_unsupported_sty(&mut self, sty: &TyKind<'tcx>) -> Result<(), Self::Error> {
         Err(EncodingError::unsupported(format!(
-            "unsupported type {:?}",
-            sty,
+            "unsupported type {sty:?}",
         )))
     }
 
@@ -154,14 +152,14 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
         EncodingError::unsupported(msg.to_string())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_adt_variant(
         &mut self,
         adt: ty::AdtDef<'tcx>,
         idx: prusti_rustc_interface::target::abi::VariantIdx,
         variant: &ty::VariantDef,
-        substs: ty::subst::SubstsRef<'tcx>,
+        substs: ty::GenericArgsRef<'tcx>,
     ) -> Result<(), Self::Error> {
-        trace!("visit_adt_variant({:?})", variant);
         let old_path = self.current_path.take().unwrap();
         self.current_path = Some(self.tcx.mk_place_downcast(old_path, adt, idx));
         type_visitor::walk_adt_variant(self, variant, substs)?;
@@ -169,16 +167,16 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self))]
     fn visit_field(
         &mut self,
         index: usize,
         field: &ty::FieldDef,
-        substs: ty::subst::SubstsRef<'tcx>,
+        substs: ty::GenericArgsRef<'tcx>,
     ) -> Result<(), Self::Error> {
-        trace!("visit_field({}, {:?})", index, field);
         let old_path = self.current_path.take().unwrap();
         let ty = field.ty(self.tcx(), substs);
-        let field_id = mir::Field::new(index);
+        let field_id = FieldIdx::from_usize(index);
         let new_path = self.tcx.mk_place_field(old_path, field_id, ty);
         self.current_path = Some(new_path);
         // self.current_path = Some(old_path.clone().field(field_id, ty));
@@ -187,19 +185,13 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self), fields(current_path = ?self.current_path))]
     fn visit_ref(
         &mut self,
         region: ty::Region<'tcx>,
         ty: ty::Ty<'tcx>,
         mutability: hir::Mutability,
     ) -> Result<(), Self::Error> {
-        trace!(
-            "visit_ref({:?}, {:?}, {:?}) current_path={:?}",
-            region,
-            ty,
-            mutability,
-            self.current_path
-        );
         let bound_region = self.extract_bound_region(region);
         let is_path_blocking = self.is_path_blocking;
         let old_path = self.current_path.take().unwrap();
@@ -222,7 +214,7 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
     fn visit_tuple(&mut self, types: &'tcx ty::List<ty::Ty<'tcx>>) -> Result<(), Self::Error> {
         let old_path = self.current_path.take().unwrap();
         for (i, ty) in types.into_iter().enumerate() {
-            let field = mir::Field::new(i);
+            let field = FieldIdx::from_usize(i);
             self.current_path = Some(self.tcx().mk_place_field(old_path, field, ty));
             self.visit_ty(ty)?;
         }
@@ -230,17 +222,12 @@ impl<'tcx> TypeVisitor<'tcx> for BorrowInfoCollectingVisitor<'tcx> {
         Ok(())
     }
 
+    #[tracing::instrument(level = "trace", skip(self), fields(current_path = ?self.current_path))]
     fn visit_raw_ptr(
         &mut self,
         ty: ty::Ty<'tcx>,
         mutability: hir::Mutability,
     ) -> Result<(), Self::Error> {
-        trace!(
-            "visit_raw_ptr({:?}, {:?}) current_path={:?}",
-            ty,
-            mutability,
-            self.current_path
-        );
         // Do nothing.
         Ok(())
     }

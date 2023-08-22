@@ -6,7 +6,6 @@
 
 //! Various helper functions for working with `mir::Place`.
 
-use log::trace;
 use prusti_rustc_interface::{
     ast::ast,
     data_structures::fx::FxHashSet,
@@ -59,7 +58,7 @@ pub fn try_pop_one_level<'tcx>(
         let last_index = place.projection.len() - 1;
         let new_place = mir::Place {
             local: place.local,
-            projection: tcx.intern_place_elems(&place.projection[..last_index]),
+            projection: tcx.mk_place_elems(&place.projection[..last_index]),
         };
         Some((place.projection[last_index], new_place))
     } else {
@@ -86,6 +85,7 @@ pub fn try_pop_deref<'tcx>(tcx: TyCtxt<'tcx>, place: mir::Place<'tcx>) -> Option
 /// `{x.g, x.h, x.f.f, x.f.h, x.f.g.f, x.f.g.g, x.f.g.h}` and
 /// subtracting `{x.f.g.h}` from it, which results into `{x.g, x.h,
 /// x.f.f, x.f.h, x.f.g.f, x.f.g.g}`.
+#[tracing::instrument(level = "debug", skip(mir, tcx), ret)]
 pub fn expand<'tcx>(
     mir: &mir::Body<'tcx>,
     tcx: TyCtxt<'tcx>,
@@ -96,23 +96,12 @@ pub fn expand<'tcx>(
         is_prefix(subtrahend, minuend),
         "The minuend must be the prefix of the subtrahend."
     );
-    trace!(
-        "[enter] expand minuend={:?} subtrahend={:?}",
-        minuend,
-        subtrahend
-    );
     let mut place_set = Vec::new();
     while minuend.projection.len() < subtrahend.projection.len() {
         let (new_minuend, places) = expand_one_level(mir, tcx, minuend, subtrahend);
         minuend = new_minuend;
         place_set.extend(places);
     }
-    trace!(
-        "[exit] expand minuend={:?} subtrahend={:?} place_set={:?}",
-        minuend,
-        subtrahend,
-        place_set
-    );
     place_set
 }
 
@@ -245,8 +234,8 @@ pub fn has_to_model_impl_attr(attrs: &[ast::Attribute]) -> bool {
     has_prusti_attr(attrs, "type_models_to_model_impl")
 }
 
-pub fn has_trait_bounds_ghost_constraint(attrs: &[ast::Attribute]) -> bool {
-    has_prusti_attr(attrs, "ghost_constraint_trait_bounds_in_where_clause")
+pub fn has_trait_bounds_type_cond_spec(attrs: &[ast::Attribute]) -> bool {
+    has_prusti_attr(attrs, "type_cond_spec_trait_bounds_in_where_clause")
 }
 
 pub fn has_abstract_predicate_attr(attrs: &[ast::Attribute]) -> bool {
@@ -265,7 +254,7 @@ pub fn read_prusti_attrs<T: Borrow<ast::Attribute>>(attr_name: &str, attrs: &[T]
                         segments,
                         tokens: _,
                     },
-                args: ast::MacArgs::Eq(_, ast::MacArgsEq::Hir(ast::Lit { token_lit, .. })),
+                args: ast::AttrArgs::Eq(_, ast::AttrArgsEq::Hir(token_lit)),
                 tokens: _,
             } = &normal_attr.item
             {
@@ -279,7 +268,7 @@ pub fn read_prusti_attrs<T: Borrow<ast::Attribute>>(attr_name: &str, attrs: &[T]
                 fn extract_string(token: &prusti_rustc_interface::ast::token::Lit) -> String {
                     token.symbol.as_str().replace("\\\"", "\"")
                 }
-                strings.push(extract_string(token_lit));
+                strings.push(extract_string(&token_lit.as_token_lit()));
             }
         };
     }

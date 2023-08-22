@@ -1,18 +1,29 @@
 //! Helper functions for working with const parameters.
 
 use crate::encoder::errors::{SpannedEncodingError, SpannedEncodingResult};
-use prusti_rustc_interface::middle::{ty, ty::SubstsRef};
+use prusti_rustc_interface::middle::{ty, ty::GenericArgsRef};
 use vir_crate::high as vir_high;
 
 pub(super) fn extract_const_parameters_from_substs<'tcx>(
     type_encoder: &impl super::MirTypeEncoderInterface<'tcx>,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
     const_parameters: &mut Vec<vir_high::VariableDecl>,
 ) -> SpannedEncodingResult<()> {
     for kind in substs.iter() {
-        if let ty::subst::GenericArgKind::Type(arg_ty) = kind.unpack() {
+        if let ty::GenericArgKind::Type(arg_ty) = kind.unpack() {
             extract_const_parameters_from_type(type_encoder, arg_ty, const_parameters)?;
         }
+    }
+    Ok(())
+}
+
+pub(super) fn extract_const_parameters_from_types<'tcx>(
+    type_encoder: &impl super::MirTypeEncoderInterface<'tcx>,
+    types: impl IntoIterator<Item = ty::Ty<'tcx>>,
+    const_parameters: &mut Vec<vir_high::VariableDecl>,
+) -> SpannedEncodingResult<()> {
+    for ty in types {
+        extract_const_parameters_from_type(type_encoder, ty, const_parameters)?;
     }
     Ok(())
 }
@@ -33,11 +44,11 @@ pub(super) fn extract_const_parameters_from_type<'tcx>(
         | ty::TyKind::Error(_)
         | ty::TyKind::Never
         | ty::TyKind::Dynamic(..) => {}
-        ty::TyKind::Adt(_, substs)
-        | ty::TyKind::Closure(_, substs)
-        | ty::TyKind::Opaque(_, substs)
-        | ty::TyKind::FnDef(_, substs) => {
-            extract_const_parameters_from_substs(type_encoder, substs, const_parameters)?
+        ty::TyKind::Adt(_, args)
+        | ty::TyKind::Closure(_, args)
+        | ty::TyKind::Alias(_, ty::AliasTy { args, .. })
+        | ty::TyKind::FnDef(_, args) => {
+            extract_const_parameters_from_substs(type_encoder, args, const_parameters)?
         }
         ty::TyKind::Ref(_, ty, _) => {
             extract_const_parameters_from_type(type_encoder, *ty, const_parameters)?
@@ -68,16 +79,12 @@ pub(super) fn extract_const_parameters_from_type<'tcx>(
         ty::TyKind::Param(_param_ty) => {
             // FIXME: extract const_parameters from TyKind::Param()
         }
-        ty::TyKind::Projection(projection_ty) => extract_const_parameters_from_substs(
-            type_encoder,
-            projection_ty.substs,
-            const_parameters,
-        )?,
         ty::TyKind::Bound(_, _)
         | ty::TyKind::Placeholder(_)
         | ty::TyKind::Infer(_)
         | ty::TyKind::Generator(..)
-        | ty::TyKind::GeneratorWitness(_) => {
+        | ty::TyKind::GeneratorWitness(_)
+        | ty::TyKind::GeneratorWitnessMIR(..) => {
             return Err(SpannedEncodingError::unsupported(
                 format!(
                     "unsupported type to extract const_parameters: {:?}",

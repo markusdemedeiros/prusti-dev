@@ -60,7 +60,7 @@ impl<'tcx> PlaceEncoding<'tcx> {
            ExprOrArrayBase::Expr(e) => Ok(e),
            ExprOrArrayBase::ArrayBase(b)
            | ExprOrArrayBase::SliceBase(b) => Err(EncodingError::internal(
-               format!("PlaceEncoding::try_into_expr called on sequence expr '{:?}'", b)
+               format!("PlaceEncoding::try_into_expr called on sequence expr '{b:?}'")
            )),
         }
     }
@@ -80,7 +80,7 @@ impl<'tcx> PlaceEncoding<'tcx> {
             PlaceEncoding::Variant { base, field } => {
                 match base.into_array_base() {
                     ExprOrArrayBase::Expr(e) => ExprOrArrayBase::Expr(
-                        vir::Expr::Variant( vir::Variant {base: box e, variant_index: field, position: vir::Position::default()} )
+                        vir::Expr::Variant( vir::Variant {base: Box::new(e), variant_index: field, position: vir::Position::default()} )
                     ),
                     base@ExprOrArrayBase::ArrayBase(_) => base,
                     base@ExprOrArrayBase::SliceBase(_) => base,
@@ -106,7 +106,7 @@ impl<'tcx> PlaceEncoding<'tcx> {
     }
 
     pub fn field(self, field: vir::Field) -> Self {
-        PlaceEncoding::FieldAccess { base: box self, field }
+        PlaceEncoding::FieldAccess { base: Box::new(self), field }
     }
 
     pub fn get_type(&self) -> &vir::Type {
@@ -121,10 +121,10 @@ impl<'tcx> PlaceEncoding<'tcx> {
 
     pub fn variant(self, index: &str) -> Self {
         // TODO: somewhat duplicate from vir::Expr::variant()
-        let field_name = format!("enum_{}", index);
+        let field_name = format!("enum_{index}");
         let field = vir::Field::new(field_name, self.get_type().clone().variant(index));
 
-        PlaceEncoding::Variant { base: box self, field }
+        PlaceEncoding::Variant { base: Box::new(self), field }
     }
 }
 
@@ -137,11 +137,11 @@ impl<'tcx> From<vir::Expr> for PlaceEncoding<'tcx> {
 impl<'tcx> Display for PlaceEncoding<'tcx> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            PlaceEncoding::Expr(e) => write!(f, "{}", e),
-            PlaceEncoding::FieldAccess { base, field } => write!(f, "{}.{}", base, field),
-            PlaceEncoding::ArrayAccess { base, index, .. } => write!(f, "{}[{}]", base, index),
-            PlaceEncoding::Variant { base, field } => write!(f, "{}[{}]", base, field),
-            PlaceEncoding::SliceAccess { base, index, .. } => write!(f, "{}[{}]", base, index),
+            PlaceEncoding::Expr(e) => write!(f, "{e}"),
+            PlaceEncoding::FieldAccess { base, field } => write!(f, "{base}.{field}"),
+            PlaceEncoding::ArrayAccess { base, index, .. } => write!(f, "{base}[{index}]"),
+            PlaceEncoding::Variant { base, field } => write!(f, "{base}[{field}]"),
+            PlaceEncoding::SliceAccess { base, index, .. } => write!(f, "{base}[{index}]"),
         }
     }
 }

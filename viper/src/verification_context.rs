@@ -57,6 +57,7 @@ impl<'a> VerificationContext<'a> {
         )
     }
 
+    #[tracing::instrument(level = "debug", skip(self, smt_manager))]
     pub fn new_verifier(
         &self,
         backend: VerificationBackend,
@@ -72,8 +73,7 @@ impl<'a> VerificationContext<'a> {
         info!("Using Z3 exe: '{}'", &z3_exe);
         assert!(
             Path::new(&z3_exe).is_file(),
-            "The Z3_EXE environment variable ({:?}) does not point to a valid file.",
-            z3_exe
+            "The Z3_EXE environment variable ({z3_exe:?}) does not point to a valid file."
         );
         verifier_args.extend(vec!["--z3Exe".to_string(), z3_exe]);
 
@@ -84,20 +84,15 @@ impl<'a> VerificationContext<'a> {
             info!("Using BOOGIE exe: '{}'", &boogie_exe);
             assert!(
                 Path::new(&boogie_exe).is_file(),
-                "The BOOGIE_EXE environment variable ({:?}) does not point to a valid file.",
-                boogie_exe
+                "The BOOGIE_EXE environment variable ({boogie_exe:?}) does not point to a valid file."
             );
             verifier_args.extend(vec!["--boogieExe".to_string(), boogie_exe]);
         }
 
         verifier_args.extend(extra_args);
-        verifier_args.push("--ignoreFile".to_string());
-        verifier_args.push("dummy.vpr".to_string());
 
         debug!("Verifier arguments: '{}'", verifier_args.to_vec().join(" "));
 
-        Verifier::new(&self.env, backend, report_path, smt_manager)
-            .parse_command_line(&verifier_args)
-            .start()
+        Verifier::new(&self.env, backend, report_path, smt_manager).initialize(&verifier_args)
     }
 }

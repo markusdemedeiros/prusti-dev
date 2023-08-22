@@ -1,5 +1,4 @@
 #![feature(box_patterns)]
-#![feature(box_syntax)]
 #![feature(decl_macro)]
 #![allow(unused_imports)]
 #![deny(unused_must_use)]
@@ -7,7 +6,12 @@
 #![deny(unused_mut)]
 #![deny(unused_variables)]
 #![deny(unused_doc_comments)]
+#![warn(clippy::disallowed_types)]
+#![allow(clippy::needless_pass_by_ref_mut)] // see https://github.com/rust-lang/rust-clippy/issues/11179
 
+// If only it wasn't generated automatically
+// so that one could do `clippy --fix`...
+#[allow(clippy::uninlined_format_args)]
 #[rustfmt::skip]
 #[path = "../gen/mod.rs"]
 mod gen;

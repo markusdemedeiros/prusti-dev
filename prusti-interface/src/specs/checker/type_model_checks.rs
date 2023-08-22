@@ -21,6 +21,11 @@ use rustc_hash::FxHashMap;
 pub struct IllegalModelUsagesChecker;
 
 impl<'tcx> SpecCheckerStrategy<'tcx> for IllegalModelUsagesChecker {
+    #[tracing::instrument(
+        name = "IllegalModelUsagesChecker::check",
+        level = "debug",
+        skip(self, env)
+    )]
     fn check(&self, env: &Environment<'tcx>) -> Vec<PrustiError> {
         let mut visit = ModelUsageVisitor {
             env_query: env.query,
@@ -91,6 +96,11 @@ impl<'tcx> NonSpecExprVisitor<'tcx> for ModelUsageVisitor<'tcx> {
 pub struct ModelDefinedOnTypeWithoutFields;
 
 impl<'tcx> SpecCheckerStrategy<'tcx> for ModelDefinedOnTypeWithoutFields {
+    #[tracing::instrument(
+        name = "ModelDefinedOnTypeWithoutFields::check",
+        level = "debug",
+        skip(self, env)
+    )]
     fn check(&self, env: &Environment<'tcx>) -> Vec<PrustiError> {
         let mut collect = CollectModelledTypes {
             env_query: env.query,
@@ -126,7 +136,7 @@ impl<'tcx> SpecCheckerStrategy<'tcx> for ModelDefinedOnTypeWithoutFields {
             .map(|(ty_hir_id_without_fields, _)| {
                 let span = env.query.get_def_span(ty_hir_id_without_fields.owner);
                 let message_type_name = type_names.get(&ty_hir_id_without_fields).unwrap();
-                let message = format!("Potentially dangerous type model definition for type '{}'", message_type_name);
+                let message = format!("Potentially dangerous type model definition for type '{message_type_name}'");
 
                 let mut warning = PrustiError::incorrect(
                         message,

@@ -1,12 +1,11 @@
 //! Helper functions for creating fields.
 
-use crate::encoder::errors::{EncodingError, EncodingResult};
-use log::trace;
+use crate::{encoder::errors::EncodingResult, error_internal, error_unsupported};
 
 use vir_crate::high as vir;
 
+#[tracing::instrument(level = "trace")]
 pub(crate) fn create_value_field(ty: vir::Type) -> EncodingResult<vir::FieldDecl> {
-    trace!("Encode value field for type '{:?}'", ty);
     let field_decl = match ty {
         vir::Type::Bool => vir::FieldDecl::new("val_bool", 0usize, vir::Type::MBool),
 
@@ -40,10 +39,7 @@ pub(crate) fn create_value_field(ty: vir::Type) -> EncodingResult<vir::FieldDecl
         }
 
         vir::Type::Array(_) | vir::Type::Slice(_) => {
-            return Err(EncodingError::internal(format!(
-                "create_value_field should not be called for {}",
-                ty
-            )));
+            error_internal!("create_value_field should not be called for {}", ty);
         }
 
         vir::Type::Union(_)
@@ -51,10 +47,7 @@ pub(crate) fn create_value_field(ty: vir::Type) -> EncodingResult<vir::FieldDecl
         | vir::Type::Never
         | vir::Type::Str
         | vir::Type::Unsupported(_) => {
-            return Err(EncodingError::unsupported(format!(
-                "{} type is not supported",
-                ty
-            )));
+            error_unsupported!("{} type is not supported", ty);
         }
 
         vir::Type::MBool

@@ -7,8 +7,8 @@
 use super::super::borrows::Borrow;
 use crate::legacy::ast::*;
 use log::debug;
+use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
-    collections::{HashMap, HashSet},
     fmt,
     hash::{Hash, Hasher},
     mem,
@@ -158,25 +158,25 @@ pub enum Const {
 impl fmt::Display for Expr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Expr::Local(ref v, ref _pos) => write!(f, "{}", v),
+            Expr::Local(ref v, ref _pos) => write!(f, "{v}"),
             Expr::Variant(ref base, ref variant_index, ref _pos) => {
-                write!(f, "{}[{}]", base, variant_index)
+                write!(f, "{base}[{variant_index}]")
             }
-            Expr::Field(ref base, ref field, ref _pos) => write!(f, "{}.{}", base, field),
-            Expr::AddrOf(ref base, _, ref _pos) => write!(f, "&({})", base),
-            Expr::Const(ref value, ref _pos) => write!(f, "{}", value),
+            Expr::Field(ref base, ref field, ref _pos) => write!(f, "{base}.{field}"),
+            Expr::AddrOf(ref base, _, ref _pos) => write!(f, "&({base})"),
+            Expr::Const(ref value, ref _pos) => write!(f, "{value}"),
             Expr::BinOp(op, ref left, ref right, ref _pos) => {
-                write!(f, "({}) {} ({})", left, op, right)
+                write!(f, "({left}) {op} ({right})")
             }
             Expr::ContainerOp(op, box ref left, box ref right, _) => match op {
-                ContainerOpKind::SeqIndex => write!(f, "{}[{}]", left, right),
-                ContainerOpKind::SeqConcat => write!(f, "{} ++ {}", left, right),
-                ContainerOpKind::SeqLen => write!(f, "|{}|", left),
+                ContainerOpKind::SeqIndex => write!(f, "{left}[{right}]"),
+                ContainerOpKind::SeqConcat => write!(f, "{left} ++ {right}"),
+                ContainerOpKind::SeqLen => write!(f, "|{left}|"),
             },
             Expr::Seq(ty, elems, _) => {
                 let elems_printed = elems
                     .iter()
-                    .map(|e| format!("{}", e))
+                    .map(|e| format!("{e}"))
                     .collect::<Vec<_>>()
                     .join(", ");
                 let elem_ty = if let Type::Seq(box elem_ty) = ty {
@@ -184,30 +184,30 @@ impl fmt::Display for Expr {
                 } else {
                     unreachable!()
                 };
-                write!(f, "Seq[{}]({})", elem_ty, elems_printed)
+                write!(f, "Seq[{elem_ty}]({elems_printed})")
             }
             Expr::Map(..) => {
                 unimplemented!()
             }
-            Expr::UnaryOp(op, ref expr, ref _pos) => write!(f, "{}({})", op, expr),
+            Expr::UnaryOp(op, ref expr, ref _pos) => write!(f, "{op}({expr})"),
             Expr::PredicateAccessPredicate(ref pred_name, ref arg, perm, ref _pos) => {
-                write!(f, "acc({}({}), {})", pred_name, arg, perm)
+                write!(f, "acc({pred_name}({arg}), {perm})")
             }
             Expr::FieldAccessPredicate(ref expr, perm, ref _pos) => {
-                write!(f, "acc({}, {})", expr, perm)
+                write!(f, "acc({expr}, {perm})")
             }
             Expr::LabelledOld(ref label, ref expr, ref _pos) => {
-                write!(f, "old[{}]({})", label, expr)
+                write!(f, "old[{label}]({expr})")
             }
             Expr::MagicWand(ref left, ref right, ref borrow, ref _pos) => {
-                write!(f, "({}) {:?} --* ({})", left, borrow, right)
+                write!(f, "({left}) {borrow:?} --* ({right})")
             }
             Expr::Unfolding(ref pred_name, ref args, ref expr, perm, ref variant, ref _pos) => {
                 write!(
                     f,
                     "(unfolding acc({}({}), {}) in {})",
                     if let Some(variant_index) = variant {
-                        format!("{}<variant {}>", pred_name, variant_index)
+                        format!("{pred_name}<variant {variant_index}>")
                     } else {
                         pred_name.to_string()
                     },
@@ -220,13 +220,13 @@ impl fmt::Display for Expr {
                 )
             }
             Expr::Cond(ref guard, ref left, ref right, ref _pos) => {
-                write!(f, "({})?({}):({})", guard, left, right)
+                write!(f, "({guard})?({left}):({right})")
             }
             Expr::ForAll(ref vars, ref triggers, ref body, ref _pos) => write!(
                 f,
                 "forall {} {} :: {}",
                 vars.iter()
-                    .map(|x| format!("{:?}", x))
+                    .map(|x| format!("{x:?}"))
                     .collect::<Vec<String>>()
                     .join(", "),
                 triggers
@@ -240,7 +240,7 @@ impl fmt::Display for Expr {
                 f,
                 "exists {} {} :: {}",
                 vars.iter()
-                    .map(|x| format!("{:?}", x))
+                    .map(|x| format!("{x:?}"))
                     .collect::<Vec<String>>()
                     .join(", "),
                 triggers
@@ -251,7 +251,7 @@ impl fmt::Display for Expr {
                 body
             ),
             Expr::LetExpr(ref var, ref expr, ref body, ref _pos) => {
-                write!(f, "(let {:?} == ({}) in {})", var, expr, body,)
+                write!(f, "(let {var:?} == ({expr}) in {body})",)
             }
             Expr::FuncApp(ref name, ref args, ref params, ref typ, ref _pos) => write!(
                 f,
@@ -297,15 +297,15 @@ impl fmt::Display for Expr {
             ),
 
             Expr::InhaleExhale(ref inhale_expr, ref exhale_expr, _) => {
-                write!(f, "[({}), ({})]", inhale_expr, exhale_expr)
+                write!(f, "[({inhale_expr}), ({exhale_expr})]")
             }
 
             Expr::Downcast(ref base, ref enum_place, ref field) => {
-                write!(f, "(downcast {} to {} in {})", enum_place, field, base,)
+                write!(f, "(downcast {enum_place} to {field} in {base})",)
             }
 
-            Expr::SnapApp(ref expr, _) => write!(f, "snap({})", expr),
-            Expr::Cast(ref kind, ref base, _) => write!(f, "cast<{:?}>({})", kind, base),
+            Expr::SnapApp(ref expr, _) => write!(f, "snap({expr})"),
+            Expr::Cast(ref kind, ref base, _) => write!(f, "cast<{kind:?}>({base})"),
         }
     }
 }
@@ -352,11 +352,11 @@ impl fmt::Display for BinaryOpKind {
 impl fmt::Display for Const {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Const::Bool(val) => write!(f, "{}", val),
-            Const::Int(val) => write!(f, "{}", val),
-            Const::BigInt(ref val) => write!(f, "{}", val),
-            Const::Float(val) => write!(f, "{:?}", val),
-            Const::BitVector(val) => write!(f, "{:?}", val),
+            Const::Bool(val) => write!(f, "{val}"),
+            Const::Int(val) => write!(f, "{val}"),
+            Const::BigInt(ref val) => write!(f, "{val}"),
+            Const::Float(val) => write!(f, "{val:?}"),
+            Const::BitVector(val) => write!(f, "{val:?}"),
             Const::FnPtr => write!(f, "FnPtr"),
         }
     }
@@ -450,12 +450,12 @@ impl Expr {
 
     pub fn predicate_access_predicate<S: ToString>(name: S, place: Expr, perm: PermAmount) -> Self {
         let pos = place.pos();
-        Expr::PredicateAccessPredicate(name.to_string(), box place, perm, pos)
+        Expr::PredicateAccessPredicate(name.to_string(), Box::new(place), perm, pos)
     }
 
     pub fn field_access_predicate(place: Expr, perm: PermAmount) -> Self {
         let pos = place.pos();
-        Expr::FieldAccessPredicate(box place, perm, pos)
+        Expr::FieldAccessPredicate(Box::new(place), perm, pos)
     }
 
     pub fn pred_permission(place: Expr, perm: PermAmount) -> Option<Self> {
@@ -465,27 +465,27 @@ impl Expr {
     }
 
     pub fn acc_permission(place: Expr, perm: PermAmount) -> Self {
-        Expr::FieldAccessPredicate(box place, perm, Position::default())
+        Expr::FieldAccessPredicate(Box::new(place), perm, Position::default())
     }
 
     pub fn labelled_old(label: &str, expr: Expr) -> Self {
-        Expr::LabelledOld(label.to_string(), box expr, Position::default())
+        Expr::LabelledOld(label.to_string(), Box::new(expr), Position::default())
     }
 
     #[allow(clippy::should_implement_trait)]
     pub fn not(expr: Expr) -> Self {
-        Expr::UnaryOp(UnaryOpKind::Not, box expr, Position::default())
+        Expr::UnaryOp(UnaryOpKind::Not, Box::new(expr), Position::default())
     }
 
     pub fn minus(expr: Expr) -> Self {
-        Expr::UnaryOp(UnaryOpKind::Minus, box expr, Position::default())
+        Expr::UnaryOp(UnaryOpKind::Minus, Box::new(expr), Position::default())
     }
 
     pub fn gt_cmp(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::GtCmp,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -493,8 +493,8 @@ impl Expr {
     pub fn ge_cmp(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::GeCmp,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -502,8 +502,8 @@ impl Expr {
     pub fn lt_cmp(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::LtCmp,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -511,8 +511,8 @@ impl Expr {
     pub fn le_cmp(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::LeCmp,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -520,8 +520,8 @@ impl Expr {
     pub fn eq_cmp(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::EqCmp,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -532,26 +532,51 @@ impl Expr {
 
     #[allow(clippy::should_implement_trait)]
     pub fn add(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Add, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Add,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     #[allow(clippy::should_implement_trait)]
     pub fn sub(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Sub, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Sub,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     #[allow(clippy::should_implement_trait)]
     pub fn mul(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Mul, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Mul,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     #[allow(clippy::should_implement_trait)]
     pub fn div(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Div, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Div,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     pub fn modulo(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Mod, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Mod,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     #[allow(clippy::should_implement_trait)]
@@ -575,11 +600,21 @@ impl Expr {
     }
 
     pub fn and(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::And, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::And,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     pub fn or(left: Expr, right: Expr) -> Self {
-        Expr::BinOp(BinaryOpKind::Or, box left, box right, Position::default())
+        Expr::BinOp(
+            BinaryOpKind::Or,
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     pub fn xor(left: Expr, right: Expr) -> Self {
@@ -589,8 +624,8 @@ impl Expr {
     pub fn implies(left: Expr, right: Expr) -> Self {
         Expr::BinOp(
             BinaryOpKind::Implies,
-            box left,
-            box right,
+            Box::new(left),
+            Box::new(right),
             Position::default(),
         )
     }
@@ -600,7 +635,7 @@ impl Expr {
             !vars.is_empty(),
             "A quantifier must have at least one variable."
         );
-        Expr::ForAll(vars, triggers, box body, Position::default())
+        Expr::ForAll(vars, triggers, Box::new(body), Position::default())
     }
 
     pub fn exists(vars: Vec<LocalVar>, triggers: Vec<Trigger>, body: Expr) -> Self {
@@ -608,11 +643,16 @@ impl Expr {
             !vars.is_empty(),
             "A quantifier must have at least one variable."
         );
-        Expr::Exists(vars, triggers, box body, Position::default())
+        Expr::Exists(vars, triggers, Box::new(body), Position::default())
     }
 
     pub fn ite(guard: Expr, left: Expr, right: Expr) -> Self {
-        Expr::Cond(box guard, box left, box right, Position::default())
+        Expr::Cond(
+            Box::new(guard),
+            Box::new(left),
+            Box::new(right),
+            Position::default(),
+        )
     }
 
     pub fn unfolding(
@@ -625,7 +665,7 @@ impl Expr {
         Expr::Unfolding(
             pred_name,
             args,
-            box expr,
+            Box::new(expr),
             perm,
             variant,
             Position::default(),
@@ -636,7 +676,14 @@ impl Expr {
     pub fn wrap_in_unfolding(arg: Expr, body: Expr) -> Expr {
         let type_name = arg.get_type().name();
         let pos = body.pos();
-        Expr::Unfolding(type_name, vec![arg], box body, PermAmount::Read, None, pos)
+        Expr::Unfolding(
+            type_name,
+            vec![arg],
+            Box::new(body),
+            PermAmount::Read,
+            None,
+            pos,
+        )
     }
 
     pub fn func_app(
@@ -654,15 +701,15 @@ impl Expr {
     }
 
     pub fn magic_wand(lhs: Expr, rhs: Expr, borrow: Option<Borrow>) -> Self {
-        Expr::MagicWand(box lhs, box rhs, borrow, Position::default())
+        Expr::MagicWand(Box::new(lhs), Box::new(rhs), borrow, Position::default())
     }
 
     pub fn downcast(base: Expr, enum_place: Expr, variant_field: Field) -> Self {
-        Expr::Downcast(box base, box enum_place, variant_field)
+        Expr::Downcast(Box::new(base), Box::new(enum_place), variant_field)
     }
 
     pub fn snap_app(expr: Expr) -> Self {
-        Expr::SnapApp(box expr, Position::default())
+        Expr::SnapApp(Box::new(expr), Position::default())
     }
 
     pub fn find(&self, sub_target: &Expr) -> bool {
@@ -740,8 +787,8 @@ impl Expr {
         components
             .into_iter()
             .fold(self, |acc, component| match component {
-                PlaceComponent::Variant(variant, pos) => Expr::Variant(box acc, variant, pos),
-                PlaceComponent::Field(field, pos) => Expr::Field(box acc, field, pos),
+                PlaceComponent::Variant(variant, pos) => Expr::Variant(Box::new(acc), variant, pos),
+                PlaceComponent::Field(field, pos) => Expr::Field(Box::new(acc), field, pos),
             })
     }
 
@@ -754,21 +801,25 @@ impl Expr {
     #[must_use]
     pub fn variant(self, index: &str) -> Self {
         assert!(self.is_place());
-        let field_name = format!("enum_{}", index);
+        let field_name = format!("enum_{index}");
         let typ = self.get_type();
         let variant = Field::new(field_name, typ.clone().variant(index));
-        Expr::Variant(box self, variant, Position::default())
+        Expr::Variant(Box::new(self), variant, Position::default())
     }
 
     #[must_use]
     pub fn field(self, field: Field) -> Self {
-        Expr::Field(box self, field, Position::default())
+        Expr::Field(Box::new(self), field, Position::default())
     }
 
     #[must_use]
     pub fn addr_of(self) -> Self {
         let type_name = self.get_type().name();
-        Expr::AddrOf(box self, Type::TypedRef(type_name), Position::default())
+        Expr::AddrOf(
+            Box::new(self),
+            Type::TypedRef(type_name),
+            Position::default(),
+        )
     }
 
     pub fn is_only_permissions(&self) -> bool {
@@ -908,7 +959,7 @@ impl Expr {
                 */
                 self
             }
-            _ => Expr::LabelledOld(label.to_string(), box self, Position::default()),
+            _ => Expr::LabelledOld(label.to_string(), Box::new(self), Position::default()),
         }
     }
 
@@ -1106,8 +1157,8 @@ impl Expr {
     */
 
     pub fn has_proper_prefix(&self, other: &Expr) -> bool {
-        debug_assert!(self.is_place(), "self={} other={}", self, other);
-        debug_assert!(other.is_place(), "self={} other={}", self, other);
+        debug_assert!(self.is_place(), "self={self} other={other}");
+        debug_assert!(other.is_place(), "self={self} other={other}");
         self != other && self.has_prefix(other)
     }
 
@@ -1233,14 +1284,14 @@ impl Expr {
                 | BinaryOpKind::Max => {
                     let typ1 = base1.get_type();
                     let typ2 = base2.get_type();
-                    assert_eq!(typ1, typ2, "expr: {:?}", self);
+                    assert_eq!(typ1, typ2, "expr: {self:?}");
                     typ1
                 }
             },
             Expr::Cond(_, box ref base1, box ref base2, _pos) => {
                 let typ1 = base1.get_maybe_type();
                 let typ2 = base2.get_maybe_type();
-                assert_eq!(typ1, typ2, "expr: {:?}", self);
+                assert_eq!(typ1, typ2, "expr: {self:?}");
                 typ1?
             }
             Expr::ForAll(..) | Expr::Exists(..) => &Type::Bool,
@@ -1361,6 +1412,7 @@ impl Expr {
     }
 
     #[must_use]
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn replace_place(self, target: &Expr, replacement: &Expr) -> Self {
         // TODO: disabled for snapshot patching
         /*
@@ -1492,6 +1544,7 @@ impl Expr {
     }
 
     #[must_use]
+    #[tracing::instrument(level = "debug", skip(self))]
     pub fn replace_multiple_places(self, replacements: &[(Expr, Expr)]) -> Self {
         // TODO: disabled for snapshot patching
         /*
@@ -1744,13 +1797,13 @@ impl Expr {
         impl ExprWalker for Collector {
             fn walk_variant(&mut self, e: &Expr, v: &Field, p: &Position) {
                 self.walk(e);
-                let expr = Expr::Variant(box e.clone(), v.clone(), *p);
+                let expr = Expr::Variant(Box::new(e.clone()), v.clone(), *p);
                 let perm = Expr::acc_permission(expr, self.perm_amount);
                 self.perms.push(perm);
             }
             fn walk_field(&mut self, e: &Expr, f: &Field, p: &Position) {
                 self.walk(e);
-                let expr = Expr::Field(box e.clone(), f.clone(), *p);
+                let expr = Expr::Field(Box::new(e.clone()), f.clone(), *p);
                 let perm = Expr::acc_permission(expr, self.perm_amount);
                 self.perms.push(perm);
             }
@@ -1768,9 +1821,9 @@ impl Expr {
 
     /// Replace all generic types with their instantiations by using substitution.
     #[must_use]
-    pub fn patch_types(self, substs: &HashMap<String, String>) -> Self {
+    pub fn patch_types(self, substs: &FxHashMap<String, String>) -> Self {
         struct TypePatcher<'a> {
-            substs: &'a HashMap<String, String>,
+            substs: &'a FxHashMap<String, String>,
         }
         impl<'a> ExprFolder for TypePatcher<'a> {
             fn fold_predicate_access_predicate(

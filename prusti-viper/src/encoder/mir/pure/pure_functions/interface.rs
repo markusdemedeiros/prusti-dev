@@ -1,6 +1,6 @@
 //! A public interface to the pure function encoder.
 
-use super::encoder::{FunctionCallInfo, FunctionCallInfoHigh, PureFunctionEncoder};
+use super::encoder_poly::{FunctionCallInfo, FunctionCallInfoHigh, PureFunctionEncoder};
 use crate::encoder::{
     errors::{SpannedEncodingResult, WithSpan},
     mir::specifications::SpecificationsInterface,
@@ -10,7 +10,7 @@ use crate::encoder::{
 use log::{debug, trace};
 use prusti_common::config;
 use prusti_interface::data::ProcedureDefId;
-use prusti_rustc_interface::middle::{ty, ty::subst::SubstsRef};
+use prusti_rustc_interface::middle::{mir, ty, ty::GenericArgsRef};
 use rustc_hash::{FxHashMap, FxHashSet};
 
 use prusti_interface::specs::typed::ProcedureSpecificationKind;
@@ -23,18 +23,20 @@ use vir_crate::{common::identifier::WithIdentifier, high as vir_high, polymorphi
 /// to account for different monomorphisations resulting from the function
 /// being called from callers (with different parameter environments). Each
 /// variant of a pure function will be encoded as a separate Viper function.
-type Key<'tcx> = (ProcedureDefId, SubstsRef<'tcx>, ty::PolyFnSig<'tcx>);
+/// Lifetimes/regions are erased.
+type Key<'tcx> = (ProcedureDefId, GenericArgsRef<'tcx>, ty::PolyFnSig<'tcx>);
 
 /// Compute the key for the given call.
 fn compute_key<'v, 'tcx: 'v>(
     encoder: &crate::encoder::encoder::Encoder<'v, 'tcx>,
     proc_def_id: ProcedureDefId,
     caller_def_id: ProcedureDefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 ) -> SpannedEncodingResult<Key<'tcx>> {
+    let tcx = encoder.env().tcx();
     Ok((
         proc_def_id,
-        substs,
+        tcx.erase_regions(substs),
         encoder
             .env()
             .query
@@ -67,7 +69,7 @@ type FunctionConstructor<'v, 'tcx> = Box<
 
 /// Depending on the context of the pure encoding,
 /// panics will be encoded slightly differently.
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub(crate) enum PureEncodingContext {
     /// Panics will be encoded as calls to unreachable functions
     /// (which have a `requires false` pre-condition).
@@ -117,15 +119,20 @@ pub(crate) struct PureFunctionEncoderState<'v, 'tcx: 'v> {
 pub(crate) struct FunctionDescription<'tcx> {
     proc_def_id: ProcedureDefId,
     parent_def_id: ProcedureDefId,
-    substs: SubstsRef<'tcx>,
+    substs: GenericArgsRef<'tcx>,
 }
 
 pub(crate) trait PureFunctionEncoderInterface<'v, 'tcx> {
+    fn encode_uneval_const(
+        &self,
+        c: mir::UnevaluatedConst<'tcx>,
+    ) -> SpannedEncodingResult<vir_poly::Expr>;
+
     fn encode_pure_expression(
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr>;
 
     /// Encode the body of the given procedure as a pure expression.
@@ -133,7 +140,7 @@ pub(crate) trait PureFunctionEncoderInterface<'v, 'tcx> {
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression>;
 
     /// Encode the pure function definition.
@@ -141,7 +148,7 @@ pub(crate) trait PureFunctionEncoderInterface<'v, 'tcx> {
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<()>;
 
     /// Ensure that the function with the specified identifier is encoded.
@@ -159,7 +166,7 @@ pub(crate) trait PureFunctionEncoderInterface<'v, 'tcx> {
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<(String, vir_poly::Type)>;
 
     /// Encode the use (call) of a pure function, returning the name of the
@@ -171,7 +178,7 @@ pub(crate) trait PureFunctionEncoderInterface<'v, 'tcx> {
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<(String, vir_high::Type)>;
 
     /// Get the encoded function declaration.
@@ -206,7 +213,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression> {
         let key = compute_key(self, proc_def_id, parent_def_id, substs)?;
         if !self
@@ -215,7 +222,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
             .borrow()
             .contains_key(&key)
         {
-            let body = super::new_encoder::encode_pure_expression(
+            let body = super::encoder_high::encode_pure_expression(
                 self,
                 proc_def_id,
                 if self.is_encoding_trigger.get() {
@@ -237,13 +244,25 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         Ok(self.pure_function_encoder_state.bodies_high.borrow()[&key].clone())
     }
 
+    fn encode_uneval_const(
+        &self,
+        mir::UnevaluatedConst {
+            def,
+            args,
+            promoted,
+        }: mir::UnevaluatedConst<'tcx>,
+    ) -> SpannedEncodingResult<vir_poly::Expr> {
+        let promoted_id = promoted.expect("unevaluated const should have a promoted ID");
+        super::encoder_poly::encode_promoted(self, def, promoted_id, def, args)
+    }
+
     // FIXME: This should be refactored to depend on encode_pure_expression_high
     // and moved to prusti-viper/src/encoder/high/pure_functions/interface.rs
     fn encode_pure_expression(
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr> {
         let key = compute_key(self, proc_def_id, parent_def_id, substs)?;
         if !self
@@ -252,7 +271,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
             .borrow()
             .contains_key(&key)
         {
-            let body = super::encoder::encode_body(
+            let body = super::encoder_poly::encode_body(
                 self,
                 proc_def_id,
                 if self.is_encoding_trigger.get() {
@@ -272,17 +291,16 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         Ok(self.pure_function_encoder_state.bodies_poly.borrow()[&key].clone())
     }
 
+    #[tracing::instrument(level = "debug", skip(self))]
     fn encode_pure_function_def(
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<()> {
-        trace!("[enter] encode_pure_function_def({:?})", proc_def_id);
         assert!(
             self.is_pure(proc_def_id, Some(substs)),
-            "procedure is not marked as pure: {:?}",
-            proc_def_id
+            "procedure is not marked as pure: {proc_def_id:?}"
         );
 
         let mir_span = self.env().query.get_def_span(proc_def_id);
@@ -331,7 +349,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
                             let function = pure_function_encoder.encode_function()?;
                             if config::use_new_encoder() {
                                 // Test the new encoding.
-                                let _ = super::new_encoder::encode_function_decl(
+                                let _ = super::encoder_high::encode_function_decl(
                                     self,
                                     proc_def_id,
                                     proc_def_id,
@@ -391,8 +409,6 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
                 }
             }
         }
-
-        trace!("[exit] encode_pure_function_def({:?})", proc_def_id);
         Ok(())
     }
 
@@ -424,12 +440,11 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<(String, vir_poly::Type)> {
         assert!(
             self.is_pure(proc_def_id, Some(substs)),
-            "procedure is not marked as pure: {:?}",
-            proc_def_id
+            "procedure is not marked as pure: {proc_def_id:?}"
         );
 
         let key = compute_key(self, proc_def_id, parent_def_id, substs)?;
@@ -484,12 +499,11 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         &self,
         proc_def_id: ProcedureDefId,
         parent_def_id: ProcedureDefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<(String, vir_high::Type)> {
         assert!(
             self.is_pure(proc_def_id, Some(substs)),
-            "procedure is not marked as pure: {:?}",
-            proc_def_id
+            "procedure is not marked as pure: {proc_def_id:?}"
         );
 
         let key = compute_key(self, proc_def_id, parent_def_id, substs)?;
@@ -501,7 +515,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
         if let std::collections::hash_map::Entry::Vacant(e) = call_infos.entry(key) {
             // Compute information necessary to encode the function call and
             // memoize it.
-            let function_call_info = super::new_encoder::encode_function_call_info(
+            let function_call_info = super::encoder_high::encode_function_call_info(
                 self,
                 proc_def_id,
                 parent_def_id,
@@ -520,7 +534,7 @@ impl<'v, 'tcx: 'v> PureFunctionEncoderInterface<'v, 'tcx>
             self.register_function_constructor_mir(
                 identifier,
                 Box::new(move |encoder| {
-                    super::new_encoder::encode_function_decl(
+                    super::encoder_high::encode_function_decl(
                         encoder,
                         proc_def_id,
                         proc_def_id,

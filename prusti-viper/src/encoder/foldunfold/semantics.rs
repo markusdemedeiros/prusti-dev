@@ -48,12 +48,12 @@ pub trait ApplyOnState {
 }
 
 impl ApplyOnState for vir::Stmt {
+    #[tracing::instrument(level = "trace", skip_all, fields(self = %self))]
     fn apply_on_state(
         &self,
         state: &mut State,
         predicates: &Predicates,
     ) -> Result<(), FoldUnfoldError> {
-        trace!("apply_on_state '{}'", self);
         trace!("State acc before {{\n{}\n}}", state.display_acc());
         trace!("State pred before {{\n{}\n}}", state.display_pred());
         trace!("State moved before {{\n{}\n}}", state.display_moved());
@@ -61,6 +61,7 @@ impl ApplyOnState for vir::Stmt {
             &vir::Stmt::Comment(_)
             | &vir::Stmt::Label(_)
             | &vir::Stmt::Assert(_)
+            | &vir::Stmt::Refute(_)
             | &vir::Stmt::Obtain(_) => {}
 
             &vir::Stmt::Inhale(vir::Inhale { ref expr }) => {
@@ -166,8 +167,7 @@ impl ApplyOnState for vir::Stmt {
                     // This is not move assignemnt or the creation of a borrow
                     assert!(
                         matches!(kind, vir::AssignKind::Copy),
-                        "Unexpected assignment kind: {:?}",
-                        kind
+                        "Unexpected assignment kind: {kind:?}"
                     );
                 }
             }
@@ -266,8 +266,7 @@ impl ApplyOnState for vir::Stmt {
                 if !unchecked {
                     debug_assert!(
                         !left.is_simple_place() || state.is_prefix_of_some_acc(left) || state.is_prefix_of_some_pred(left),
-                        "The fold/unfold state does not contain the permission for an expiring borrow: {}",
-                        left
+                        "The fold/unfold state does not contain the permission for an expiring borrow: {left}"
                     );
                 }
                 /*assert!(
@@ -348,9 +347,12 @@ impl ApplyOnState for vir::Stmt {
                         if this_label == target_label {
                             if let vir::Expr::LabelledOld(repl_labelled) = replacement {
                                 return vir::Expr::LabelledOld(vir::LabelledOld {
-                                    base: box this_base
-                                        .clone()
-                                        .replace_place(target_base, repl_labelled.base.as_ref()),
+                                    base: Box::new(
+                                        this_base.clone().replace_place(
+                                            target_base,
+                                            repl_labelled.base.as_ref(),
+                                        ),
+                                    ),
                                     label: repl_labelled.label.clone(),
                                     position: repl_labelled.position,
                                 });

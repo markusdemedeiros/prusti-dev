@@ -217,8 +217,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
     ) -> SpannedEncodingResult<()> {
         let mut new_derived_lifetimes = self.lifetimes.get_origin_contains_loan_at_start(location);
         block_builder.add_comment(format!(
-            "Prepare lifetimes for statement start {:?}",
-            location
+            "Prepare lifetimes for statement start {location:?}"
         ));
         let new_reborrow_lifetime_to_ignore: Option<String> =
             self.reborrow_operand_lifetime(statement);
@@ -244,10 +243,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
         statement: Option<&mir::Statement<'tcx>>,
     ) -> SpannedEncodingResult<()> {
         let mut new_derived_lifetimes = self.lifetimes.get_origin_contains_loan_at_mid(location);
-        block_builder.add_comment(format!(
-            "Prepare lifetimes for statement mid {:?}",
-            location
-        ));
+        block_builder.add_comment(format!("Prepare lifetimes for statement mid {location:?}"));
         let new_reborrow_lifetime_to_ignore: Option<String> =
             self.reborrow_operand_lifetime(statement);
         // FIXME: The lifetimes read via the reborrow statement are currently not killed.
@@ -325,7 +321,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
         let mut current_derived_lifetimes =
             self.lifetimes.get_origin_contains_loan_at_mid(location);
         let mut current_original_lifetimes = self.lifetimes.get_loan_live_at_start(location);
-        block_builder.add_comment(format!("Prepare lifetimes for block {:?}", target));
+        block_builder.add_comment(format!("Prepare lifetimes for block {target:?}"));
         self.encode_lft(
             block_builder,
             location,
@@ -338,7 +334,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
         )?;
         self.reborrow_lifetimes_to_remove_for_block
             .entry(target)
-            .or_insert_with(BTreeSet::new);
+            .or_default();
         let mut values = self
             .reborrow_lifetimes_to_remove_for_block
             .get(&self.current_basic_block.unwrap())
@@ -365,7 +361,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
         let fresh_destination_label = self.fresh_basic_block_label();
         let mut intermediate_block_builder =
             block_builder.create_basic_block_builder(fresh_destination_label.clone());
-        intermediate_block_builder.add_comment(format!("Prepare lifetimes for block {:?}", target));
+        intermediate_block_builder.add_comment(format!("Prepare lifetimes for block {target:?}"));
         self.encode_lft(
             &mut intermediate_block_builder,
             location,
@@ -378,7 +374,7 @@ impl<'p, 'v: 'p, 'tcx: 'v> LifetimesEncoder<'tcx> for ProcedureEncoder<'p, 'v, '
         )?;
         self.reborrow_lifetimes_to_remove_for_block
             .entry(target)
-            .or_insert_with(BTreeSet::new);
+            .or_default();
         let mut values = self
             .reborrow_lifetimes_to_remove_for_block
             .get(&self.current_basic_block.unwrap())

@@ -9,23 +9,27 @@ use crate::encoder::{
     mir::{
         places::PlacesEncoderInterface,
         pure::{
-            interpreter::ExpressionBackwardInterpreter,
+            interpreter::{
+                interpreter_high::ExpressionBackwardInterpreter,
+                interpreter_poly::PureFunctionBackwardInterpreter,
+                run_backward_interpretation_point_to_point,
+                state_poly::ExprBackwardInterpreterState,
+            },
             specifications::{
                 encoder_high::{
                     encode_quantifier_high, inline_closure_high, inline_spec_item_high,
                 },
                 encoder_poly::{encode_quantifier, inline_closure, inline_spec_item},
             },
-            PureEncodingContext, PureFunctionBackwardInterpreter,
+            PureEncodingContext,
         },
     },
     mir_encoder::{MirEncoder, PlaceEncoder, PRECONDITION_LABEL},
-    mir_interpreter::run_backward_interpretation_point_to_point,
     snapshot::interface::SnapshotEncoderInterface,
 };
 use prusti_rustc_interface::{
     hir::def_id::DefId,
-    middle::{mir, ty::subst::SubstsRef},
+    middle::{mir, ty::GenericArgsRef},
     span::Span,
 };
 use vir_crate::{
@@ -40,7 +44,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         span: Span,
         encoded_args: Vec<vir_high::Expression>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression>;
 
     #[allow(clippy::too_many_arguments)]
@@ -51,7 +55,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         target_args: &[vir_high::Expression],
         target_return: Option<&vir_high::Expression>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression>;
 
     fn encode_loop_spec_high(
@@ -59,7 +63,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         mir: &mir::Body<'tcx>, // body of the method containing the loop
         invariant_block: mir::BasicBlock, // in which the invariant is defined
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression>;
 
     fn encode_prusti_operation(
@@ -68,7 +72,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         span: Span,
         encoded_args: Vec<vir_poly::Expr>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr>;
 
     #[allow(clippy::too_many_arguments)]
@@ -80,7 +84,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         target_return: Option<&vir_poly::Expr>,
         targets_are_values: bool,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr>;
 
     fn encode_invariant(
@@ -88,7 +92,7 @@ pub(crate) trait SpecificationEncoderInterface<'tcx> {
         mir: &mir::Body<'tcx>, // body of the method containing the loop
         invariant_block: mir::BasicBlock, // in which the invariant is defined
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr>;
 }
 
@@ -99,7 +103,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         span: Span,
         encoded_args: Vec<vir_high::Expression>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression> {
         match fn_name {
             "prusti_contracts::forall" | "prusti_contracts::exists" => encode_quantifier_high(
@@ -121,7 +125,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         target_args: &[vir_high::Expression],
         target_return: Option<&vir_high::Expression>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression> {
         let encoded_assertion = inline_spec_item_high(
             self,
@@ -143,7 +147,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         mir: &mir::Body<'tcx>, // body of the method containing the loop
         invariant_block: mir::BasicBlock, // in which the invariant is defined
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_high::Expression> {
         // identify previous block: there should only be one
         let predecessors = &mir.basic_blocks.predecessors()[invariant_block];
@@ -197,7 +201,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         // inline invariant body
         let encoded_invariant = inline_closure_high(
             self,
-            inv_def_id.to_def_id(),
+            inv_def_id,
             closure_expression_borrow,
             vec![],
             parent_def_id,
@@ -220,8 +224,8 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
              predecessor,
              invariant_block,
              inv_loc + 1, // include the closure assign itself
-             crate::encoder::mir::pure::interpreter::state::ExprBackwardInterpreterState::new_defined(encoded_invariant),
-             crate::encoder::mir::pure::interpreter::state::ExprBackwardInterpreterState::new(None),
+             crate::encoder::mir::pure::interpreter::state_high::ExprBackwardInterpreterState::new_defined(encoded_invariant),
+             crate::encoder::mir::pure::interpreter::state_high::ExprBackwardInterpreterState::new(None),
          )?;
 
         let final_invariant = invariant.unwrap().into_expr().unwrap();
@@ -235,7 +239,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         span: Span,
         encoded_args: Vec<vir_poly::Expr>,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr> {
         match fn_name {
             "prusti_contracts::forall" | "prusti_contracts::exists" => encode_quantifier(
@@ -263,7 +267,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         target_return: Option<&vir_poly::Expr>,
         targets_are_values: bool,
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr> {
         let mut encoded_assertion = inline_spec_item(
             self,
@@ -298,7 +302,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         mir: &mir::Body<'tcx>, // body of the method containing the loop
         invariant_block: mir::BasicBlock, // in which the invariant is defined
         parent_def_id: DefId,
-        substs: SubstsRef<'tcx>,
+        substs: GenericArgsRef<'tcx>,
     ) -> SpannedEncodingResult<vir_poly::Expr> {
         // identify closure aggregate assign (the invariant body)
         let closure_assigns = mir.basic_blocks[invariant_block]
@@ -337,7 +341,7 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
         // inline invariant body
         let encoded_invariant = inline_closure(
             self,
-            inv_def_id.to_def_id(),
+            inv_def_id,
             inv_cl_expr_encoded.try_into_expr().unwrap(),
             vec![],
             parent_def_id,
@@ -358,10 +362,8 @@ impl<'v, 'tcx: 'v> SpecificationEncoderInterface<'tcx> for crate::encoder::Encod
             invariant_block,
             invariant_block,
             inv_loc + 1, // include the closure assign itself
-            crate::encoder::mir_interpreter::ExprBackwardInterpreterState::new_defined(
-                encoded_invariant,
-            ),
-            crate::encoder::mir_interpreter::ExprBackwardInterpreterState::new(None),
+            ExprBackwardInterpreterState::new_defined(encoded_invariant),
+            ExprBackwardInterpreterState::new(None),
         )?;
 
         // TODO: deal with old(...) ?

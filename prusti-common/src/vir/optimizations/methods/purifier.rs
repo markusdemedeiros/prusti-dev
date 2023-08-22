@@ -13,19 +13,16 @@ use crate::{
     config,
     vir::polymorphic_vir::{ast, cfg},
 };
-use std::{
-    self,
-    collections::{HashMap, HashSet},
-    mem,
-};
+use rustc_hash::{FxHashMap, FxHashSet};
+use std::{self, mem};
 
 /// Purify vars.
 pub fn purify_vars(mut method: cfg::CfgMethod) -> cfg::CfgMethod {
     let mut collector = VarCollector {
-        all_vars: HashSet::new(),
-        impure_vars: HashSet::new(),
+        all_vars: FxHashSet::default(),
+        impure_vars: FxHashSet::default(),
         is_pure_context: false,
-        replacements: HashMap::new(),
+        replacements: FxHashMap::default(),
     };
     // Since we cannot purify the return value, mark it as impure.
     for return_var in method.get_formal_returns() {
@@ -82,13 +79,13 @@ fn is_purifiable_method(name: &str) -> bool {
 
 /// Collects all variables that cannot be purified.
 struct VarCollector {
-    all_vars: HashSet<ast::LocalVar>,
+    all_vars: FxHashSet<ast::LocalVar>,
     /// Vars that cannot be purified.
-    impure_vars: HashSet<ast::LocalVar>,
+    impure_vars: FxHashSet<ast::LocalVar>,
     /// Are we in a pure context?
     is_pure_context: bool,
     /// Variable replacement map.
-    replacements: HashMap<ast::LocalVar, ast::LocalVar>,
+    replacements: FxHashMap<ast::LocalVar, ast::LocalVar>,
 }
 
 impl VarCollector {
@@ -264,8 +261,8 @@ impl ast::StmtWalker for VarCollector {
 }
 
 struct VarPurifier {
-    pure_vars: HashSet<ast::LocalVar>,
-    replacements: HashMap<ast::LocalVar, ast::LocalVar>,
+    pure_vars: FxHashSet<ast::LocalVar>,
+    replacements: FxHashMap<ast::LocalVar, ast::LocalVar>,
 }
 
 impl VarPurifier {
@@ -277,11 +274,17 @@ impl VarPurifier {
         }
     }
     fn get_replacement(&self, expr: &ast::Expr) -> ast::Expr {
-        let ast::Expr::Local(ast::Local {variable: var, position: pos}) = expr else { unreachable!() };
+        let ast::Expr::Local(ast::Local {
+            variable: var,
+            position: pos,
+        }) = expr
+        else {
+            unreachable!()
+        };
         let replacement = self
             .replacements
             .get(var)
-            .unwrap_or_else(|| panic!("key: {}", var))
+            .unwrap_or_else(|| panic!("key: {var}"))
             .clone();
         ast::Expr::Local(ast::Local {
             variable: replacement,
@@ -303,7 +306,11 @@ impl VarPurifier {
                 _ => unreachable!(),
             }
         } else if config::encode_unsigned_num_constraint() {
-            ast::Expr::ge_cmp(replacement, 0.into())
+            match predicate.name().as_ref() {
+                "usize" => ast::Expr::ge_cmp(replacement, 0.into()),
+                "isize" => true.into(),
+                _ => unreachable!(),
+            }
         } else {
             true.into()
         }
@@ -312,11 +319,7 @@ impl VarPurifier {
 
 impl ast::ExprFolder for VarPurifier {
     fn fold_local(&mut self, ast::Local { variable, position }: ast::Local) -> ast::Expr {
-        assert!(
-            !self.pure_vars.contains(&variable),
-            "local_var: {}",
-            variable
-        );
+        assert!(!self.pure_vars.contains(&variable), "local_var: {variable}");
         ast::Expr::local_with_pos(variable, position)
     }
     fn fold_predicate_access_predicate(
@@ -477,14 +480,14 @@ impl ast::StmtFolder for VarPurifier {
             let replacement = self
                 .replacements
                 .get(target)
-                .unwrap_or_else(|| panic!("key: {}", target))
+                .unwrap_or_else(|| panic!("key: {target}"))
                 .clone();
             method_name = match replacement.typ {
                 ast::Type::Int => "builtin$havoc_int".to_string(),
                 ast::Type::Bool => "builtin$havoc_bool".to_string(),
                 ast::Type::Float(ast::Float::F32) => "builtin$havoc_f32".to_string(),
                 ast::Type::Float(ast::Float::F64) => "builtin$havoc_f64".to_string(),
-                ast::Type::BitVector(value) => format!("builtin$havoc_{}", value),
+                ast::Type::BitVector(value) => format!("builtin$havoc_{value}"),
                 ast::Type::TypedRef(_) => "builtin$havoc_ref".to_string(),
                 ast::Type::TypeVar(_) => "builtin$havoc_ref".to_string(),
                 ast::Type::Domain(_)
