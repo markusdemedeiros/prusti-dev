@@ -38,9 +38,41 @@ type Node = RegionVid;
 
 type Group = usize;
 
+
+/// Represents the last path an execution took through the to- block.
+#[derive(PartialEq, Eq, Debug)]
+struct DataflowFlag {
+    from : BasicBlock,
+    to : BasicBlock
+}
+
+/// Infrormation for using DataFlowFlags 
+pub(crate) struct DataflowInfo<'a, 'tcx> { 
+    pub(crate) cgx: &'a CgContext<'a, 'tcx>,
+}
+
+impl<'a, 'tcx> DataflowInfo<'a, 'tcx> {
+    /// interp. 
+    /// DataflowFlag is possible to set 
+    pub fn is_valid(f: &DataflowFlag) -> bool {
+        todo!()
+    }
+
+    /// interp. 
+    /// Exactly one sibling should be set if some execution path goes through the to-block
+    /// No siblings should be set if no execution path goes through the to-block
+    pub fn siblings(f: &DataflowFlag) -> FxHashSet<DataflowFlag> {
+        todo!()
+    }
+}
+
+
+/// DSL for high-level actions on the reborrowing DAG/PCS
 #[derive(PartialEq, Eq)]
 pub(crate) enum Annotation {
-    ExpireLifetime(Node),
+    Insert(Node),
+    Freeze(Node),
+    Thaw(Node),
 }
 
 
@@ -51,7 +83,7 @@ pub(crate) enum Annotation {
 struct Eg { 
     parents : FxHashMap<Group, FxHashSet<Node>>,
     children : FxHashMap<Group, FxHashSet<Node>>,
-    live_regions : FxHashMap<RegionVid, Group>,
+    live_regions : FxHashMap<Node, Group>,
     live_groups : FxHashSet<Group>,
     annotations : FxHashMap<Group, Vec<Annotation>>,
     fresh_group : Group, 
@@ -59,6 +91,7 @@ struct Eg {
 
 impl PartialEq for Eg {
     fn eq(&self, other: &Self) -> bool {
+        /* FIXME: this is wrong: check should see if they're the same graph mod group annotations */
         self.parents == other.parents && 
         self.children == other.children && 
         self.live_regions == other.live_regions && 
@@ -73,6 +106,25 @@ impl Eg {
     fn gen_fresh_group (self: &mut Self) -> Group {
         let r = self.fresh_group;
         self.fresh_group += 1;
+        assert!(self.live_groups.insert(r));
         return r;
+    }
+
+    /// Given a node X and children C, add the shape
+    ///     X --[expire X]--> C
+    ///  to the graph
+    fn issue_group(self: &mut Self, node: Node, children: FxHashSet<Node>) -> Group {
+        assert!(!self.live_regions.contains_key(&node));
+        let group = self.gen_fresh_group();
+        assert!(self.annotations.insert(group, vec![Annotation::Insert(node)]).is_some());
+        assert!(self.children.insert(group, children).is_some());
+        assert!(self.parents.insert(group, [node].iter().cloned().collect::<_>()).is_some()); /* FIXME */
+        return group;
+    }
+
+    /// Get the sequence of annotations we would insert if we were to expire a node right now 
+    /// returns None if that expiry is not possible 
+    pub fn query_expiry(self: & Self, node: Node) -> Option<Vec<Annotation>> {
+        todo!();
     }
 }

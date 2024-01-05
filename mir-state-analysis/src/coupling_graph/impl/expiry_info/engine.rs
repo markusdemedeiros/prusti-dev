@@ -30,7 +30,6 @@ use prusti_rustc_interface::{
         ty::{RegionVid, TyCtxt},
     },
 };
-
 use prusti_rustc_interface::{dataflow::JoinSemiLattice};
 
 use crate::coupling_graph::CgContext;
@@ -64,10 +63,10 @@ impl PartialEq for Exg<'_, '_> {
         self.graph == other.graph
     }
 }
+
 impl Eq for Exg<'_, '_> {}
 
-impl <'a, 'tcx> Exg <'a, 'tcx> {
-}
+impl <'a, 'tcx> Exg <'a, 'tcx> {}
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     fn join(&mut self, other: &Self) -> bool {
