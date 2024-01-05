@@ -42,7 +42,7 @@ use crate::{
     utils::PlaceRepacker,
 };
 
-use super::triple::Cg;
+use super::{triple::Cg, expiry_info::engine::ExpiryInfo};
 
 #[tracing::instrument(name = "draw_dots", level = "debug", skip(c))]
 pub(crate) fn draw_dots<'tcx, 'a>(c: &mut ResultsCursor<'_, 'tcx, CouplingGraph<'a, 'tcx>>) {
@@ -137,6 +137,8 @@ impl<'a, 'tcx> CouplingGraph<'a, 'tcx> {
             .pass_name("borrowck")
             .iterate_to_fixpoint()
             .into_results_cursor(cgx.rp.body());
+
+        let expiry_info = ExpiryInfo::new(cgx, top_crates);
 
         if false && !top_crates {
             println!("body: {:#?}", cgx.rp.body());

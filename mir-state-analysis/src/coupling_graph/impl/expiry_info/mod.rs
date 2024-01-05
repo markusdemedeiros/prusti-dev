@@ -1,4 +1,4 @@
-// © 2023, ETH Zurich
+// © 2024, ETH Zurich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -6,7 +6,3 @@
 
 pub(crate) mod engine;
 pub(crate) mod graph;
-pub(crate) mod join_semi_lattice;
-pub(crate) mod triple;
-pub(crate) mod expiry_info;
-mod dot;
