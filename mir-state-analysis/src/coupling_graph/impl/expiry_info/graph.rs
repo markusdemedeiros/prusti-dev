@@ -39,33 +39,6 @@ type Node = RegionVid;
 type Group = usize;
 
 
-/// Represents the last path an execution took through the to- block.
-#[derive(PartialEq, Eq, Debug)]
-struct DataflowFlag {
-    from : BasicBlock,
-    to : BasicBlock
-}
-
-/// Infrormation for using DataFlowFlags 
-pub(crate) struct DataflowInfo<'a, 'tcx> { 
-    pub(crate) cgx: &'a CgContext<'a, 'tcx>,
-}
-
-impl<'a, 'tcx> DataflowInfo<'a, 'tcx> {
-    /// interp. 
-    /// DataflowFlag is possible to set 
-    pub fn is_valid(f: &DataflowFlag) -> bool {
-        todo!()
-    }
-
-    /// interp. 
-    /// Exactly one sibling should be set if some execution path goes through the to-block
-    /// No siblings should be set if no execution path goes through the to-block
-    pub fn siblings(f: &DataflowFlag) -> FxHashSet<DataflowFlag> {
-        todo!()
-    }
-}
-
 
 /// DSL for high-level actions on the reborrowing DAG/PCS
 #[derive(PartialEq, Eq)]
