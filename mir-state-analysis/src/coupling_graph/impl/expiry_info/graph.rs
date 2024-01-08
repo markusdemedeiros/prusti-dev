@@ -68,7 +68,7 @@ type Group = usize;
 
 /// DSL for the actions an exiry may require from the lower passes
 /// These make up the annotations on each group
-#[derive(PartialEq, Eq, Debug, Hash)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone)]
 pub(crate) enum Annotation {
     /// Base-level expiry associated to the loan Vertex
     BasicExpiry(Vertex),
@@ -78,7 +78,7 @@ pub(crate) enum Annotation {
 }
 
 /// Information associated to each expiry group
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Debug, Clone)]
 pub(crate) struct GroupData {
     /// None when the edge is Opaque 
     /// Some when the edge is Transparent or Translucent
@@ -97,7 +97,8 @@ impl GroupData {
 }
 
 
-struct Eg { 
+#[derive(Debug, Clone)]
+pub(crate) struct Eg { 
     /// Edge structure of the groups 
     parents : FxHashMap<Group, FxHashSet<Vertex>>,
     children : FxHashMap<Group, FxHashSet<Vertex>>,
@@ -163,6 +164,10 @@ impl Eg {
     /// Bottom graph
     pub(crate) fn bottom() -> Self  { 
         Self::default()
+    }
+
+    pub(crate) fn couple(v: Vec<(ControlFlowFlag, Self)>) -> Self {
+        todo!();
     }
 
 }

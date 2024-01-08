@@ -35,7 +35,7 @@ use crate::coupling_graph::CgContext;
 /// INVARIANT: If the `to` block is a predecessor in the control flow graph, 
 /// exactly one sibling flag should be set at runtime. Otherwise, none should
 /// be set. 
-#[derive(PartialEq, Eq, Debug, Hash)]
+#[derive(PartialEq, Eq, Debug, Hash, Clone, PartialOrd, Ord)]
 pub(crate) struct ControlFlowFlag {
     from : BasicBlock,
     to : BasicBlock
@@ -47,11 +47,20 @@ impl ControlFlowFlag {
         todo!()
     }
 
-    pub fn is_sibling<'a, 'tcx>(&self, other: &Self) -> bool {
+    pub fn is_sibling(&self, other: &Self) -> bool {
         self.to == other.to
     }
 
-    fn num_siblings<'a, 'tcx>(&self, other: &Self) -> usize {
+    fn num_siblings(&self, other: &Self) -> usize {
         todo!();
     }
+
+    pub fn join_is_complete<'a, 'tcx>(v: Vec<&Self>, cgx: &'a CgContext<'a, 'tcx>) -> bool {
+        // All flags must be valid
+        // All to-blocks must be the same
+        // Must contain all prececessor blocks to the to-block
+        // Must not contain anything else (length equals num_siblings)
+        todo!()
+    }
+
 }

@@ -7,7 +7,7 @@
 
 #![allow(unused_imports)]
 
-use std::cell::Cell;
+use std::{cell::Cell, collections::BTreeSet};
 use std::fmt::Formatter;
 
 use prusti_rustc_interface::{
@@ -38,6 +38,8 @@ use prusti_rustc_interface::dataflow::JoinSemiLattice;
 
 use crate::coupling_graph::CgContext;
 
+use super::{graph::Eg, control_flow::ControlFlowFlag};
+
 pub(crate) struct ExpiryInfo<'a, 'tcx> {
     pub(crate) cgx: &'a CgContext<'a, 'tcx>,
     bb_index: Cell<BasicBlock>,
@@ -50,11 +52,83 @@ impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
     }
 }
 
+/// Helper Struct: Used to represent a one-shot lazy join of graphs
+/// This way we can avoid associativity issues by just waiting until we have 
+/// all the branches to be coupled.
+#[derive(Debug, Clone, Eq)]
+pub(crate) enum LazyCoupling {
+    Done(Eg),
+    Lazy(Vec<(ControlFlowFlag, Eg)>)
+}
+
+impl PartialEq for LazyCoupling {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Self::Done(l), Self::Done(r)) => l == r,
+            (Self::Lazy(l), Self::Lazy(r)) => {
+                l.iter().all(|v| r.contains(v)) &&
+                r.iter().all(|v| l.contains(v)) 
+            }
+            _ => false,
+        }
+    }
+}
+
+impl LazyCoupling {
+    /// Lazily join two LazyCouplings together,
+    /// The coupling must not be shot yet
+    pub(crate) fn join(&mut self, mut other: Self) {
+        match (self, other) {
+            (Self::Lazy(l), Self::Lazy(mut r)) => {
+                l.append(&mut r)
+            }
+            _ => {
+                panic!("one-shot lazy join given Done value");
+            }
+        }
+    }
+
+    /// Lazily add a single branch to a LazyCoupling
+    pub(crate) fn add_case(&mut self, mut other: (ControlFlowFlag, Eg)) {
+        self.join(LazyCoupling::Lazy(vec![other]));
+    }
+
+    /// Identity for join 
+    pub(crate) fn empty() -> Self {
+        Self::Lazy(vec![])
+    }
+
+    /// Ensure that the lazy join is completed, or attempt to complete it
+    /// Calling this asserts that nothing else will be added to this join point afterwards, which should be the case
+    /// if we are correcrtly combining state together (never joining with prior work)
+    pub(crate) fn shoot<'a, 'tcx>(&mut self, cgx: &'a CgContext<'a, 'tcx>) {
+        if let (Self::Lazy(v)) = self {
+            let v = std::mem::take(v);
+            assert!(ControlFlowFlag::join_is_complete(v.iter().map(|x| &x.0).collect::<_>(), cgx));
+            assert!(v.len() > 0);
+            *self = Self::Done(Eg::couple(v));
+
+        }
+    }
+
+    /// Ensures we only ever read shot values
+    pub(crate) fn get(&mut self) -> &mut Eg {
+        match self {
+            Self::Lazy(_) => panic!("tried to read an unevaluated lazy coupling"),
+            Self::Done(v) => &mut (*v)
+        }
+
+    }
+}
+
+
 #[derive(Debug, Clone)]
 pub(crate) struct Exg<'a, 'tcx> {
     pub cgx: &'a CgContext<'a, 'tcx>,
 
-    pub graph: (),
+    pub graph: LazyCoupling,
+
+    pub location: Location,
 
     // expiry instructions at this point 
     // pub instructions: (),
@@ -72,12 +146,6 @@ impl PartialEq for Exg<'_, '_> {
 impl Eq for Exg<'_, '_> {}
 
 impl <'a, 'tcx> Exg <'a, 'tcx> {
-    fn bottom(cgx: &'a CgContext<'a, 'tcx>) ->Self {
-        Self {
-            cgx,
-            graph: Default::default(),
-        }
-    }
 
     pub(crate) fn initialize_start_block(&mut self) {
         /* nothing special for now, put universal origin stuff here? 
@@ -88,6 +156,12 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     fn join(&mut self, other: &Self) -> bool {
+        if self.location != other.location {
+            panic!("Join of Exg states at different locations ({:?} and {:?})is incomprehensible", 
+                self.location, 
+                other.location);
+        }
+
         todo!()
     }
 }
@@ -102,7 +176,14 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
         /* ?? */
         let block = self.bb_index.get();
         self.bb_index.set(block.plus(1));
-        Exg::bottom(self.cgx)
+        Exg {
+            cgx: self.cgx,
+            graph: LazyCoupling::Done(Default::default()),
+            location: Location {
+                block: START_BLOCK,
+                statement_index: 0,
+            },
+        }
     }
 
     fn initialize_start_block(&self, _body: &Body<'tcx>, state: &mut Self::Domain) {
