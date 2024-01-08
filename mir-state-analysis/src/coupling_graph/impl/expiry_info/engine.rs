@@ -77,10 +77,11 @@ impl PartialEq for LazyCoupling {
 impl LazyCoupling {
     /// Lazily join two LazyCouplings together,
     /// The coupling must not be shot yet
-    pub(crate) fn join(&mut self, mut other: Self) {
+    pub(crate) fn append(&mut self, mut other: Self) {
         match (self, other) {
             (Self::Lazy(l), Self::Lazy(mut r)) => {
-                l.append(&mut r)
+                todo!(); // Check to see if there's a lazy case already?
+                // l.append(&mut r)
             }
             _ => {
                 panic!("one-shot lazy join given Done value");
@@ -90,7 +91,7 @@ impl LazyCoupling {
 
     /// Lazily add a single branch to a LazyCoupling
     pub(crate) fn add_case(&mut self, mut other: (ControlFlowFlag, Eg)) {
-        self.join(LazyCoupling::Lazy(vec![other]));
+        self.append(LazyCoupling::Lazy(vec![other]));
     }
 
     /// Identity for join 
@@ -112,7 +113,7 @@ impl LazyCoupling {
     }
 
     /// Ensures we only ever read shot values
-    pub(crate) fn get(&mut self) -> &mut Eg {
+    pub(crate) fn read(&mut self) -> &mut Eg {
         match self {
             Self::Lazy(_) => panic!("tried to read an unevaluated lazy coupling"),
             Self::Done(v) => &mut (*v)
@@ -155,6 +156,7 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
 }
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
+    /// ASSUMES that self.cgx and other.cgx are the same
     fn join(&mut self, other: &Self) -> bool {
         if self.location != other.location {
             panic!("Join of Exg states at different locations ({:?} and {:?})is incomprehensible", 
@@ -162,6 +164,11 @@ impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
                 other.location);
         }
 
+
+        // If one state is newer, use that.
+        // If they are the same, we must combine them.
+
+        // When is join called? Is it like the other framework or can it be called arbitrarily?
         todo!()
     }
 }
