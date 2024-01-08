@@ -5,6 +5,8 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+#![allow(unused_imports)]
+
 use std::cell::Cell;
 
 use prusti_rustc_interface::{
@@ -30,7 +32,7 @@ use prusti_rustc_interface::{
         ty::{RegionVid, TyCtxt},
     },
 };
-use prusti_rustc_interface::{dataflow::JoinSemiLattice};
+use prusti_rustc_interface::dataflow::JoinSemiLattice;
 
 use crate::coupling_graph::CgContext;
 
@@ -53,9 +55,10 @@ pub(crate) struct Exg<'a, 'tcx> {
     pub graph: (),
 
     // expiry instructions at this point 
-    pub instructions: (),
-    // live groups
-    pub active_groups: (), 
+    // pub instructions: (),
+
+    // live groups 
+    // pub active_groups: (), 
 }
 
 impl PartialEq for Exg<'_, '_> {
@@ -66,7 +69,20 @@ impl PartialEq for Exg<'_, '_> {
 
 impl Eq for Exg<'_, '_> {}
 
-impl <'a, 'tcx> Exg <'a, 'tcx> {}
+impl <'a, 'tcx> Exg <'a, 'tcx> {
+    fn bottom(cgx: &'a CgContext<'a, 'tcx>) ->Self {
+        Self {
+            cgx,
+            graph: Default::default(),
+        }
+    }
+
+    pub(crate) fn initialize_start_block(&mut self) {
+        /* nothing special for now, put universal origin stuff here? 
+           not even sure I understand what Jonas' implementation is doing 
+        */
+    }
+}
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     fn join(&mut self, other: &Self) -> bool {
@@ -79,27 +95,15 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
     const NAME: &'static str = "expiry_graph";
 
     fn bottom_value(&self, _body: &Body<'tcx>) -> Self::Domain {
-        /*
+        /* ?? */
         let block = self.bb_index.get();
         self.bb_index.set(block.plus(1));
-        Cg::new(
-            self.cgx,
-            self.top_crates,
-            Location {
-                block,
-                statement_index: 0,
-            },
-        )
-        */
-        todo!();
+        Exg::bottom(self.cgx)
     }
 
-    fn initialize_start_block(&self, body: &Body<'tcx>, state: &mut Self::Domain) {
-        /*
+    fn initialize_start_block(&self, _body: &Body<'tcx>, state: &mut Self::Domain) {
         self.bb_index.set(START_BLOCK);
         state.initialize_start_block()
-         */
-        todo!();
     }
 }
 

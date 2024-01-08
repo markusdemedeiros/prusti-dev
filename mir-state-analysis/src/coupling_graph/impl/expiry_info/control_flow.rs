@@ -35,8 +35,8 @@ use crate::coupling_graph::CgContext;
 /// INVARIANT: If the `to` block is a predecessor in the control flow graph, 
 /// exactly one sibling flag should be set at runtime. Otherwise, none should
 /// be set. 
-#[derive(PartialEq, Eq, Debug)]
-struct ControlFlowFlag {
+#[derive(PartialEq, Eq, Debug, Hash)]
+pub(crate) struct ControlFlowFlag {
     from : BasicBlock,
     to : BasicBlock
 }
