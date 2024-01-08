@@ -138,8 +138,13 @@ impl<'a, 'tcx> CouplingGraph<'a, 'tcx> {
             .iterate_to_fixpoint()
             .into_results_cursor(cgx.rp.body());
 
-        let expiry_info = ExpiryInfo::new(cgx, top_crates).into_engine(cgx.rp.tcx(), cgx.rp.body());
+        let expiry_info = ExpiryInfo::new(cgx, top_crates)
+            .into_engine(cgx.rp.tcx(), cgx.rp.body())
+            .pass_name("expiry_info")
+            .iterate_to_fixpoint()
+            .into_results_cursor(cgx.rp.body());
 
+        panic!("CHECK! EXPIRY INFO SHOULD BE CALCULATED");
 
         if false && !top_crates {
             println!("body: {:#?}", cgx.rp.body());

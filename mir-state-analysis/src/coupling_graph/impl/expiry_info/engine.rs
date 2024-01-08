@@ -8,6 +8,7 @@
 #![allow(unused_imports)]
 
 use std::cell::Cell;
+use std::fmt::Formatter;
 
 use prusti_rustc_interface::{
     borrowck::{
@@ -18,7 +19,7 @@ use prusti_rustc_interface::{
         },
     },
     data_structures::fx::{FxHashSet, FxIndexMap},
-    dataflow::{Analysis, AnalysisDomain, ResultsCursor},
+    dataflow::{Analysis, AnalysisDomain, ResultsCursor, fmt::DebugWithContext},
     index::{
         bit_set::{BitSet, HybridBitSet},
         Idx,
@@ -34,6 +35,7 @@ use prusti_rustc_interface::{
 };
 use prusti_rustc_interface::dataflow::JoinSemiLattice;
 
+
 use crate::coupling_graph::CgContext;
 
 pub(crate) struct ExpiryInfo<'a, 'tcx> {
@@ -48,7 +50,7 @@ impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct Exg<'a, 'tcx> {
     pub cgx: &'a CgContext<'a, 'tcx>,
 
@@ -90,6 +92,8 @@ impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     }
 }
 
+impl<'a, 'tcx> DebugWithContext<ExpiryInfo<'a, 'tcx>> for Exg<'a, 'tcx> { }
+
 impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
     type Domain = Exg<'a, 'tcx>;
     const NAME: &'static str = "expiry_graph";
@@ -107,6 +111,7 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
     }
 }
 
+
 impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
     fn apply_before_statement_effect(
         &mut self,
@@ -114,6 +119,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
+        println!("APPLY BEFORE STATEMENT EFFECT");
         /*
         state.location = location;
         state.reset_ops();
@@ -153,6 +159,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
+        println!("APPLY STATEMENT EFFECT");
         /*
         state.reset_ops();
         state.handle_outlives(location, statement.kind.assigns_to());
@@ -173,6 +180,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         terminator: &Terminator<'tcx>,
         location: Location,
     ) {
+        println!("APPLY BEFORE TERMINATOR EFFECT");
         /*
         // println!("Location: {l}");
         state.location = location;
@@ -214,6 +222,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         terminator: &'mir Terminator<'tcx>,
         location: Location,
     ) -> TerminatorEdges<'mir, 'tcx> {
+        println!("APPLY TERMINATOR EFFECT");
         /*
         state.reset_ops();
         state.handle_outlives(location, terminator.kind.assigns_to());
@@ -267,7 +276,6 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         _return_places: CallReturnPlaces<'_, 'tcx>,
     ) {
         // Nothing to do here
-        todo!();
     }
 }
 
