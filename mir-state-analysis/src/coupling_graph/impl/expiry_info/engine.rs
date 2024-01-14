@@ -79,6 +79,7 @@ impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
         Self { cgx, bb_index: Cell::new(START_BLOCK), flow_borrows: RefCell::new(flow_borrows), output_facts, top_crates }
     }
 
+
 }
 
 
@@ -111,7 +112,7 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
         let location = Location { block: START_BLOCK, statement_index: 0 };
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
         for r in self.output_facts.origin_live_on_entry.get(&point).unwrap().iter() {
-            g.add_universal_vertex(Vertex::untagged(*r));
+            g.add_vertex(Vertex::untagged(*r));
         }
         // TODO add universal edges too
     }
@@ -248,37 +249,45 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
-        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
-        println!("[before location:       {:?}]", location);
-        println!(" ** live borrows ** ");
-        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-        println!("{}\n", state.graph.pretty()); 
+        // basic steps
         state.location = location;
         state.reset_ops();
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
+
+        // Get a coherent graph 
         if location.statement_index == 0 {
-            // FIXME what does state.is_pre do in the other analysis?
+            // FIXME what does state.is_pre mean in the other analysis?
             // state.is_pre = false;
             self.flow_borrows
                 .borrow_mut()
-                .seek_to_block_start(location.block);
+                .seek_to_block_start(location.block); /* are we ever actually using flow_borrows? */
 
-            // FIXME it would probably be helpful to track the live borrows in the state?
-            // Though we'd really want live lifetimes, not just live borrows. 
+            /* TODO: if Location is 0, shoot the graph */
         }
+        let g = state.graph.read();
+
+        // update the graph: add vertices 
+        if let Some(m) = self.output_facts.origin_contains_loan_at.get(&point) {
+            for k in m.keys() {
+                g.include_vertex(Vertex::untagged(*k));
+            }
+        }
+
+        // debug: 
+        println!("[before location:       {:?}]", point);
+        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
+        println!("{}\n", state.graph.pretty()); 
 
         // self.flow_borrows
         //     .borrow_mut()
         //     .seek_before_primary_effect(location);
         // println!("[flow_borrows (pre):  {:?}]", self.flow_borrows.borrow().get().clone());
-        // self.flow_borrows
-        //     .borrow_mut()
-        //     .seek_after_primary_effect(location);
-        // println!("[flow_borrows (post): {:?}]", self.flow_borrows.borrow().get().clone());
 
         // Jonas sets the live borrows to other here... why? Shouldn't we do this in apply_statement_effect?
         
         /*
-        FIXME: kills
+        FIXME: kills?
         let oos = self.out_of_scope.get(&location);
         state.handle_kills(&delta, oos, location);
          */
@@ -292,11 +301,18 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
     ) {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
         println!("[statement effect:      {:?}]", location);
-        println!(" ** live borrows ** ");
-        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
         println!("{}\n", state.graph.pretty()); 
 
         state.reset_ops();
+        // Update the graph
+        let g = state.graph.read();
+        if let Some(m) = self.output_facts.origin_contains_loan_at.get(&point) {
+            for k in m.keys() {
+                g.include_vertex(Vertex::untagged(*k));
+            }
+        }
         state.handle_outlives(location, statement.kind.assigns_to().map(|p| p.into()));
         state.visit_statement(statement, location);
     }
@@ -307,11 +323,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         terminator: &Terminator<'tcx>,
         location: Location,
     ) {
-        // FIXME: same live borrows calculation here 
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
+        // FIXME: same live borrows calculation here 
         println!("APPLY BEFORE TERMINATOR EFFECT");
-        println!(" ** live borrows ** ");
-        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
         println!("{}\n", state.graph.pretty()); 
         // todo!();
         /*
@@ -340,10 +356,9 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
     ) -> TerminatorEdges<'mir, 'tcx> {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
         println!("APPLY TERMINATOR EFFECT");
-        println!(" ** live borrows ** ");
-        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
         println!("{}\n", state.graph.pretty()); 
-        terminator.edges()
         // todo!();
         /*
         state.reset_ops();
@@ -380,14 +395,9 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
             }
             _ => (),
         };
-
-        let l = format!("{:?}", location).replace('[', "_").replace(']', "");
-        state.output_to_dot(
-            format!("log/coupling/individual/{l}_v{}.dot", state.sum_version()),
-            false,
-        );
-        terminator.edges()
       */
+
+        terminator.edges()
     }
 
     fn apply_call_return_effect(

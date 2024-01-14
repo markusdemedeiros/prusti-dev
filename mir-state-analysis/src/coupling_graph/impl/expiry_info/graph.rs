@@ -51,7 +51,7 @@ use super::control_flow::ControlFlowFlag;
 
 type VertexTag = usize; 
 
-#[derive(PartialEq, Eq, Debug, Hash, Clone, Copy)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 pub(crate) struct Vertex {
     region: RegionVid,
     tag: Option<VertexTag>,
@@ -69,6 +69,15 @@ impl Vertex {
     /// Tags a vertex only if it is untagged
     pub(crate) fn tag_safe(&mut self, tag: VertexTag) {
         self.tag = self.tag.or_else(|| Some(tag));
+    }
+}
+
+impl std::fmt::Debug for Vertex {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.tag {
+            Some(t) => write!(f, "{:?}@{:?}", self.region, t),
+            None => write!(f, "{:?}", self.region)
+        }
     }
 }
 
@@ -174,8 +183,12 @@ impl Eg {
         todo!();
     }
 
-    pub(crate) fn add_universal_vertex(&mut self, vertex: Vertex) {
+    pub(crate) fn add_vertex(&mut self, vertex: Vertex) {
         assert!(self.live_regions.insert(vertex));
+    }
+
+    pub(crate) fn include_vertex(&mut self, vertex: Vertex) {
+        self.live_regions.insert(vertex);
     }
 
 
