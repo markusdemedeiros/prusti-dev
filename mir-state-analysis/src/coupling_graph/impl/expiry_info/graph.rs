@@ -58,6 +58,14 @@ pub(crate) struct Vertex {
 }
 
 impl Vertex {
+    pub(crate) fn untagged(region: RegionVid) -> Self {
+        Self {
+            region,
+            tag: None
+        }
+    }
+
+
     /// Tags a vertex only if it is untagged
     pub(crate) fn tag_safe(&mut self, tag: VertexTag) {
         self.tag = self.tag.or_else(|| Some(tag));
@@ -104,7 +112,7 @@ pub(crate) struct Eg {
     children : FxHashMap<Group, FxHashSet<Vertex>>,
 
     /// Set of vertices in the graph
-    live_regions : FxHashMap<Vertex, Group>,
+    live_regions : FxHashSet<Vertex>,
 
     /// Edges of the graph, plus their annotations
     annotations : FxHashMap<Group, GroupData>,
@@ -131,14 +139,15 @@ impl Eq for Eg {}
 
 impl Default for Eg {
     fn default() -> Self {
-        Self { 
-            parents: Default::default(), 
-            children: Default::default(), 
-            live_regions: Default::default(), 
-            annotations: Default::default(), 
+        Self {
+            parents: Default::default(),
+            children: Default::default(),
+            live_regions: Default::default(),
+            annotations: Default::default(),
             fresh_group: 0,
-            fresh_tag: 0 
+            fresh_tag: 0,
         }
+        
     }
 }
 
@@ -153,7 +162,7 @@ impl Eg {
     ///     X --[expire X]--> C
     ///  to the graph. X must not exist in the graph already. 
     fn issue_group(self: &mut Self, vertex: Vertex, children: FxHashSet<Vertex>) -> Group {
-        assert!(!self.live_regions.contains_key(&vertex));
+        assert!(!self.live_regions.contains(&vertex));
         let group = self.gen_fresh_group();
         assert!(self.annotations.insert(group, GroupData::basic_data(vertex)).is_some());
         assert!(self.children.insert(group, children).is_some());
@@ -161,13 +170,26 @@ impl Eg {
         return group;
     }
 
-    /// Bottom graph
-    pub(crate) fn bottom() -> Self  { 
-        Self::default()
-    }
-
     pub(crate) fn couple(v: Vec<(ControlFlowFlag, Self)>) -> Self {
         todo!();
     }
 
+    pub(crate) fn add_universal_vertex(&mut self, vertex: Vertex) {
+        assert!(self.live_regions.insert(vertex));
+    }
+
+
+}
+
+
+/// Pretty printing 
+impl Eg { 
+    pub fn pretty(&self) -> String {
+        // Print the groups
+        format!("| EG \n\
+                 | V: {:?} \n\
+                 | E: {:?} \n", 
+            self.live_regions.iter().collect::<Vec<_>>(),
+            self.annotations.keys().collect::<Vec<_>>())
+    }
 }

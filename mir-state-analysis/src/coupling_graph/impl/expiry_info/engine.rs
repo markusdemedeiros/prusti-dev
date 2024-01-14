@@ -45,6 +45,8 @@ use prusti_rustc_interface::dataflow::JoinSemiLattice;
 use crate::coupling_graph::CgContext;
 use crate::coupling_graph::outlives_info::AssignsToPlace;
 
+use super::graph::Vertex;
+use super::lazy_coupling::LazyCoupling;
 use super::{graph::Eg, control_flow::ControlFlowFlag};
 
 pub(crate) struct ExpiryInfo<'a, 'tcx> {
@@ -59,7 +61,6 @@ pub(crate) struct ExpiryInfo<'a, 'tcx> {
 impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
     pub(crate) fn new(cgx: &'a CgContext<'a, 'tcx>, top_crates: bool) -> Self {
         let input_facts = cgx.facts.input_facts.borrow().as_ref().unwrap().clone();
-        let location_table1 = cgx.facts.location_table.borrow().as_ref().unwrap();
         let output_facts = prusti_rustc_interface::polonius_engine::Output::compute(
             &input_facts,
             prusti_rustc_interface::polonius_engine::Algorithm::Naive,
@@ -80,90 +81,17 @@ impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
 
 }
 
-/// Helper Struct: Used to represent a one-shot lazy join of graphs
-/// This way we can avoid associativity issues by just waiting until we have 
-/// all the branches to be coupled.
-#[derive(Debug, Clone, Eq)]
-pub(crate) enum LazyCoupling {
-    Done(Eg),
-    Lazy(Vec<(ControlFlowFlag, Eg)>)
-}
-
-impl PartialEq for LazyCoupling {
-    fn eq(&self, other: &Self) -> bool {
-        match (self, other) {
-            (Self::Done(l), Self::Done(r)) => l == r,
-            (Self::Lazy(l), Self::Lazy(r)) => {
-                l.iter().all(|v| r.contains(v)) &&
-                r.iter().all(|v| l.contains(v)) 
-            }
-            _ => false,
-        }
-    }
-}
-
-impl LazyCoupling {
-    /// Lazily join two LazyCouplings together,
-    /// The coupling must not be shot yet
-    pub(crate) fn append(&mut self, mut other: Self) {
-        match (self, other) {
-            (Self::Lazy(l), Self::Lazy(mut r)) => {
-                todo!(); // Check to see if there's a lazy case already?
-                // l.append(&mut r)
-            }
-            _ => {
-                panic!("one-shot lazy join given Done value");
-            }
-        }
-    }
-
-    /// Lazily add a single branch to a LazyCoupling
-    pub(crate) fn add_case(&mut self, mut other: (ControlFlowFlag, Eg)) {
-        self.append(LazyCoupling::Lazy(vec![other]));
-    }
-
-    /// Identity for join 
-    pub(crate) fn empty() -> Self {
-        Self::Lazy(vec![])
-    }
-
-    /// Ensure that the lazy join is completed, or attempt to complete it
-    /// Calling this asserts that nothing else will be added to this join point afterwards, which should be the case
-    /// if we are correcrtly combining state together (never joining with prior work)
-    pub(crate) fn shoot<'a, 'tcx>(&mut self, cgx: &'a CgContext<'a, 'tcx>) {
-        if let (Self::Lazy(v)) = self {
-            let v = std::mem::take(v);
-            assert!(ControlFlowFlag::join_is_complete(v.iter().map(|x| &x.0).collect::<_>(), cgx));
-            assert!(v.len() > 0);
-            *self = Self::Done(Eg::couple(v));
-
-        }
-    }
-
-    /// Ensures we only ever read shot values
-    pub(crate) fn read(&mut self) -> &mut Eg {
-        match self {
-            Self::Lazy(_) => panic!("tried to read an unevaluated lazy coupling"),
-            Self::Done(v) => &mut (*v)
-        }
-
-    }
-}
 
 
 #[derive(Clone)]
 pub(crate) struct Exg<'a, 'tcx> {
     pub cgx: &'a CgContext<'a, 'tcx>,
-
+    pub output_facts: prusti_rustc_interface::borrowck::consumers::PoloniusOutput,
     pub graph: LazyCoupling,
-
     pub location: Location,
 
     // expiry instructions at this point 
     // pub instructions: (),
-
-    // live groups 
-    // pub active_groups: (), 
 }
 
 impl PartialEq for Exg<'_, '_> {
@@ -177,9 +105,15 @@ impl Eq for Exg<'_, '_> {}
 impl <'a, 'tcx> Exg <'a, 'tcx> {
 
     pub(crate) fn initialize_start_block(&mut self) {
-        /* nothing special for now, put universal origin stuff here? 
-           not even sure I understand what Jonas' implementation is doing 
-        */
+        let g = self.graph.read();
+
+        // FIXME: there should be a better way to get these? 
+        let location = Location { block: START_BLOCK, statement_index: 0 };
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
+        for r in self.output_facts.origin_live_on_entry.get(&point).unwrap().iter() {
+            g.add_universal_vertex(Vertex::untagged(*r));
+        }
+        // TODO add universal edges too
     }
 
     pub(crate) fn reset_ops(&mut self) {
@@ -227,7 +161,6 @@ impl<'tcx> Visitor<'tcx> for Exg<'_, 'tcx> {
         */
     }
 
-    // when is this acutally called?
     fn visit_statement(&mut self, statement: &Statement<'tcx>, location: Location) {
         println!("          ST {:?}", statement);
         self.super_statement(statement, location);
@@ -292,7 +225,8 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
 
         Exg {
             cgx: self.cgx,
-            graph: LazyCoupling::Done(Default::default()),
+            graph: LazyCoupling::Done(Eg::default()),
+            output_facts: self.output_facts.clone(),
             location: Location {
                 block: START_BLOCK,
                 statement_index: 0,
@@ -314,7 +248,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
         println!("[before location:       {:?}]", location);
+        println!(" ** live borrows ** ");
+        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!("{}\n", state.graph.pretty()); 
         state.location = location;
         state.reset_ops();
         if location.statement_index == 0 {
@@ -352,15 +290,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
-        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
-        println!("[statement effect:      {:?}/{:?}]", location, point);
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
+        println!("[statement effect:      {:?}]", location);
         println!(" ** live borrows ** ");
         println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-
-        // println!(" ** {:?} ", self.lifetimes.get_origin_live_on_entry_start(location));
-
-        // println!(" ** {:?} ", self.lifetimes); // .as_ref().unwrap().as_ref().origin_live_on_entry.get(&point));
-
+        println!("{}\n", state.graph.pretty()); 
 
         state.reset_ops();
         state.handle_outlives(location, statement.kind.assigns_to().map(|p| p.into()));
@@ -374,7 +308,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         location: Location,
     ) {
         // FIXME: same live borrows calculation here 
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
         println!("APPLY BEFORE TERMINATOR EFFECT");
+        println!(" ** live borrows ** ");
+        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!("{}\n", state.graph.pretty()); 
         // todo!();
         /*
         // println!("Location: {l}");
@@ -400,7 +338,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         terminator: &'mir Terminator<'tcx>,
         location: Location,
     ) -> TerminatorEdges<'mir, 'tcx> {
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
         println!("APPLY TERMINATOR EFFECT");
+        println!(" ** live borrows ** ");
+        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
+        println!("{}\n", state.graph.pretty()); 
         terminator.edges()
         // todo!();
         /*
