@@ -7,9 +7,15 @@
 
 #![allow(unused_imports)]
 
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::{cell::Cell, collections::BTreeSet};
 use std::fmt::Formatter;
 
+use prusti_interface::environment::borrowck::facts::{BorrowckFacts, AllOutputFacts};
+use prusti_interface::environment::mir_body::borrowck::facts::LocationTable;
+use prusti_interface::environment::mir_body::borrowck::lifetimes::Lifetimes;
+use prusti_interface::environment::mir_utils::MirPlace;
 use prusti_rustc_interface::{
     borrowck::{
         borrow_set::{BorrowData, TwoPhaseActivation},
@@ -37,19 +43,41 @@ use prusti_rustc_interface::dataflow::JoinSemiLattice;
 
 
 use crate::coupling_graph::CgContext;
+use crate::coupling_graph::outlives_info::AssignsToPlace;
 
 use super::{graph::Eg, control_flow::ControlFlowFlag};
 
 pub(crate) struct ExpiryInfo<'a, 'tcx> {
     pub(crate) cgx: &'a CgContext<'a, 'tcx>,
+    flow_borrows : RefCell<ResultsCursor<'a, 'tcx, Borrows<'a, 'tcx>>>,
+    /* really we should be able to populate cgx with this. why is it not doing borrow checking on it's own? */
+    output_facts: prusti_rustc_interface::borrowck::consumers::PoloniusOutput,
     bb_index: Cell<BasicBlock>,
     top_crates: bool,
 }
 
 impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
     pub(crate) fn new(cgx: &'a CgContext<'a, 'tcx>, top_crates: bool) -> Self {
-        Self { cgx, bb_index: Cell::new(START_BLOCK), top_crates }
+        let input_facts = cgx.facts.input_facts.borrow().as_ref().unwrap().clone();
+        let location_table1 = cgx.facts.location_table.borrow().as_ref().unwrap();
+        let output_facts = prusti_rustc_interface::polonius_engine::Output::compute(
+            &input_facts,
+            prusti_rustc_interface::polonius_engine::Algorithm::Naive,
+            true,
+        );
+
+        // FIXME: can we reuse the other anaylsis without screwing up the other state?
+        let borrow_set = &cgx.facts2.borrow_set;
+        let regioncx = &*cgx.facts2.region_inference_context;
+        let flow_borrows = Borrows::new(cgx.rp.tcx(), cgx.rp.body(), regioncx, borrow_set)
+            .into_engine(cgx.rp.tcx(), cgx.rp.body())
+            .pass_name("borrowck")
+            .iterate_to_fixpoint()
+            .into_results_cursor(cgx.rp.body());
+
+        Self { cgx, bb_index: Cell::new(START_BLOCK), flow_borrows: RefCell::new(flow_borrows), output_facts, top_crates }
     }
+
 }
 
 /// Helper Struct: Used to represent a one-shot lazy join of graphs
@@ -123,7 +151,7 @@ impl LazyCoupling {
 }
 
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub(crate) struct Exg<'a, 'tcx> {
     pub cgx: &'a CgContext<'a, 'tcx>,
 
@@ -153,7 +181,79 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
            not even sure I understand what Jonas' implementation is doing 
         */
     }
+
+    pub(crate) fn reset_ops(&mut self) {
+        /* FIXME: implemenet ops */
+    }
+
+    pub fn handle_outlives(&mut self, location: Location, assigns_to: Option<MirPlace<'tcx>>) {
+        let local = assigns_to.clone().map(|a| a.local);
+        for &c in self
+            .cgx
+            .outlives_info
+            .pre_constraints(location, local, &self.cgx.region_info)
+        {
+            println!("  - outlives(pre):  {:?}", c);
+            /* self.outlives(c) */
+        }
+        if let Some(place) = assigns_to {
+            println!("  - kills: {:?}", place);
+            /* self.kill_shared_borrows_on_place(Some(location), place); */
+        }
+        for &c in self
+            .cgx
+            .outlives_info
+            .post_constraints(location, local, &self.cgx.region_info)
+        {
+            println!("  - outlives(post): {:?}", c);
+            /* self.outlives(c); */
+        }
+    }
 }
+
+
+impl<'tcx> Visitor<'tcx> for Exg<'_, 'tcx> {
+    fn visit_operand(&mut self, operand: &Operand<'tcx>, location: Location) {
+        println!("          OP {:?}", operand);
+        self.super_operand(operand, location);
+        /*
+        match operand {
+            Operand::Copy(_) => (),
+            &Operand::Move(place) => {
+                self.kill_shared_borrows_on_place(Some(location), place);
+            }
+            Operand::Constant(_) => (),
+        }
+        */
+    }
+
+    // when is this acutally called?
+    fn visit_statement(&mut self, statement: &Statement<'tcx>, location: Location) {
+        println!("          ST {:?}", statement);
+        self.super_statement(statement, location);
+        /*
+        match &statement.kind {
+            StatementKind::AscribeUserType(box (p, _), _) => {
+                for &c in self
+                    .cgx
+                    .outlives_info
+                    .type_ascription_constraints
+                    .iter()
+                    .filter(|c| {
+                        self.cgx.region_info.map.for_local(c.sup, p.local)
+                            || self.cgx.region_info.map.for_local(c.sub, p.local)
+                    })
+                {
+                    self.outlives(c);
+                }
+            }
+            _ => (),
+        }
+         */
+    }
+}
+
+
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     /// ASSUMES that self.cgx and other.cgx are the same
@@ -173,6 +273,12 @@ impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     }
 }
 
+impl<'a, 'tcx> std::fmt::Debug for Exg<'a, 'tcx> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "<An Exg instance>")
+    }
+}
+
 impl<'a, 'tcx> DebugWithContext<ExpiryInfo<'a, 'tcx>> for Exg<'a, 'tcx> { }
 
 impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
@@ -183,6 +289,7 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
         /* ?? */
         let block = self.bb_index.get();
         self.bb_index.set(block.plus(1));
+
         Exg {
             cgx: self.cgx,
             graph: LazyCoupling::Done(Default::default()),
@@ -207,38 +314,36 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
-        println!("APPLY BEFORE STATEMENT EFFECT");
-        /*
+        println!("[before location:       {:?}]", location);
         state.location = location;
         state.reset_ops();
-
         if location.statement_index == 0 {
-            state.is_pre = false;
-            // println!("\nblock: {:?}", location.block);
-            let l = format!("{location:?}").replace('[', "_").replace(']', "");
-            state.output_to_dot(
-                format!(
-                    "log/coupling/individual/{l}_v{}_start.dot",
-                    state.sum_version()
-                ),
-                false,
-            );
+            // FIXME what does state.is_pre do in the other analysis?
+            // state.is_pre = false;
             self.flow_borrows
                 .borrow_mut()
                 .seek_to_block_start(location.block);
-            state.live = self.flow_borrows.borrow().get().clone();
-        }
-        self.flow_borrows
-            .borrow_mut()
-            .seek_after_primary_effect(location);
-        let other = self.flow_borrows.borrow().get().clone();
-        let delta = calculate_diff(&other, &state.live);
-        state.live = other;
 
+            // FIXME it would probably be helpful to track the live borrows in the state?
+            // Though we'd really want live lifetimes, not just live borrows. 
+        }
+
+        // self.flow_borrows
+        //     .borrow_mut()
+        //     .seek_before_primary_effect(location);
+        // println!("[flow_borrows (pre):  {:?}]", self.flow_borrows.borrow().get().clone());
+        // self.flow_borrows
+        //     .borrow_mut()
+        //     .seek_after_primary_effect(location);
+        // println!("[flow_borrows (post): {:?}]", self.flow_borrows.borrow().get().clone());
+
+        // Jonas sets the live borrows to other here... why? Shouldn't we do this in apply_statement_effect?
+        
+        /*
+        FIXME: kills
         let oos = self.out_of_scope.get(&location);
         state.handle_kills(&delta, oos, location);
          */
-        todo!();
     }
 
     fn apply_statement_effect(
@@ -247,19 +352,19 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
-        println!("APPLY STATEMENT EFFECT");
-        /*
-        state.reset_ops();
-        state.handle_outlives(location, statement.kind.assigns_to());
-        state.visit_statement(statement, location);
+        let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
+        println!("[statement effect:      {:?}/{:?}]", location, point);
+        println!(" ** live borrows ** ");
+        println!(" ** {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
 
-        let l = format!("{location:?}").replace('[', "_").replace(']', "");
-        state.output_to_dot(
-            format!("log/coupling/individual/{l}_v{}.dot", state.sum_version()),
-            false,
-        );
-        */
-        todo!();
+        // println!(" ** {:?} ", self.lifetimes.get_origin_live_on_entry_start(location));
+
+        // println!(" ** {:?} ", self.lifetimes); // .as_ref().unwrap().as_ref().origin_live_on_entry.get(&point));
+
+
+        state.reset_ops();
+        state.handle_outlives(location, statement.kind.assigns_to().map(|p| p.into()));
+        state.visit_statement(statement, location);
     }
 
     fn apply_before_terminator_effect(
@@ -268,28 +373,14 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         terminator: &Terminator<'tcx>,
         location: Location,
     ) {
+        // FIXME: same live borrows calculation here 
         println!("APPLY BEFORE TERMINATOR EFFECT");
+        // todo!();
         /*
         // println!("Location: {l}");
         state.location = location;
         state.reset_ops();
 
-        if location.statement_index == 0 {
-            state.is_pre = false;
-            // println!("\nblock: {:?}", location.block);
-            let l = format!("{location:?}").replace('[', "_").replace(']', "");
-            state.output_to_dot(
-                format!(
-                    "log/coupling/individual/{l}_v{}_start.dot",
-                    state.sum_version()
-                ),
-                false,
-            );
-            self.flow_borrows
-                .borrow_mut()
-                .seek_to_block_start(location.block);
-            state.live = self.flow_borrows.borrow().get().clone();
-        }
         self.flow_borrows
             .borrow_mut()
             .seek_after_primary_effect(location);
@@ -301,7 +392,6 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         let oos = self.out_of_scope.get(&location);
         state.handle_kills(&delta, oos, location);
          */
-        todo!();
     }
 
     fn apply_terminator_effect<'mir>(
@@ -311,6 +401,8 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         location: Location,
     ) -> TerminatorEdges<'mir, 'tcx> {
         println!("APPLY TERMINATOR EFFECT");
+        terminator.edges()
+        // todo!();
         /*
         state.reset_ops();
         state.handle_outlives(location, terminator.kind.assigns_to());
@@ -354,7 +446,6 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         );
         terminator.edges()
       */
-      todo!();
     }
 
     fn apply_call_return_effect(
@@ -366,4 +457,3 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         // Nothing to do here
     }
 }
-

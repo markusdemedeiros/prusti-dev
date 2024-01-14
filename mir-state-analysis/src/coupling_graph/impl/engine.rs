@@ -1,4 +1,4 @@
-// © 2023, ETH Zurich
+    // © 2023, ETH Zurich
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -138,13 +138,11 @@ impl<'a, 'tcx> CouplingGraph<'a, 'tcx> {
             .iterate_to_fixpoint()
             .into_results_cursor(cgx.rp.body());
 
-        let expiry_info = ExpiryInfo::new(cgx, top_crates)
+        let expiry_info = ExpiryInfo::new(cgx,  top_crates)
             .into_engine(cgx.rp.tcx(), cgx.rp.body())
             .pass_name("expiry_info")
             .iterate_to_fixpoint()
-            .into_results_cursor(cgx.rp.body());
-
-        panic!("CHECK! EXPIRY INFO SHOULD BE CALCULATED");
+            .into_results_cursor(cgx.rp.body()); 
 
         if false && !top_crates {
             println!("body: {:#?}", cgx.rp.body());
