@@ -188,7 +188,14 @@ impl Eg {
     }
 
     pub(crate) fn include_vertex(&mut self, vertex: Vertex) {
-        self.live_regions.insert(vertex);
+        if !self.live_regions.contains(&vertex) {
+            self.live_regions.insert(vertex);
+        }
+    }
+
+    pub(crate) fn expire_except(&mut self, to_retain: Vec<Vertex>) {
+        // FIXME: just here for testing rn 
+        self.live_regions = to_retain.into_iter().collect::<_>();
     }
 
 

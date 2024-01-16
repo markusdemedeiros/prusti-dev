@@ -79,7 +79,34 @@ impl<'a, 'tcx> ExpiryInfo<'a, 'tcx> {
         Self { cgx, bb_index: Cell::new(START_BLOCK), flow_borrows: RefCell::new(flow_borrows), output_facts, top_crates }
     }
 
+    pub(crate) fn get_origin_contains_loan_at(&self, location: Location, start: bool) -> Vec<RegionVid> {
+        // FIXME: extremely frusturating: I can't just pass around LocationIndex values because I can't import that type????
+        let point = if start {
+            self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location)
+        } else {
+            self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location)
+        };
+        if let Some(m) = self.output_facts.origin_contains_loan_at.get(&point) {
+            return m.keys().cloned().collect::<Vec<_>>();
+        } else  {
+            return vec![];
+        }
+    }
 
+    pub(crate) fn get_origin_live_on_entry(&self, location: Location, start: bool) -> Vec<RegionVid> {
+        // FIXME: extremely frusturating: I can't just pass around LocationIndex values because I can't import that type????
+        let point = if start {
+            self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location)
+        } else {
+            self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location)
+        };
+        return self.output_facts.origin_live_on_entry.get(&point).map(|x| x.clone()).unwrap_or_default();
+    }
+
+    pub(crate) fn get_universal_origins(&self) -> Vec<RegionVid> {
+        let u = self.cgx.facts.input_facts.borrow().clone();
+        return u.unwrap().universal_region;
+    }
 }
 
 
@@ -249,6 +276,8 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
+        println!("[PRE statement effect:      {:?}]", location);
+
         // basic steps
         state.location = location;
         state.reset_ops();
@@ -258,31 +287,29 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         if location.statement_index == 0 {
             // FIXME what does state.is_pre mean in the other analysis?
             // state.is_pre = false;
-            self.flow_borrows
-                .borrow_mut()
-                .seek_to_block_start(location.block); /* are we ever actually using flow_borrows? */
-
             /* TODO: if Location is 0, shoot the graph */
         }
         let g = state.graph.read();
 
-        // update the graph: add vertices 
-        if let Some(m) = self.output_facts.origin_contains_loan_at.get(&point) {
-            for k in m.keys() {
-                g.include_vertex(Vertex::untagged(*k));
-            }
+        let mut to_retain = self.get_universal_origins().into_iter().map(|x| Vertex::untagged(x)).collect::<Vec<_>>();
+        for r in self.get_origin_contains_loan_at(location, true) {
+            to_retain.push(Vertex::untagged(r));
         }
+        g.expire_except(to_retain);
 
-        // debug: 
-        println!("[before location:       {:?}]", point);
-        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
+
+        // update the graph: remove dead vertices
+        // this could also be done at the end of the last Mid statement? 
+        // for k in self.get_live_borrows_at(location, true) {
+        //     g.include_vertex(Vertex::untagged(k));
+        // }
+
+
+        // debug: we should not have any new vertices
+        println!("  ** uo :   {:?}", self.get_universal_origins());
+        println!("  ** ocla : {:?}", self.get_origin_contains_loan_at(location, true));
+        println!("  ** oloe : {:?}", self.get_origin_contains_loan_at(location, true));
         println!("{}\n", state.graph.pretty()); 
-
-        // self.flow_borrows
-        //     .borrow_mut()
-        //     .seek_before_primary_effect(location);
-        // println!("[flow_borrows (pre):  {:?}]", self.flow_borrows.borrow().get().clone());
 
         // Jonas sets the live borrows to other here... why? Shouldn't we do this in apply_statement_effect?
         
@@ -300,21 +327,25 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         location: Location,
     ) {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
-        println!("[statement effect:      {:?}]", location);
-        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
-        println!("{}\n", state.graph.pretty()); 
+        println!("[POST statement effect:      {:?}]", location);
+        println!("  ** uo :   {:?}", self.get_universal_origins());
+        println!("  ** ocla : {:?}", self.get_origin_contains_loan_at(location, false));
+        println!("  ** oloe : {:?}", self.get_origin_contains_loan_at(location, false));
 
-        state.reset_ops();
-        // Update the graph
+
+        // Update the graph: remove vertices and edges
         let g = state.graph.read();
-        if let Some(m) = self.output_facts.origin_contains_loan_at.get(&point) {
-            for k in m.keys() {
-                g.include_vertex(Vertex::untagged(*k));
-            }
+        // update the graph: add new live vertices
+        for k in self.get_origin_contains_loan_at(location, false).iter() {
+            g.include_vertex(Vertex::untagged(*k));
         }
+
+        // update the graph: add edges
         state.handle_outlives(location, statement.kind.assigns_to().map(|p| p.into()));
-        state.visit_statement(statement, location);
+        state.reset_ops();
+
+
+        println!("{}\n", state.graph.pretty()); 
     }
 
     fn apply_before_terminator_effect(
@@ -326,8 +357,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
         // FIXME: same live borrows calculation here 
         println!("APPLY BEFORE TERMINATOR EFFECT");
-        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
+        // println!("  ** live: {:?}", self.get_live_borrows_at(location, true));
         println!("{}\n", state.graph.pretty()); 
         // todo!();
         /*
@@ -356,8 +386,7 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
     ) -> TerminatorEdges<'mir, 'tcx> {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
         println!("APPLY TERMINATOR EFFECT");
-        println!(" ** live: {:?}", self.output_facts.origin_live_on_entry.get(&point).unwrap());
-        println!(" ** all:  {:?}", self.output_facts.origin_contains_loan_at.get(&point).map(|m| m.keys().collect::<Vec<_>>()));
+        // println!("  ** live: {:?}", self.get_live_borrows_at(location, false));
         println!("{}\n", state.graph.pretty()); 
         // todo!();
         /*
