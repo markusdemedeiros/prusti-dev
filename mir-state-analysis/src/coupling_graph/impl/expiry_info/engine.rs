@@ -155,8 +155,7 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
             .outlives_info
             .pre_constraints(location, local, &self.cgx.region_info)
         {
-            println!("  - outlives(pre):  {:?}", c);
-            /* self.outlives(c) */
+            self.outlives(c);
         }
         if let Some(place) = assigns_to {
             println!("  - kills: {:?}", place);
@@ -167,9 +166,12 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
             .outlives_info
             .post_constraints(location, local, &self.cgx.region_info)
         {
-            println!("  - outlives(post): {:?}", c);
-            /* self.outlives(c); */
+            self.outlives(c);
         }
+    }
+
+    pub fn outlives(&mut self, c: OutlivesConstraint) {
+        self.graph.read().issue_group(Vertex::untagged(c.sub), [Vertex::untagged(c.sup)].into_iter().collect());
     }
 }
 
@@ -220,7 +222,7 @@ impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
     /// ASSUMES that self.cgx and other.cgx are the same
     fn join(&mut self, other: &Self) -> bool {
         if self.location != other.location {
-            panic!("Join of Exg states at different locations ({:?} and {:?})is incomprehensible", 
+            panic!("Join of Exg states at different locations ({:?} and {:?}) is incomprehensible", 
                 self.location, 
                 other.location);
         }
@@ -291,11 +293,11 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         }
         let g = state.graph.read();
 
-        let mut to_retain = self.get_universal_origins().into_iter().map(|x| Vertex::untagged(x)).collect::<Vec<_>>();
+        let mut to_retain = self.get_universal_origins().into_iter().map(|x| x).collect::<Vec<_>>();
         for r in self.get_origin_contains_loan_at(location, true) {
-            to_retain.push(Vertex::untagged(r));
+            to_retain.push(r);
         }
-        g.expire_except(to_retain);
+        g.expire_except(location, to_retain);
 
 
         // update the graph: remove dead vertices
@@ -355,14 +357,18 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         location: Location,
     ) {
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
+
         // FIXME: same live borrows calculation here 
         println!("APPLY BEFORE TERMINATOR EFFECT");
+
+
+        state.location = location;
+
         // println!("  ** live: {:?}", self.get_live_borrows_at(location, true));
         println!("{}\n", state.graph.pretty()); 
         // todo!();
         /*
         // println!("Location: {l}");
-        state.location = location;
         state.reset_ops();
 
         self.flow_borrows
