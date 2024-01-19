@@ -37,8 +37,8 @@ use crate::coupling_graph::CgContext;
 /// be set. 
 #[derive(PartialEq, Eq, Debug, Hash, Clone, PartialOrd, Ord)]
 pub(crate) struct ControlFlowFlag {
-    from : BasicBlock,
-    to : BasicBlock
+    pub(crate) from : BasicBlock,
+    pub(crate) to : BasicBlock
 }
 
 impl ControlFlowFlag {

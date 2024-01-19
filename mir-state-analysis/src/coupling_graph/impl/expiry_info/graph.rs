@@ -308,8 +308,7 @@ impl Eg {
     pub fn pretty(&self) -> String {
 
         // Print the groups
-        format!("| EG \n\
-                 | V: {:?} \n\
+        format!("| V: {:?} \n\
                  | E: {:?} \n\
                  {}", 
             self.live_regions.iter().collect::<Vec<_>>(),

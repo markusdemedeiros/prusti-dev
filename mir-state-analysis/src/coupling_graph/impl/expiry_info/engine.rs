@@ -97,7 +97,7 @@ pub(crate) struct Exg<'a, 'tcx> {
     pub cgx: &'a CgContext<'a, 'tcx>,
     pub output_facts: prusti_rustc_interface::borrowck::consumers::PoloniusOutput,
     pub graph: LazyCoupling,
-    pub location: Location,
+    pub is_pre : bool, 
 
     // expiry instructions at this point 
     // pub instructions: (),
@@ -105,7 +105,7 @@ pub(crate) struct Exg<'a, 'tcx> {
 
 impl PartialEq for Exg<'_, '_> {
     fn eq(&self, other: &Self) -> bool {
-        self.graph == other.graph && self.location == other.location
+        self.graph == other.graph 
     }
 }
 
@@ -114,12 +114,13 @@ impl Eq for Exg<'_, '_> {}
 impl <'a, 'tcx> Exg <'a, 'tcx> {
 
     pub(crate) fn initialize_start_block(&mut self) {
-        let g = self.graph.read();
+        let (_, g) = self.graph.read();
         let location = Location { block: START_BLOCK, statement_index: 0 };
         let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
         for r in self.output_facts.origin_live_on_entry.get(&point).unwrap().iter() {
             g.add_vertex(Vertex::untagged(*r));
         }
+        self.graph.set_location(location);
         // TODO: Add universal edges, when they exist
     }
 
@@ -152,24 +153,34 @@ impl <'a, 'tcx> Exg <'a, 'tcx> {
 
     /// Handle a single outlives constraint by adding a new group to the graph
     pub fn outlives(&mut self, c: OutlivesConstraint) {
-        self.graph.read().issue_group(Vertex::untagged(c.sub), [Vertex::untagged(c.sup)].into_iter().collect());
+        self.graph.read().1.issue_group(Vertex::untagged(c.sub), [Vertex::untagged(c.sup)].into_iter().collect());
     }
 }
 
 impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
+    // I think as written, this is OK.
+    // If the compiler tries to do joins at locations other than join points, this could pose a problem
     fn join(&mut self, other: &Self) -> bool {
-        if self.location != other.location {
-            panic!("Join of Exg states at different locations ({:?} and {:?}) is incomprehensible", 
-                self.location, 
-                other.location);
+        if self.is_pre && other.is_pre {
+            return false; 
+        } else if self.is_pre && !other.is_pre {
+            *self = other.clone();
+            return true;
+        } else if !self.is_pre && other.is_pre {
+            return false; 
         }
+        // Otherwise, both are not pre
 
 
-        // If one state is newer, use that.
-        // If they are the same, we must combine them.
 
-        // When is join called? Is it like the other framework or can it be called arbitrarily?
-        todo!()
+        println!("------------------------------------------ join ------------------------------------------");
+
+        println!("STATE 1: \n{}", self.graph.pretty());
+        println!("STATE 2: \n{}", other.graph.pretty());
+
+
+        todo!();
+        return true;
     }
 }
 
@@ -194,12 +205,9 @@ impl<'a, 'tcx> AnalysisDomain<'tcx> for ExpiryInfo<'a, 'tcx> {
 
         Exg {
             cgx: self.cgx,
-            graph: LazyCoupling::Done(Eg::default()),
+            graph: LazyCoupling::Done(Location { block, statement_index: 0, }, Eg::default()),
             output_facts: self.output_facts.clone(),
-            location: Location {
-                block,
-                statement_index: 0,
-            },
+            is_pre : true
         }
     }
 
@@ -217,13 +225,14 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         _statement: &Statement<'tcx>,
         location: Location,
     ) {
+        state.is_pre = false; 
         state.reset_ops();
         println!("[PRE statement effect:      {:?}]", location);
-        state.location = location;
 
         // Get a coherent graph 
         if location.statement_index == 0 { state.graph.shoot(self.cgx); }
-        let g = state.graph.read();
+        state.graph.set_location(location);
+        let (_, g) = state.graph.read();
 
         // Expire all dead vertices
         let mut to_retain = self.get_universal_origins().into_iter().map(|x| x).collect::<Vec<_>>();
@@ -244,13 +253,15 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         statement: &Statement<'tcx>,
         location: Location,
     ) {
+        state.is_pre = false; 
         state.reset_ops();
         println!("[POST statement effect:      {:?}]", location);
         println!("  ** uo :   {:?}", self.get_universal_origins());
         println!("  ** ocla : {:?}", self.get_origin_contains_loan_at(location, false));
 
         // Update the graph: Add new vertices and edges
-        let g = state.graph.read();
+        state.graph.set_location(location);
+        let (_, g) = state.graph.read();
         for k in self.get_origin_contains_loan_at(location, false).iter() {
             g.include_vertex(Vertex::untagged(*k));
         }
@@ -265,11 +276,12 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         _terminator: &Terminator<'tcx>,
         location: Location,
     ) {
+        state.is_pre = false; 
         // let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().start_index(location);
 
         // FIXME: same live borrows calculation here 
         println!("APPLY BEFORE TERMINATOR EFFECT");
-        state.location = location;
+        state.graph.set_location(location);
 
         println!("{}\n", state.graph.pretty()); 
     }
@@ -278,10 +290,13 @@ impl<'a, 'tcx> Analysis<'tcx> for ExpiryInfo<'a, 'tcx> {
         &mut self,
         state: &mut Self::Domain,
         terminator: &'mir Terminator<'tcx>,
-        _location: Location,
+        location: Location,
     ) -> TerminatorEdges<'mir, 'tcx> {
+        state.is_pre = false; 
         // let point = self.cgx.facts.location_table.borrow().as_ref().unwrap().mid_index(location);
         println!("APPLY TERMINATOR EFFECT");
+
+        state.graph.set_location(location);
         // println!("  ** live: {:?}", self.get_live_borrows_at(location, false));
         println!("{}\n", state.graph.pretty()); 
         // todo!();
