@@ -7,7 +7,7 @@
 use crate::coupling_graph::CgContext;
 
 use super::{graph::Eg, control_flow::ControlFlowFlag};
-use prusti_rustc_interface::middle::mir::Location;
+use prusti_rustc_interface::middle::mir::{Location, BasicBlock,BasicBlocks};
 
 #[derive(Debug, Clone, Eq)]
 pub(crate) enum LazyCoupling {
@@ -82,6 +82,44 @@ impl LazyCoupling {
 
     }
 
+    pub(crate) fn join<'tcx>(&self, other: &Self, block_data : &BasicBlocks<'tcx>) -> Self {
+        match (self, other) {
+            (Self::Done(l1, g1), Self::Done(l2, g2)) => {
+                let from1 = l1.block;
+                let from2 = l2.block;
+                let sucs1 = block_data.get(from1).unwrap().terminator.clone().unwrap().kind.successors().collect::<Vec<_>>();
+                let sucs_common = block_data.get(from2).unwrap().terminator.clone().unwrap().kind.successors().filter(|bb| sucs1.contains(bb)).collect::<Vec<_>>();
+                assert!(sucs_common.len() == 1);
+                let to = sucs_common[0];
+                let cff1 = ControlFlowFlag {from: from1, to};
+                let cff2 = ControlFlowFlag {from: from2, to};
+                Self::Lazy(vec![(cff1, g1.clone()), (cff2, g2.clone())])
+            }
+            (Self::Done(l, g), Self::Lazy(v)) => {
+                let to = v[0].0.to;
+                let from = l.block;
+                let mut vr = v.clone();
+                vr.push((ControlFlowFlag {to, from}, g.clone()));
+                return Self::Lazy(vr);
+            }
+            (Self::Lazy(v), Self::Done(l, g)) => {
+                let to = v[0].0.to;
+                let from = l.block;
+                let mut vr = v.clone();
+                vr.push((ControlFlowFlag {to, from}, g.clone()));
+                return Self::Lazy(vr);
+            }
+            (Self::Lazy(v1), Self::Lazy(v2)) => {
+                assert!(v1[0].0.to == v2[0].0.to, "incoherent lazy join");
+                // We should check that there are no duplicate flags
+                let mut vr = v1.clone();
+                vr.append(&mut v2.clone());
+                return Self::Lazy(vr);
+            }
+        }
+    }
+
+
     pub(crate) fn pretty(&self) -> String {
         match self {
             LazyCoupling::Done(l, g) => format!("EG@{:?}:\n{}", l, g.pretty()),
@@ -94,4 +132,9 @@ impl LazyCoupling {
             }
         }
     }
+}
+
+pub (crate) enum ReadBlockResult {
+    EagerFrom(BasicBlock),
+    LazyTo(BasicBlock)
 }

@@ -201,7 +201,7 @@ impl Eg {
     }
 
     pub(crate) fn couple(v: Vec<(ControlFlowFlag, Self)>) -> Self {
-        todo!();
+        todo!("TODO: n-way coupling");
     }
 
     pub(crate) fn add_vertex(&mut self, vertex: Vertex) {

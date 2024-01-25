@@ -56,11 +56,15 @@ impl ControlFlowFlag {
     }
 
     pub fn join_is_complete<'a, 'tcx>(v: Vec<&Self>, cgx: &'a CgContext<'a, 'tcx>) -> bool {
+        // FIXME: sanity check 
+
+
         // All flags must be valid
         // All to-blocks must be the same
         // Must contain all prececessor blocks to the to-block
         // Must not contain anything else (length equals num_siblings)
-        todo!()
+
+        true
     }
 
 }
