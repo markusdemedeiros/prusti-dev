@@ -172,13 +172,6 @@ impl<'a, 'tcx> JoinSemiLattice for Exg<'a, 'tcx> {
         }
         // Otherwise, both are not pre. We construct a lazy coupling. 
 
-        println!("------------------------------------------ join ------------------------------------------");
-
-        println!("STATE 1: \n{}", self.graph.pretty());
-        println!("STATE 2: \n{}", other.graph.pretty());
-
-        // Either of the lazy couplings may be shot, if they're not shot, we need to lazily join them with 
-        // the appropriate cf location
         let r = Self { 
             cgx: self.cgx,
             output_facts: self.output_facts.clone(),

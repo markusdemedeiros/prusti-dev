@@ -137,7 +137,6 @@ impl<'a, 'tcx> CouplingGraph<'a, 'tcx> {
             .pass_name("borrowck")
             .iterate_to_fixpoint()
             .into_results_cursor(cgx.rp.body());
-
         let expiry_info = ExpiryInfo::new(cgx,  top_crates)
             .unwrap()
             .into_engine(cgx.rp.tcx(), cgx.rp.body())
