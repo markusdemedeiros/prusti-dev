@@ -95,7 +95,7 @@ pub(crate) enum Annotation {
     BasicExpiry(Vertex),
     Freeze(Vertex),
     Thaw(Vertex),
-    Branch(Vec<(ControlFlowFlag, Vec<Annotation>)>),
+    Cond(ControlFlowFlag, Vec<Annotation>),
 }
 
 impl std::fmt::Debug for Annotation {
@@ -104,7 +104,7 @@ impl std::fmt::Debug for Annotation {
             Self::BasicExpiry(v) => write!(f, "basic({:?})", v),
             Self::Freeze(v) => write!(f, "freeze({:?})", v),
             Self::Thaw(v) => write!(f, "thaw({:?})", v),
-            Self::Branch(bs) =>write!(f, "<branched annotations>"),
+            Self::Cond(_, _) =>write!(f, "<branched annotations>"),
         }
     }
 }
@@ -135,7 +135,7 @@ impl GroupData {
                     Annotation::BasicExpiry(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
                     Annotation::Freeze(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
                     Annotation::Thaw(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
-                    Annotation::Branch(_) => todo!("implement branch tagging"),
+                    Annotation::Cond(_, _) => todo!("implement branch tagging"),
                 }
             }
         }
@@ -150,7 +150,7 @@ pub(crate) struct Eg {
     children : FxHashMap<Group, FxHashSet<Vertex>>,
 
     /// Set of vertices in the graph
-    live_regions : FxHashSet<Vertex>,
+    vertices : FxHashSet<Vertex>,
 
     /// Edges of the graph, plus their annotations
     annotations : FxHashMap<Group, GroupData>,
@@ -165,7 +165,7 @@ impl PartialEq for Eg {
         // FIXME: this is too strong for loops; renaming the groups should have no effect
         self.parents == other.parents && 
         self.children == other.children && 
-        self.live_regions == other.live_regions && 
+        self.vertices == other.vertices && 
         self.annotations == other.annotations 
     }
 }
@@ -177,7 +177,7 @@ impl Default for Eg {
         Self {
             parents: Default::default(),
             children: Default::default(),
-            live_regions: Default::default(),
+            vertices : Default::default(),
             annotations: Default::default(),
             fresh_group: 0,
         }
@@ -192,16 +192,23 @@ impl Eg {
         return r;
     }
 
+
+    fn add_group(self: &mut Self, parents: FxHashSet<Vertex>, children: FxHashSet<Vertex>, gd: GroupData) -> Group {
+        for vertex in parents.iter() {
+            assert!(self.vertices.contains(&vertex));
+        }
+        let group = self.gen_fresh_group();
+        assert!(self.annotations.insert(group, gd).is_none());
+        assert!(self.children.insert(group, children).is_none());
+        assert!(self.parents.insert(group, parents).is_none()); 
+        return group;
+    }
+
     /// Given a vertex X and children C, add the shape
     ///     X --[expire X]--> C
     ///  to the graph. X must exist in the graph already. 
     pub(crate) fn issue_group(self: &mut Self, vertex: Vertex, children: FxHashSet<Vertex>) -> Group {
-        assert!(self.live_regions.contains(&vertex));
-        let group = self.gen_fresh_group();
-        assert!(self.annotations.insert(group, GroupData::basic_data(vertex)).is_none());
-        assert!(self.children.insert(group, children).is_none());
-        assert!(self.parents.insert(group, [vertex].into_iter().collect::<_>()).is_none()); 
-        return group;
+        self.add_group(vec![vertex].into_iter().collect::<FxHashSet<_>>(), children, GroupData::basic_data(vertex))
     }
 
     fn hyperpath_to (&self, target : Vertex) -> (FxHashSet<Vertex>, FxHashSet<Group>) {
@@ -256,7 +263,12 @@ impl Eg {
         return (net_leaf_vertices, net_target_vertices, annotations);
     }
 
+    fn is_empty(&self) -> bool {
+        self.parents.is_empty() && self.children.is_empty() && self.annotations.is_empty()
+    }
 
+
+    // FIXME: conditionally regained capabailities (frozen) are broken
     pub(crate) fn couple(v: Vec<(ControlFlowFlag, Self)>) -> Self {
         println!("---------------------------------------- coupling ----------------------------------------");
 
@@ -267,69 +279,107 @@ impl Eg {
             m.insert(f, g);
         }
 
-        // FIXME: This map be our progress measure for the loop
-        // FIXME: Include frozen vertices
-        // Get a vertex which is a leaf in both branches 
-        let mut leaves = m.iter().map(|(_, v)| v.leaves().into_iter().map(|v| *v).collect::<Vec<_>>()).next().unwrap();
+        // The live vertices in each graph should be the same 
+
+        let mut vertices = m.iter().next().unwrap().1.vertices.clone();
         for (_, g) in m.iter() {
-            leaves.retain(|v| g.is_leaf(*v));
+            vertices.retain(|x| g.vertices.contains(x));
         }
-        println!("common leaves: {:?}", leaves);
+        let mut output = Self { 
+            parents: Default::default(), 
+            children: Default::default(), 
+            vertices: vertices,
+            annotations: Default::default(),  
+            fresh_group: 0 
+        };
 
+        let mut frozen_vertices : FxHashMap<ControlFlowFlag, Vec<Vertex>> = FxHashMap::default();
 
-        // Figure out what we can reach in both graphs... there has to be at least one or else Polonius would mark all remaining origins as dead
-        let mut common_directly_blocked= m.iter().next().map(|(_, x)| x.live_regions.iter().cloned().collect::<Vec<_>>()).unwrap();
-        for (_, g) in m.iter() {
-            let b = g.directly_blocked();
-            common_directly_blocked.retain(|x| b.contains(x));
-            common_directly_blocked.retain(|x| !g.is_leaf(*x));
-        }
-        println!("common directly blocked: {:?}", common_directly_blocked);
+        // Go until all graphs are empty
+        while m.iter().any(|(_, v)| !v.is_empty()) {
 
-        let target = common_directly_blocked[0];  
-        println!("coupling for : {:?}", target);
-
-        // Figure out the part of the graph which definitely has to expure to obtain target 
-        // If an origin has to expure to obtain target in _any_ branch, it must expire at the same time in _all_ branches. 
-
-        let mut del : FxHashSet<Vertex> = Default::default();
-        for (_ , g) in m.iter() {
-            for d in  g.clone().hyperpath_to(target).0.into_iter() {
-                del.insert(d);
+            // FIXME: This map be our progress measure for the loop
+            // FIXME: Include frozen vertices
+            // Get a vertex which is a leaf in both branches 
+            let mut leaves = m.iter().map(|(_, v)| v.leaves().into_iter().map(|v| *v).collect::<Vec<_>>()).next().unwrap();
+            for (_, g) in m.iter() {
+                leaves.retain(|v| g.is_leaf(*v));
             }
+            println!("common leaves: {:?}", leaves);
+
+
+            // Figure out what we can reach in both graphs... there has to be at least one or else Polonius would mark all remaining origins as dead
+            let mut common_directly_blocked= m.iter().next().map(|(_, x)| x.vertices.iter().cloned().collect::<Vec<_>>()).unwrap();
+            for (_, g) in m.iter() {
+                let b = g.directly_blocked();
+                common_directly_blocked.retain(|x| b.contains(x));
+                common_directly_blocked.retain(|x| !g.is_leaf(*x));
+            }
+            println!("common directly blocked: {:?}", common_directly_blocked);
+
+            let target = common_directly_blocked[0];  
+            println!("coupling for : {:?}", target);
+
+            // Figure out the part of the graph which definitely has to expure to obtain target 
+            // If an origin has to expure to obtain target in _any_ branch, it must expire at the same time in _all_ branches. 
+
+            let mut del : FxHashSet<Vertex> = Default::default();
+            for (_ , g) in m.iter() {
+                for d in  g.clone().hyperpath_to(target).0.into_iter() {
+                    del.insert(d);
+                }
+            }
+            println!("definitely expired leaves: {:?}", del);
+
+
+            let mut cpl_to_map : FxHashMap<ControlFlowFlag, FxHashSet<Vertex>> = Default::default();
+            let mut cpl_from_map : FxHashMap<ControlFlowFlag, FxHashSet<Vertex>> = Default::default();
+            let mut cpl_ann : Vec<Annotation> = vec![];
+
+            // Now, in all graphs, expire all definitely expired leaves and unpick all dead branches as much as possible. 
+            for (cff, g) in m.iter_mut() {
+                let (to, from, anns) = g.expire_for_coupling(del.clone());
+                println!("efc {:?} // {:?} // {:?}", to, from, anns);
+
+                // Keep track of the annotations & gained caps into a new map here? 
+                
+                // With frozen caps we might need to add unfreeze and freeze instructions before pushing to cpl_ann
+
+                cpl_ann.push(Annotation::Cond(cff.clone(), anns));
+                cpl_to_map.insert(cff.clone(), from);
+                cpl_from_map.insert(cff.clone(), to);
+            }
+
+            // If either of these fail, this is where we need freeze/unfreeze. TODO. 
+            let mut common_from = cpl_from_map.iter().next().unwrap().1.clone();
+            for (_, from) in cpl_from_map {
+                assert!(from == common_from, "incoherent from");
+            }
+
+            let mut common_to= cpl_to_map.iter().next().unwrap().1.clone();
+            for (_, to) in cpl_to_map {
+                assert!(to == common_to, "incoherent to");
+            }
+
+            println!("inserting a coupled edge: ");
+            println!("common from: {:?}", common_from);
+            println!("common to: {:?}", common_to);
+            println!("common anns: {:?}", cpl_ann); 
+            output.add_group(common_from, common_to, GroupData{ annotations: Some(cpl_ann)});
         }
-        println!("definitely expired leaves: {:?}", del);
 
-        // Now, in all graphs, expire all definitely expired leaves and unpick all dead branches as much as possible. 
-        for (_, g) in m.iter_mut() {
-            let (to, from, anns) = g.expire_for_coupling(del.clone());
-            println!("efc {:?} // {:?} // {:?}", to, from, anns);
-
-            // Update the leaf set of each branch
-
-            // Keep track of the annotations & gained caps into a new map here? 
-        }
-
-        todo!();
-
-
-        // Ensure the 
-        // If a vertex is gained 
-
-
-
-
-        println!("------------------------------------------------------------------------------------------");
-        unimplemented!();
+        println!("final coupled graph: \n{}", output.pretty());
+        println!("------------------------------------------------------------------------------------------\n");
+        return output;
     }
 
     pub(crate) fn add_vertex(&mut self, vertex: Vertex) {
-        assert!(self.live_regions.insert(vertex));
+        assert!(self.vertices.insert(vertex));
     }
 
     pub(crate) fn include_vertex(&mut self, vertex: Vertex) {
-        if !self.live_regions.contains(&vertex) {
-            self.live_regions.insert(vertex);
+        if !self.vertices.contains(&vertex) {
+            self.vertices.insert(vertex);
         }
     }
 
@@ -344,12 +394,12 @@ impl Eg {
     }
 
     fn leaves(&self) -> Vec<&Vertex> {
-        self.live_regions.iter().filter(|v| self.is_leaf(**v)).collect::<Vec<_>>()
+        self.vertices.iter().filter(|v| self.is_leaf(**v)).collect::<Vec<_>>()
     }
 
     /// Search for a vertex which is a dead leaf
     fn try_find_dead_leaf(&mut self) -> Option<Vertex> {
-        self.live_regions.iter().cloned().find(|v1| self.is_leaf(*v1) && v1.tag.is_some())
+        self.vertices.iter().cloned().find(|v1| self.is_leaf(*v1) && v1.tag.is_some())
     }
 
     /// Search for a group whose leaves are all dead or contained inside some allowed set 
@@ -374,9 +424,9 @@ impl Eg {
         for (_, groupdata) in self.annotations.iter_mut() {
             groupdata.tag(v, location);
         }
-        if self.live_regions.contains(&Vertex::untagged(v)) {
-            self.live_regions.remove(&Vertex::untagged(v));
-            self.live_regions.insert(Vertex {region: v, tag: Some(location)});
+        if self.vertices.contains(&Vertex::untagged(v)) {
+            self.vertices.remove(&Vertex::untagged(v));
+            self.vertices.insert(Vertex {region: v, tag: Some(location)});
         }
     }
 
@@ -404,7 +454,7 @@ impl Eg {
 
     pub(crate) fn expire_except(&mut self, location: Location, to_retain: Vec<RegionVid>) {
         // Figure out which lifetimes need to get expired
-        let mut to_tag = self.live_regions.iter().cloned().filter(|v| v.tag.is_none() && !to_retain.contains(&v.region)).map(|v| v.region).collect::<Vec<_>>();
+        let mut to_tag = self.vertices.iter().cloned().filter(|v| v.tag.is_none() && !to_retain.contains(&v.region)).map(|v| v.region).collect::<Vec<_>>();
 
         // Every expiry should remove at least one edge from some expiry group
         // If that edge is the last in the expire group, that group "expires"
@@ -420,7 +470,7 @@ impl Eg {
         while let Some(dead_leaf) = self.try_find_dead_leaf() {
             // Remove the dead leaf vertex, and all edges it is a parent of (we do not need to look for it's parents)
             // println!("\t\t\t------------------------------------------------------------ EMIT: obtain permissions for {:?}", dead_leaf);
-            self.live_regions.remove(&dead_leaf);
+            self.vertices.remove(&dead_leaf);
 
             for (_, parents) in self.parents.iter_mut() {
                 parents.remove(&dead_leaf);
@@ -454,7 +504,7 @@ impl Eg {
         format!("| V: {:?} \n\
                  | E: {:?} \n\
                  {}", 
-            self.live_regions.iter().collect::<Vec<_>>(),
+            self.vertices.iter().collect::<Vec<_>>(),
             self.annotations.keys().collect::<Vec<_>>(),
             self.annotations
                 .iter()
