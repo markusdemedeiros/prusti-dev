@@ -104,7 +104,23 @@ impl std::fmt::Debug for Annotation {
             Self::BasicExpiry(v) => write!(f, "basic({:?})", v),
             Self::Freeze(v) => write!(f, "freeze({:?})", v),
             Self::Thaw(v) => write!(f, "thaw({:?})", v),
-            Self::Cond(_, _) =>write!(f, "<branched annotations>"),
+            Self::Cond(pc, anns) =>write!(f, "if {:?} then {:?}", pc, anns ),
+        }
+    }
+}
+
+impl Annotation {
+    pub(crate) fn tag(&mut self, v: RegionVid, location: Location) {
+        match self {
+            Annotation::BasicExpiry(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
+            Annotation::Freeze(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
+            Annotation::Thaw(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
+            Annotation::Cond(_, vs) => {
+                for ann in vs.iter_mut() {
+                    // FIXME: This might not be the right thing to do... these annotations are already technically expired. 
+                    ann.tag(v, location)
+                }
+            }
         }
     }
 }
@@ -131,12 +147,7 @@ impl GroupData {
     pub(crate) fn tag(&mut self, v: RegionVid, location: Location) {
         if let Some(ans) = &mut self.annotations {
             for an in ans.iter_mut() {
-                match an {
-                    Annotation::BasicExpiry(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
-                    Annotation::Freeze(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
-                    Annotation::Thaw(v1) => if v1.tag.is_none() && v1.region == v { v1.tag = Some(location); },
-                    Annotation::Cond(_, _) => todo!("implement branch tagging"),
-                }
+                an.tag(v, location);
             }
         }
     }
